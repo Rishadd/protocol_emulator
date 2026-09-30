@@ -1,0 +1,43 @@
+flowchart LR
+    HOST(["Host — e.g. Raspberry Pi Pico"])
+
+    subgraph CHIP["Protocol Emulator ASIC (Tiny Tapeout tile)"]
+        direction LR
+
+        MGMT["Management / SPI Host Interface<br/>frame decode, register windows,<br/>routes to Core 0 / Core 1"]
+
+        SAFETY["Safety Latch<br/>reset/abort dominates all pin drive"]
+
+        subgraph CORE0BOX["Core 0 — independent engine"]
+            CORE0["Core 0<br/>engine + datapath<br/>(see detailed diagram)"]
+        end
+
+        subgraph CORE1BOX["Core 1 — independent engine"]
+            CORE1["Core 1<br/>engine + datapath<br/>(see detailed diagram)"]
+        end
+
+        PINMUX["Pin Ownership Mux<br/>per-pin: which core, if any, owns it"]
+    end
+
+    IOPINS(["Tiny Tapeout IO<br/>ui_in[7:0], uo_out[7:0],<br/>uio[7:0], clk, rst_n, ena"])
+
+    HOST -- "SPI: SCLK / MOSI / MISO / CS_N" --> MGMT
+    IOPINS -- "ui_in / uo_out mgmt pins" --> MGMT
+
+    MGMT -- "program load, control/status, TX/RX data" --> CORE0
+    MGMT -- "program load, control/status, TX/RX data" --> CORE1
+
+    CORE0 -- "pin data + oe requests" --> PINMUX
+    CORE1 -- "pin data + oe requests" --> PINMUX
+    PINMUX -- "uio[7:0]" --> IOPINS
+
+    SAFETY -- "disarm — overrides all pin drive" --> PINMUX
+    IOPINS -- "clk, rst_n, ena" --> SAFETY
+    IOPINS -- "clk, rst_n, ena" --> MGMT
+    IOPINS -- "clk, rst_n, ena" --> CORE0
+    IOPINS -- "clk, rst_n, ena" --> CORE1
+
+    classDef core0style fill:#dbeeff,stroke:#4a90d9,stroke-width:1px;
+    classDef core1style fill:#e6ffe6,stroke:#4ac96a,stroke-width:1px;
+    class CORE0BOX core0style
+    class CORE1BOX core1style

@@ -1,0 +1,86 @@
+flowchart TD
+    CLKRST(["clk, rst_n<br/>(top-level, fans to every sequential module)"])
+    MGMTEXT(["Management Interface (external)"])
+    SAFETYEXT(["Safety Latch (external): disarm"])
+
+    IMEM["<b>instr_mem</b><br/>─ in ─<br/>addr [5:0]<br/>host_wr_en [1]<br/>host_wr_addr [5:0]<br/>host_wr_data [31:0]<br/>─ out ─<br/>instr [31:0]"]
+
+    PCREG["<b>pc_reg</b><br/>─ in ─<br/>clk, rst_n<br/>advance [1]<br/>pc_load [1]<br/>pc_load_addr [5:0]<br/>─ out ─<br/>pc [5:0]"]
+
+    CTRL["<b>control_unit</b><br/>─ in ─<br/>clk, rst_n<br/>instr [31:0]<br/>dc_busy [1]<br/>tx_valid [1]<br/>rx_full [1]<br/>sync_edge [1]<br/>sync_level [1]<br/>last_bit [1]<br/>─ out ─<br/>pc_advance [1]<br/>pc_load [1]<br/>pc_load_addr [5:0]<br/>dc_load [1]<br/>dc_load_value [23:0]<br/>tx_consume [1]<br/>tx_parallel_load [1]<br/>tx_shift_en [1]<br/>rx_shift_en [1]<br/>rx_produce [1]<br/>side_set_en [1]<br/>side_set_val [1:0]<br/>branch_capture_en [1]<br/>halted [1]"]
+
+    DCNT["<b>delay_counter</b><br/>─ in ─<br/>clk, rst_n<br/>load [1]<br/>load_value [23:0]<br/>─ out ─<br/>busy [1]"]
+
+    TXHS["<b>tx_handshake</b><br/>─ in ─<br/>clk, rst_n<br/>host_wr_en [1]<br/>host_wr_data [7:0]<br/>consume_pulse [1]<br/>─ out ─<br/>tx_valid [1]<br/>tx_byte [7:0]"]
+
+    TXSHIFT["<b>tx_shift_reg</b><br/>─ in ─<br/>clk, rst_n<br/>parallel_load [1]<br/>load_data [7:0]<br/>shift_en [1]<br/>─ out ─<br/>bit_out [1]"]
+
+    RXSHIFT["<b>rx_shift_reg</b><br/>─ in ─<br/>clk, rst_n<br/>shift_en [1]<br/>bit_in [1]<br/>─ out ─<br/>byte_out [7:0]"]
+
+    RXHS["<b>rx_handshake</b><br/>─ in ─<br/>clk, rst_n<br/>produce_pulse [1]<br/>byte_in [7:0]<br/>host_rd_en [1]<br/>─ out ─<br/>rx_full [1]<br/>rx_data [7:0]<br/>rx_ready [1]"]
+
+    INSYNC["<b>input_sync</b><br/>─ in ─<br/>clk, rst_n<br/>pin_in_raw [1]<br/>─ out ─<br/>pin_sync [1]<br/>edge_detected [1]"]
+
+    BRANCHREG["<b>branch_condition_reg</b><br/>─ in ─<br/>clk, rst_n<br/>capture_en [1]<br/>sampled_bit [1]<br/>─ out ─<br/>last_bit [1]"]
+
+    SIDESET["<b>side_set_apply</b><br/>─ in ─<br/>side_set_en [1]<br/>side_set_val [1:0]<br/>pin_map_config<br/>─ out ─<br/>side_pin_data [1:0]"]
+
+    PINDRV["<b>pin_driver</b><br/>─ in ─<br/>data_in [1]<br/>side_pin_data [1:0]<br/>disarm [1]<br/>ownership_en [1]<br/>electrical_mode [1]<br/>─ out ─<br/>uio_out [1]<br/>uio_oe [1]<br/>pin_in_raw [1]"]
+
+    CLKRST -->|clk, rst_n| PCREG
+    CLKRST -->|clk, rst_n| CTRL
+    CLKRST -->|clk, rst_n| DCNT
+    CLKRST -->|clk, rst_n| TXHS
+    CLKRST -->|clk, rst_n| TXSHIFT
+    CLKRST -->|clk, rst_n| RXSHIFT
+    CLKRST -->|clk, rst_n| RXHS
+    CLKRST -->|clk, rst_n| INSYNC
+    CLKRST -->|clk, rst_n| BRANCHREG
+
+    PCREG -->|"pc [5:0]"| IMEM
+    IMEM -->|"instr [31:0]"| CTRL
+
+    CTRL -->|"pc_advance [1]"| PCREG
+    CTRL -->|"pc_load [1]"| PCREG
+    CTRL -->|"pc_load_addr [5:0]"| PCREG
+
+    CTRL -->|"dc_load [1]"| DCNT
+    CTRL -->|"dc_load_value [23:0]"| DCNT
+    DCNT -->|"busy [1]"| CTRL
+
+    CTRL -->|"tx_consume [1]"| TXHS
+    TXHS -->|"tx_valid [1]"| CTRL
+    TXHS -->|"tx_byte [7:0]"| TXSHIFT
+
+    CTRL -->|"tx_parallel_load [1]"| TXSHIFT
+    CTRL -->|"tx_shift_en [1]"| TXSHIFT
+    TXSHIFT -->|"bit_out [1]"| PINDRV
+
+    CTRL -->|"rx_shift_en [1]"| RXSHIFT
+    INSYNC -->|"pin_sync [1]"| RXSHIFT
+    RXSHIFT -->|"byte_out [7:0]"| RXHS
+
+    CTRL -->|"rx_produce [1]"| RXHS
+    RXHS -->|"rx_full [1]"| CTRL
+
+    PINDRV -->|"pin_in_raw [1]"| INSYNC
+    INSYNC -->|"edge_detected [1]"| CTRL
+    INSYNC -->|"pin_sync [1]"| CTRL
+    INSYNC -->|"pin_sync [1]"| BRANCHREG
+
+    CTRL -->|"branch_capture_en [1]"| BRANCHREG
+    BRANCHREG -->|"last_bit [1]"| CTRL
+
+    CTRL -->|"side_set_en [1]"| SIDESET
+    CTRL -->|"side_set_val [1:0]"| SIDESET
+    SIDESET -->|"side_pin_data [1:0]"| PINDRV
+
+    SAFETYEXT -->|"disarm [1]"| PINDRV
+    MGMTEXT -->|"host_wr_en, host_wr_addr [5:0], host_wr_data [31:0]"| IMEM
+    MGMTEXT -->|"host_wr_en, host_wr_data [7:0]"| TXHS
+    MGMTEXT -->|"host_rd_en [1]"| RXHS
+    RXHS -->|"rx_data [7:0], rx_ready [1]"| MGMTEXT
+    PCREG -->|"pc [5:0]"| MGMTEXT
+    CTRL -->|"halted [1]"| MGMTEXT
+    MGMTEXT -->|"pin_map_config"| SIDESET
+    MGMTEXT -->|"ownership_en [1], electrical_mode [1]"| PINDRV

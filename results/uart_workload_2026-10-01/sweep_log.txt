@@ -1,0 +1,24 @@
+payload: 1024 bytes, 256 distinct byte values, f_clk=50 MHz, cycle budget/run=12M
+    baud    cpb      D     actual    err% bytes frames byteOK exact rxtol+% rxtol-% Mcycles wall s  status
+    9600   5208   5206     9600.6  +0.006   119    119    119   119    5.25    5.25    9.46   81.4  PASS pc=3 fault=0 rejected=0
+   14400   3472   3470    14400.9  +0.006   193    193    193   193    5.25    5.25    9.38   79.2  PASS pc=3 fault=0 rejected=0
+   19200   2604   2602    19201.2  +0.006   241    241    241   241    5.25    5.25    9.21   79.3  PASS pc=3 fault=0 rejected=0
+   28800   1736   1734    28801.8  +0.006   369    369    369   369    5.25    5.25    9.31   92.0  PASS pc=3 fault=0 rejected=0
+   38400   1302   1300    38402.5  +0.006   569    569    569   569    5.25    5.25    9.38  110.5  PASS pc=3 fault=0 rejected=0
+   57600    868    866    57603.7  +0.006   772    772    772   772    5.25    5.25    9.36   77.3  PASS pc=3 fault=0 rejected=0
+   76800    651    649    76804.9  +0.006  1024   1024   1024  1024    5.25    5.25    8.98   70.2  PASS pc=3 fault=0 rejected=0
+  115200    434    432   115207.4  +0.006  1024   1024   1024  1024    5.25    5.25    6.09   47.2  PASS pc=3 fault=0 rejected=0
+
+--- limit tests ---
+D=0 -> 2 cycles/bit = 25 Mbaud (fastest the loop can go):
+    baud    cpb      D     actual    err% bytes frames byteOK exact rxtol+% rxtol-% Mcycles wall s  status
+25000000.0      2      0 25000000.0  +0.000    64     64     64    64    5.75    5.25    0.00    0.1  PASS pc=3 fault=0 rejected=0
+D=1 -> 3 cycles/bit = 16.67 Mbaud:
+16666666.666666666      3      1 16666666.7  +0.000    64     64     64    64    5.75    5.25    0.00    0.1  PASS pc=3 fault=0 rejected=0
+host ignores tx_full (writes 1 KB back-to-back into a 4-deep FIFO) @115200:
+  115200    434    432   115207.4  +0.006  1024      5      5     5    0.00    0.00    0.03    0.3  FAIL pc=3 fault=0 rejected=1019
+   engine transmitted 5 of 1024 bytes; first 8 kept: 5468652071 (payload starts 5468652071756963); every transmitted frame exact=True
+odd D (bit period 435 cycles) still exact:
+114942.52873563218    435    433   114942.5  +0.000    64     64     64    64    5.25    5.25    0.28    2.4  PASS pc=3 fault=0 rejected=0
+
+8/8 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
