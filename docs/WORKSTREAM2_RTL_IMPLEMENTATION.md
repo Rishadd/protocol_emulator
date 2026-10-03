@@ -1,213 +1,94 @@
 # Workstream 2 — RTL Implementation Plan
 
 Companion to [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md),
-[EXECUTION_PLAN.md](EXECUTION_PLAN.md), and
-[WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md) | 2026-09-27 |
-Status: planning, pre-RTL
+[EXECUTION_PLAN.md](EXECUTION_PLAN.md), [WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md)
+and the ISA contract in [../instructions.md](../instructions.md) | revised 2026-10-03 |
+Status: **v0.1 engine implemented and verified in simulation**
 
-## Same staging rule as Workstream 1
+## What changed from the original plan (2026-09-27 → 2026-10-03)
 
-This plan follows the same principle as the architecture doc: **full detail
-for v0.1 only, brief deltas for later versions.** Each RTL module below maps
-directly to a hardware capability already derived from the v0.1 opcode set
-(`PULL_BYTE`, `OUT1`, `JMP`) and to a task ID in
-[EXECUTION_PLAN.md](EXECUTION_PLAN.md)'s Workstream 2 (R1-R12) — this document
-narrows those broad tasks down to exactly what v0.1 needs, nothing more.
+The first plan built UART-shaped hardware: a 10-bit "TX shift register with
+frame packing", a single `TX_DATA` register + valid flag, and opcodes
+(`LDBYTE`, `OUT1` with an embedded delay field) that only made sense for UART.
+During review we replaced that with a protocol-agnostic datapath in the
+RP2040-PIO spirit, so that UART, SPI, I2C, JTAG and future protocols differ
+only in firmware:
 
-## Module map (brief — full detail for v0.1 below)
+| Original (UART-specific) | Implemented (generic) |
+|---|---|
+| `tx_shift_reg`, 10-bit, hardwired `{stop, byte, start}` | `shift_reg` (32-bit, LSB/MSB-first selectable), instantiated twice as **OSR** and **ISR** |
+| `tx_handshake` / `rx_handshake` single-byte registers | `fifo` (32-bit × 4, first-word-fall-through), instantiated twice as `tx_fifo` and `rx_fifo` |
+| Single `pin_driver` for 1 pin | `pin_block`: 8 pins, per-pin `out`/`oe` registers, 2-stage input synchronizer |
+| No loop counter in v0.1 | `loop_counter` (16-bit) + `SETL`/`DJNZ`, needed to fit 8-bit loops in 64 words |
+| 18-bit delay operand | 27-bit flat operand (covers 2.68 s at 50 MHz) |
+| Opcode 5 bits + delay 6 + side-set 3 + operand 18 | Opcode 5 bits + **one flat 27-bit operand**; delay *is* the operand of timed instructions |
+| 3–7 opcodes | 17 opcodes (see [../instructions.md](../instructions.md) §1) |
 
-| Module | v0.1 (UART TX) | Arrives/grows at |
+Framing (start/stop bits, CS, SCLK, TMS…) is now entirely firmware
+(`SETH`/`SETLO`/`DIRO`/`DIRI`). Nothing in `src/` knows what UART is.
+
+## Module map — current state
+
+| Module | File | Status | Notes / what grows later |
+|---|---|---|---|
+| Program counter | `pc_reg.v` | **Done, unit-tested** | 6-bit; jump beats advance |
+| Instruction memory | `instr_mem.v` | **Done** (64×32, combinational read) | Loaded by `$readmemh` / FPGA power-up init. **Host write port and parity not yet built** (RTL-5b, RTL-5c) |
+| Delay counter | `delay_counter.v` | **Done, unit-tested** | 27-bit, `busy` + `last`; `last` lets the control unit release one cycle early so a timed instruction costs exactly d+1 |
+| Loop counter | `loop_counter.v` | **Done, unit-tested** | 16-bit, saturates at 0 |
+| FIFO | `fifo.v` | **Done, unit-tested** | DEPTH parameter; 4 today. Host must honor `tx_full` (proven in the workload limit test) |
+| Shift register | `shift_reg.v` | **Done, unit-tested** | One module for OSR and ISR |
+| Pin block | `pin_block.v` | **Done, unit-tested** | Reset releases all pins (`oe=0`). Edge detect (v0.3), ownership mux (multi-engine), abort/`ena` latch (RTL-1) still to add |
+| Control unit | `control_unit.v` | **Done, unit-tested** | 2-state FSM (EXEC / HOLD), stall logic for PULL/PUSH/WAITH/WAITL, `CFG` registers, trap on reserved opcodes |
+| Engine top | `engine_top.v` | **Done, integration-tested** | Host-facing: `tx_fifo` write port, `rx_fifo` read port, 8 pins, `halted`/`fault`/`pc` |
+| Safety latch (abort, `ena`) | — | Not built | Reset already releases pins; async abort + synchronized release is RTL-1 |
+| Management / CSR + SPI frame decode | — | Not built | RTL-8; needed before the chip is host-loadable |
+| Input edge detect | — | Not built | For `WAITR`/`WAITF` (opcodes 17/18, reserved) — UART RX |
+| Side-set | — | **Open decision** | Flat format gave up the reserved bits; options are a dedicated opcode or a `CFG`-selected pin that `OUT1`/`IN1` toggle automatically. Needed for I3C-class speeds |
+| Trace / first-fault / BIST / watchdog | — | Not built | v0.6 |
+
+## Verification status
+
+| Level | Harness | Result |
 |---|---|---|
-| Safety latch | Full detail below | Unchanged in later versions — this one is done right the first time |
-| Pin driver | Full detail below (1 pin, no ownership mux) | Ownership mux added at v0.4 (multi-pin), electrical mode added at v0.5 (open-drain) |
-| Delay counter | Full detail below | Unchanged — reused as-is by every later opcode that needs timed holds |
-| PC / fetch / decode | Full detail below (3 opcodes) | Opcode table grows at v0.3/v0.5; conditional PC mux added at v0.5 (`BRANCH_IF`) |
-| Instruction memory | Full detail below (64x32, no parity) | Parity bit added at v0.6 |
-| TX shift register | Full detail below (10-bit, UART frame packing) | RX shift register added at v0.3; generic 8-bit mode added at v0.4 (SPI/I2C) |
-| Host data handshake | Full detail below (TX_DATA + valid flag) | RX_DATA + ready flag added at v0.3 |
-| Management/CSR + frame decode | Full detail below (minimal register set, no CRC) | Full CRC-16 + sequence pipelining added at v0.6 |
-| Input synchronizer | *(not needed yet)* | Added at v0.3 (UART RX) |
-| Side-set apply logic | *(not needed yet)* | Added at v0.4 (SPI) |
-| Trace / first-fault / BIST / watchdog | *(not needed yet)* | Added at v0.6 |
+| Unit (7 modules) | `tb/tb_<module>.v`, self-checking, X-safe (`!==`) | All PASS |
+| Control unit | `tb/tb_control_unit.v` — every opcode's exact strobe set, d+1 timing for d∈{0,1,2,3,5}, stall with zero side-effects, trap on 17/18/31 | PASS |
+| Integration | `tb/tb_engine_top.v` B1–B8: PC flow, 11-cycle stall, DJNZ loop, PULL blocking, trap freeze, UART TX 115200 + 9600 decoded, reset mid-frame | PASS (136 checks total across suite) |
+| Workload | `host/uart_workload.py` + `tb/tb_uart_workload.v`: Python reference model + ideal receiver, 1 KB payload with all 256 byte values, runs of 0x00/0xFF/0x55, UTF-8, host silence gaps | 9600–115200 all cycle-exact; rx clock tolerance ±5.25%; D=0 (25 Mbaud) still exact; host ignoring `tx_full` drops whole bytes cleanly, never corrupts |
 
----
+One RTL bug found and fixed by the suite: the combinational stall `case` had no
+match for an X opcode (before first fetch) and propagated X onto every control
+strobe. Replaced with a `?:` chain. One firmware bug found before simulation:
+`SETL` placed after the start-bit `WAIT` stretched the start bit by one cycle.
 
-## v0.1 — Full RTL detail
+Timing contract that everything depends on, now **verified**: non-timed
+instruction = 1 cycle; `WAIT d` / `OUT1 d` / `IN1 d` = exactly d+1 cycles;
+blocking instructions hold PC with zero side-effects; pin inputs are 2 clocks old.
 
-### RTL-1: Safety latch
+## Remaining RTL tasks (ordered)
 
-**Purpose**: reset or abort must instantly force the owned pin to a
-non-driving state, overriding every other module below.
+| ID | Task | Depends on | Validation |
+|---|---|---|---|
+| RTL-F1 | **FPGA wrapper for DE0-Nano**: `msg_host.v` (string → `tx_fifo`, honors `tx_full`), `de0_nano_top.v` (KEY0 reset sync, tri-state `GPIO_0`, LEDs), `.sdc`, `.qsf` pins, `instr_mem` power-up init | — | Testbench on `de0_nano_top`; then message received on a phone via HC-05 at 9600 |
+| RTL-5b | Host write port on `instr_mem` (gated by halted) | — | Write/read-back all 64 words; write while running has no effect |
+| RTL-1 | Safety latch: async disarm on reset/abort/`!ena`, synchronized release, forces all `pin_oe=0` | — | Formal (SymbiYosys) or exhaustive directed sim: V01 |
+| RTL-E | Edge detector per pin + `WAITR`/`WAITF` decode | — | Directed sim; then UART RX firmware (v0.3) |
+| RTL-S | Side-set decision + implementation | design review | SPI at ≥ 5 MHz with SCLK toggled in the same instruction as `OUT1` |
+| RTL-8 | Management/CSR + 12-byte SPI frame decode (checksum first, CRC-16 later) | RTL-5b | Frame encode/decode round trip, corrupt-byte rejection (V10) |
+| RTL-2nd | Second engine instance + pin ownership mux | RTL-8 | Both engines run independent programs without pin interference (V03) |
+| RTL-5c | Parity on `instr_mem` | RTL-8 | Fault injection |
+| RTL-9 | Trace, first-fault, BIST, watchdog | all above | v0.6 obligations |
 
-- Inputs: `rst_n`, `abort_n`, `ena`
-- Output: `disarm` (1 = force output-enable to 0 everywhere)
-- Behavior: `disarm` asserts **asynchronously** the instant `rst_n` or
-  `abort_n` goes low, or `ena` drops. It **releases synchronously** — i.e.
-  waiting one clock after the input returns high, never combinationally.
-- **Validation**: formal property — for every reachable state of every other
-  module, `rst_n=0` OR `abort_n=0` implies pin output-enable is 0 on the next
-  clock edge, with zero exceptions. This is V01 from the verification
-  obligations list and gets a dedicated SymbiYosys proof, not just simulation.
-
-### RTL-2: Pin driver (single pin, v0.1)
-
-**Purpose**: hold a single output pin at a commanded level.
-
-- Inputs: `pin_data` (from TX shift register or side-set — side-set unused in
-  v0.1), `disarm` (from RTL-1)
-- Outputs: `uio_out[0]`, `uio_oe[0]`
-- Behavior: `uio_oe[0] = !disarm`; `uio_out[0] = pin_data` when not disarmed.
-- **Validation**: directed sim — assert `disarm` mid-drive, confirm `uio_oe`
-  drops within one clock regardless of what `pin_data` was doing.
-
-### RTL-3: Delay counter
-
-**Purpose**: hold the engine at the current instruction for exactly N cycles,
-where N comes directly from the instruction's operand field (not a narrow
-6-bit field — see the discussion that led to `WAITCYC`-style timing being
-folded into `OUT1` itself).
-
-- Inputs: `load` (pulse), `load_value` (18 bits, from instruction operand),
-  `clk`
-- Output: `busy` (1 while counting down)
-- Behavior: on `load`, counter := `load_value`; decrements every clock while
-  nonzero; `busy` deasserts the cycle the counter reaches 0, allowing the
-  next fetch.
-- **Validation**: directed sim — load with 0, 1, and the maximum 18-bit value;
-  confirm `busy` timing matches `1 + load_value` cycles exactly (this is the
-  cycle-accounting rule the whole architecture depends on).
-
-### RTL-4: PC / fetch / decode (3 opcodes)
-
-**Purpose**: fetch one instruction per cycle (once RTL-3's `busy` clears),
-decode it, and drive the rest of the datapath.
-
-- Inputs: instruction word from RTL-5, `busy` from RTL-3
-- Outputs: `pc` (6 bits, for `PC_READBACK`), decoded opcode, decoded operand
-  fields routed to the relevant module (delay value to RTL-3, jump target to
-  its own PC-load mux, shift command to RTL-6)
-- Opcodes implemented: `PULL_BYTE` (0), `OUT1` (1), `JMP` (2). **Every other
-  5-bit opcode value must trap** — force the engine to a fault/halted state
-  visible in `STATUS`, never execute undefined behavior.
-- **Validation**: differential test against the ISA cycle model
-  (Workstream 4's F1) for all three opcodes, plus a directed test that writes
-  every unimplemented opcode value and confirms a clean trap, not garbage
-  execution. This is V04 and V13 from the verification obligations list.
-
-### RTL-5: Instruction memory (64 x 32, no parity in v0.1)
-
-**Purpose**: store the program; host-writable, engine-readable.
-
-- 64 words x 32 bits, implemented as flip-flops (not SRAM, per the
-  architecture doc's baseline)
-- Host write port: address + data, gated by "engine halted" (no writes while
-  running)
-- Engine read port: combinational read at `pc`
-- No parity bit in v0.1 — deferred to v0.6 alongside BIST, to keep the first
-  RTL pass as small as possible
-- **Validation**: write/read-back test for all 64 words; confirm a write
-  attempt while the engine is running is rejected or has no effect (never
-  silently corrupts a running program — ties to V13)
-
-### RTL-6: TX shift register (10-bit, UART frame packing)
-
-**Purpose**: turn one host-supplied byte into a 10-bit UART frame
-(`{stop=1, byte[7:0], start=0}`) and shift it out one bit per `OUT1`.
-
-- Parallel load: on `PULL_BYTE`, load `{1'b1, tx_data_byte, 1'b0}`
-- Serial shift: on `OUT1`, output current LSB, then shift right by 1
-- **Validation**: directed sim — load a known byte (e.g. `0x55`), step through
-  10 `OUT1`s, confirm the bit sequence matches `0, 1,0,1,0,1,0,1,0, 1`
-  (start, LSB-first data, stop) exactly.
-
-### RTL-7: Host data handshake (TX_DATA + valid flag)
-
-**Purpose**: let the host hand a byte to the engine without racing it.
-
-- `TX_DATA` register (8 bits), host-writable
-- `valid` flag: set on host write, cleared on `PULL_BYTE` consumption
-- `PULL_BYTE` stalls fetch (via the same mechanism as RTL-3's `busy`, or a
-  dedicated stall signal) until `valid=1`
-- **Validation**: directed sim — write a byte, confirm `PULL_BYTE` unblocks
-  immediately; issue `PULL_BYTE` with no byte written, confirm it stalls
-  indefinitely until a write occurs (no false unblock)
-
-### RTL-8: Management/CSR + frame decode (minimal, v0.1 register set only)
-
-**Purpose**: let the host talk to everything above over SPI.
-
-- Implements only the six v0.1 registers from
-  [WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md#a2--register-map-v01-subset-same-address-windows-as-the-full-doc):
-  `ID`, `CONTROL`, `STATUS`, `TX_DATA`, `PC_READBACK`, instruction memory
-  window
-- Frame format: same 12-byte shape as the full architecture doc (op,
-  sequence, address, payload, reserved/status) — **the shape is frozen now**,
-  but the integrity mechanism is simplified for v0.1: use a 1-byte additive
-  checksum instead of full CRC-16, deferring CRC-16 to v0.6. (This reverses
-  the earlier "freeze CRC now" call, per the later simplification review —
-  flag this explicitly if you want to keep full CRC-16 from day one instead.)
-- **Validation**: directed sim — encode/decode a known frame by hand, confirm
-  register read/write reaches the correct target; corrupt one byte, confirm
-  the checksum mismatch is detected and the frame is rejected without
-  mutating state (V10)
-
-### RTL-9: Top-level integration (v0.1)
-
-Wire RTL-1 through RTL-8 together per the block diagram in
-[WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md#a7--interconnect--signal-spec-v01-minimal).
-
-- **Validation**: full-chip simulation running the 12-word UART TX reference
-  program from the earlier design discussion; confirm the pin waveform
-  matches 115200 baud within the expected -0.08% error, byte-accurate
-  against an independent UART decoder (V12)
-
----
-
-## Bring-up order for v0.1 RTL (build and test in this sequence)
-
-1. RTL-1 (safety latch) — formal proof passes standalone before anything else is built
-2. RTL-3 (delay counter) — the cycle-accounting foundation everything else depends on
-3. RTL-5 (instruction memory) — write/read-back proven before the engine can fetch from it
-4. RTL-4 (PC/fetch/decode) — using RTL-3 and RTL-5, prove the 3-opcode fetch/decode/trap behavior
-5. RTL-6 + RTL-7 (shift register + handshake) — prove frame packing and blocking behavior
-6. RTL-2 (pin driver) — wire the shift register's output through the safety latch
-7. RTL-8 (management/CSR) — prove the host can load a program and read status
-8. RTL-9 (integration) — run the full reference program end to end
-
-This order matches the GDS-flow philosophy from
-[EXECUTION_PLAN.md](EXECUTION_PLAN.md): each module is proven in isolation
-before integration, so a full-chip failure can only mean an interconnect bug,
-not a hidden module bug.
-
----
+The original RTL-6/RTL-7 (UART shifter, TX_DATA handshake) are **deleted**, not
+deferred — their roles are covered by `shift_reg` and `fifo`.
 
 ## Brief roadmap for later versions (deltas only)
 
-- **v0.3 (UART RX / full duplex)**: add an input synchronizer module (2-stage
-  flip-flops per input pin), an RX shift register (mirror of RTL-6, shifting
-  in instead of out), an edge detector (for `WAIT_EDGE`'s start-bit
-  detection), and an RX_DATA + ready-flag handshake (mirror of RTL-7).
-  Instantiate a second copy of RTL-2 through RTL-7 as Engine 1, run
-  independently of Engine 0.
-
-- **v0.4 (SPI)**: add side-set apply logic (a small pin-map register plus
-  logic to drive 1-2 auxiliary pins alongside the main opcode's effect,
-  finally using the side-set bits reserved in the instruction format since
-  v0.1). Add the pin ownership mux (RTL-2 grows from "1 pin, always owned"
-  to "N pins, checked ownership per write"). Optionally reintroduce a general
-  loop counter register (`LDI`/`DJNZ`) if compact variable-length transfers
-  are wanted.
-
-- **v0.5 (I2C)**: add open-drain electrical mode to RTL-2 (output-enable
-  computed differently: writing "1" releases rather than drives high). Add a
-  level detector (for `WAIT_LEVEL`'s clock-stretch handling) and a
-  "last-sampled-bit" condition register plus a conditional PC mux in RTL-4
-  (for `BRANCH_IF`'s ACK/NACK handling).
-
-- **v0.6 (debug/safety hardening)**: add parity bit generation/checking to
-  RTL-5, full CRC-16/CCITT-FALSE plus sequence-number pipelining to RTL-8,
-  a trace buffer and first-fault latch (new modules, read-only taps on the
-  existing datapath, never able to backpressure the engine), a memory BIST
-  controller (March C- FSM, temporarily takes ownership of RTL-5's ports),
-  and a watchdog timer (separate from RTL-3's delay counter — this one
-  detects "stuck but still executing" firmware, not "waiting on purpose").
+- **v0.3 (UART RX / full duplex)**: RTL-E edge detect, second engine, `IN1`
+  into ISR, `PUSH` to `rx_fifo` — all already present except edge detect.
+- **v0.4 (SPI)**: side-set decision; ownership mux. The shifters already do
+  MSB-first and full duplex (`OUT1` + `IN1` per bit).
+- **v0.5 (I2C)**: open-drain needs no RTL mode — firmware uses `DIRO`=drive-low,
+  `DIRI`=release. Still wanted: a `CFG` bit making `OUT1` write `~bit` to
+  `pin_oe` so a data byte fits in a loop (see [../instructions.md](../instructions.md) §4),
+  and a conditional branch on a pin for ACK/NACK.
+- **v0.6**: parity, CRC-16, trace, BIST, watchdog.

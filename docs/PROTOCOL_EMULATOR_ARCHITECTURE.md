@@ -1,6 +1,38 @@
 # Programmable Protocol Emulator ASIC
 
-Architecture proposal v0.1 | 2026-09-26 | Status: for review, not RTL sign-off
+Architecture proposal v0.1 | 2026-09-26, revised 2026-10-03 | Status: long-term target; **single-engine core implemented and verified in simulation**
+
+## 0. Implementation status (2026-10-03)
+
+This document is the full-chip target. What exists in `src/` today is the
+single protocol engine of §4 with the datapath subset below; everything else
+(second engine, management port, event fabric, trace, BIST, safety latch) is
+still plan. Two decisions made during RTL work supersede text further down:
+
+1. **Instruction format is 5-bit opcode + one flat 27-bit operand.** The
+   delay/side-set sub-fields proposed in §4.2 were dropped; delay is the
+   operand of the timed opcodes (`WAIT`, `OUT1`, `IN1`). Side-set is an open
+   item. The authoritative opcode table is [../instructions.md](../instructions.md).
+2. **No protocol-specific hardware anywhere.** Early drafts had a UART frame
+   shifter and a `TX_DATA` byte register; these were replaced by a generic
+   32-bit OSR/ISR pair, generic 32-bit FIFOs and an 8-pin block with per-pin
+   data/direction registers. Framing, clocking and open-drain behaviour are
+   firmware idioms (`SETH`/`SETLO`/`DIRO`/`DIRI`).
+
+| Block in §3 diagram | Status |
+|---|---|
+| Deterministic engine 0 (PC, decode, delay counter, loop counter) | **Built, verified** — 17 opcodes, exact d+1 timing |
+| Private instruction storage 0 (64×32) | Built; parity and host write port pending |
+| Per-engine TX/RX FIFOs | Built as 32-bit × 4 (plan says 16-bit × 8 — revisit at sizing) |
+| Serial datapath (shifters) | Built as 32-bit OSR + ISR, LSB/MSB-first selectable |
+| Pin control + synchronizers | Built (8 pins, 2-stage sync); ownership mux, filters, edge detect pending |
+| Engine 1, event fabric, timestamp, deadline | Not built |
+| Management port, CSR, frame decode | Not built |
+| Safety latch (abort, `ena`), watchdog, trace, BIST | Not built (reset already releases all pins) |
+| Firmware | UART TX verified cycle-exact 9600–115200 vs. Python reference; SPI/I2C/JTAG drafted |
+
+Next milestone: DE0-Nano FPGA bring-up sending a message to a phone through an
+HC-05 Bluetooth module (see [EXECUTION_PLAN.md](EXECUTION_PLAN.md)).
 
 ## 1. Recommendation
 
@@ -108,19 +140,19 @@ interrupt preemption inside an engine.
 
 ### Baseline resource contract
 
-| Resource | Proposed implementation |
-| --- | --- |
-| Protocol engines | 2, independently running |
-| Instruction storage | 64 x 32 bits per engine, plus one parity bit per word |
-| Data scratchpad | 16 x 16 bits per engine |
-| General registers | 4 x 16 bits per engine |
-| Serial datapath | Separate 16-bit TX/RX shifters and valid-bit counts |
-| FIFOs | 8 x 16-bit TX and 8 x 16-bit RX per engine |
-| Timing | Global 32-bit timestamp; per-engine 32-bit deadline and bounded wait timer |
-| Coordination | Four sticky event bits with independent per-engine pending state |
-| Debug | Two PC comparators per engine; coherent halted-state access |
-| Trace | 16 x 64-bit circular buffer; selectable engine or pin-sample mode |
-| Safety | Reset release sequencing, output arm, per-engine watchdog, abort input |
+| Resource | Proposed implementation | Built today |
+| --- | --- | --- |
+| Protocol engines | 2, independently running | 1 |
+| Instruction storage | 64 x 32 bits per engine, plus one parity bit per word | 64 x 32, no parity |
+| Data scratchpad | 16 x 16 bits per engine | none (no opcode uses it yet) |
+| General registers | 4 x 16 bits per engine | none; one 16-bit loop counter |
+| Serial datapath | Separate TX/RX shifters and valid-bit counts | 32-bit OSR + 32-bit ISR, no bit counts (firmware loops via `SETL`/`DJNZ`) |
+| FIFOs | 8 x 16-bit TX and 8 x 16-bit RX per engine | 4 x 32-bit each (width/depth parameters) |
+| Timing | Global 32-bit timestamp; per-engine 32-bit deadline and bounded wait timer | 27-bit per-instruction delay counter only |
+| Coordination | Four sticky event bits with independent per-engine pending state | none |
+| Debug | Two PC comparators per engine; coherent halted-state access | `pc`, `halted`, `fault` outputs |
+| Trace | 16 x 64-bit circular buffer; selectable engine or pin-sample mode | none |
+| Safety | Reset release sequencing, output arm, per-engine watchdog, abort input | reset releases all pins |
 
 All capacities are discoverable through read-only capability registers. The
 initial program-store depth is a sizing hypothesis: complete UART, SPI, and
@@ -156,57 +188,51 @@ When the condition succeeds, the instruction commits exactly once. Its delay
 starts then. Illegal instructions and parity faults produce no instruction
 side effects and enter the fault state.
 
-### 4.2 Proposed instruction format
+### 4.2 Instruction format (as implemented)
 
-Use fixed 32-bit words:
+Fixed 32-bit words, one flat operand:
 
 | Bits | Meaning |
 | --- | --- |
-| 31:27 | Opcode: 32 primary families |
-| 26:21 | Post-commit delay, 0 through 63 cycles |
-| 20 | Enable simultaneous side-set |
-| 19:18 | Values for two configured side-set pins |
-| 17:0 | Opcode-specific operands |
+| 31:27 | Opcode: 32 encodings, 17 implemented, reserved ones trap |
+| 26:0 | Operand — meaning fixed per opcode: delay, address, count, pin index, or `CFG` bits |
 
-The 18-bit operand allows, for example, a 2-bit register destination and a
-16-bit immediate. Pin-map configuration identifies side-set pins; it does not
-consume instruction payload. A pin must not be written by both the main
-operation and side-set on the same instruction; reject that instruction before
-commit. Side-set affects logical data, including open-drain drive/release, but
-not ownership. Reserved encodings trap.
+The earlier proposal split the low bits into a 6-bit post-commit delay, 3
+side-set bits and an 18-bit operand. That was dropped: a flat operand keeps
+every instruction single-purpose, makes the decoder a one-level `case`, and
+gives timed instructions a 27-bit range (2.68 s at 50 MHz) instead of 63
+cycles. The cost is that "toggle a second pin in the same instruction"
+(side-set) has no field; when SPI/I3C speed needs it, the candidates are a
+dedicated opcode or a `CFG`-selected clock pin that `OUT1`/`IN1` toggle
+implicitly. Decide before v0.4.
 
-This allocates the format, not a frozen binary opcode table. Freeze exact
-subfields, flags, and assembler syntax after compiling representative programs.
+Implemented families (details and cycle costs in [../instructions.md](../instructions.md)):
 
-| Instruction family | Required semantics |
-| --- | --- |
-| `NOP`, `LDI`, `MOV` | Fixed-latency state operations; full 16-bit immediate load. |
-| `ADD`, `SUB`, `AND`, `OR`, `XOR`, `CMP` | 16-bit arithmetic/logic, explicit zero/carry flags; no multiply/divide. |
-| `SHIFT` | Register shifts by 1 or 8; no general barrel shifter required. |
-| `LD`, `ST` | One-cycle local 16-word scratch access, direct or register-indexed; out-of-range index traps. |
-| `JMP`, `BR`, `DJNZ` | Absolute local PC targets; `DJNZ` decrements modulo 16 bits and branches on the new nonzero value. |
-| `PINS` | Masked update of output data, set/clear/toggle as operand submodes. |
-| `DRIVE` | Atomic 8-bit data and 8-bit direction update, restricted by static ownership. |
-| `SAMPLE` | Read the synchronized eight-pin vector into a register. |
-| `IN`, `OUT` | Shift 1 or 8 bits between mapped pins and RX/TX shifter; selectable bit order. |
-| `PULL`, `PUSH` | Explicit FIFO transfer; blocking or nonblocking result flag. |
-| `WAIT` | Wait for level, edge, event, or FIFO condition, with optional timeout. |
-| `TIME` | Read timestamp halves through a coherent latch; initialize or advance deadline from immediate/register values. |
-| `SYNC` | Wait for absolute deadline; return late status or fault under strict timing policy. |
-| `EVENT` | Set or acknowledge a selected event for specified destination engines. |
-| `YIELD`, `HALT` | A declared safe debug boundary, or stop and apply configured normal idle state. |
+| Family | Opcodes | Semantics |
+| --- | --- | --- |
+| Control | `NOP`, `WAIT d`, `JMP a`, `HALT` | `WAIT d` holds exactly d+1 cycles |
+| Loop | `SETL n`, `DJNZ a` | 16-bit loop counter; `DJNZ` jumps while the decremented value is nonzero |
+| Data movement | `PULL`, `PUSH` | Blocking FIFO ↔ shifter transfer; stall holds PC with no side effects |
+| Serial | `OUT1 d`, `IN1 d` | One bit between the mapped pin and OSR/ISR, then hold d cycles; bit order from `CFG` |
+| Pins | `SETH p`, `SETLO p`, `DIRO p`, `DIRI p` | Per-pin data / direction; open-drain = `DIRO` to drive low, `DIRI` to release |
+| Wait on pin | `WAITH p`, `WAITL p` | Level waits (I2C stretch, handshakes); `WAITR`/`WAITF` edge waits reserved |
+| Config | `CFG v` | out_pin, in_pin, OSR/ISR MSB-first |
 
-There is no implicit auto-push or auto-pull in v1. Firmware places explicit FIFO
-operations in safe intervals, preventing an innocent-looking bit instruction
-from unexpectedly stalling. Full-duplex SPI uses independent TX and RX shifters
-within one engine; concurrent asynchronous UART TX and RX use both engines.
+Planned families from the original proposal, not yet needed by any verified
+program and therefore not built: `LDI`/`MOV`, `ADD`/`SUB`/`AND`/`OR`/`XOR`/`CMP`,
+`SHIFT`, `LD`/`ST` scratch, `BR` (conditional), parallel `IN`/`OUT` 8, `TIME`,
+`SYNC` deadline, `EVENT`, `YIELD`, side-set. Each is added only when a
+protocol program demonstrably needs it; reserved encodings trap until then.
 
-For serial widths of one, IN/OUT select a configured physical pin; for eight,
-they use the physical eight-bit vector. Parallel OUT is legal only with the
-required ownership. Bit counts saturate at 16; an attempt to consume unavailable
-TX bits or overflow RX capacity faults before modifying pins or shift state.
-Partial RX words are explicitly movable/pushable. PULL can load a general
-register or TX shifter; PUSH can source a register or RX shifter.
+There is no implicit auto-push or auto-pull. Firmware places explicit FIFO
+operations in safe intervals, so an innocent-looking bit instruction never
+stalls unexpectedly. Full-duplex SPI uses OSR and ISR together within one
+engine; concurrent asynchronous UART TX and RX use both engines.
+
+`PULL` loads the whole 32-bit OSR; firmware chooses how many bits to shift
+out. `PUSH` moves the whole ISR and clears it; partial words are fine. A host
+must honor `tx_full` — a write to a full FIFO is dropped as a whole word, in
+order, without corrupting any frame in flight (verified).
 
 ### 4.3 Deadlines, waits, and event ordering
 
