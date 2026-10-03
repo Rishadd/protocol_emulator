@@ -12,7 +12,7 @@ module pc_reg #(
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             pc <= {WIDTH{1'b0}};
-        else if (jump)
+        else if (jump) //jump given more priority than advance
             pc <= jump_addr;
         else if (advance)
             pc <= pc + 1'b1;
