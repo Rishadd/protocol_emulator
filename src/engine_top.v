@@ -1,7 +1,9 @@
 // Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
 // In a testbench: $readmemh("program.hex", <inst>.imem.mem);
-module engine_top (
+module engine_top #(
+    parameter INIT_FILE = ""
+)(
     input  wire        clk,
     input  wire        rst_n,
     // host -> engine data
@@ -40,7 +42,7 @@ module engine_top (
     wire [2:0]  cfg_out_pin, cfg_in_pin;
     wire        cfg_osr_msb, cfg_isr_msb;
 
-    instr_mem imem (
+    instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .addr  (pc),
         .instr (instr)
     );
