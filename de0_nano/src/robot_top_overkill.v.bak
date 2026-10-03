@@ -1,0 +1,644 @@
+module robot_top_overkill(
+    // Clock and Reset
+    input clk_50M, reset_n,
+    
+    // Sensor Inputs
+    input us_echo_f, us_echo_l, us_echo_r,
+    input ir_top, ir_down, ir_middle,
+    input enc_l_a, enc_r_a,
+    inout dht_data_pin,
+    
+    // Servo Output
+    output servo_pwm_pin,
+
+    // ADC Pins
+    input  adc_sdat,        
+    output adc_cs_n,        
+    output adc_sclk,        
+    output adc_saddr,        
+
+    // Bluetooth
+    input  bt_rx_pin,
+    output bt_tx_pin,
+    
+    // Motor Driver Outputs
+    output IN1, IN2, IN3, IN4, 
+    output ENA, ENB,
+    
+    // Ultrasonic Triggers
+    output us_trig_f, us_trig_l, us_trig_r,
+    
+	 //Debug
+    output reg [2:0] wall_status,
+    output reg [3:0] state_check,
+    
+    output reg signed [6:0] pd_check, 
+    output reg [6:0] speed_l, speed_r,
+	 output wire [15:0] distance_f_debug,
+    
+    // Turn Counter
+    output reg [3:0] uturn_count,
+    
+    output [3:0] debug_x,
+    output [3:0] debug_y,
+    output [1:0] debug_heading
+);
+
+    // ==========================================
+    // 1. PARAMETERS
+    // ==========================================
+    
+    /*
+     * COORDINATE SYSTEM:
+     * 
+     * Maze Grid (9x9 cells, coordinates 0-8):
+     * 
+     *     X: 0   1   2   3   4   5   6   7   8
+     * Y:  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+     * 8   │   │   │   │   │END│   │   │   │   │  ← Target area (top)
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 7   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 6   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 5   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 4   │   │   │   │   │   │   │   │   │   │  ← Robot path (middle)
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 3   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 2   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 1   │   │   │   │   │   │   │   │   │   │
+     *     ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
+     * 0   │   │   │   │   │STR│   │   │   │   │  ← Start position (bottom)
+     *     └───┴───┴───┴───┴───┴───┴───┴───┴───┘
+     * 
+     * Starting Position: (4, 0) facing NORTH (↑)
+     * Target Position:   (4, 8) or nearby, depending on maze
+     */
+    
+    // Odometry Parameters
+    localparam TICKS_PER_CELL_MIN = 11'd1100; 
+    localparam TICKS_PER_CELL_MAX = 11'd1300;
+    localparam TICKS_PER_CELL_AVG = 11'd1200;
+    
+    // Odometry Parameters
+    localparam TICKS_AFTER_TURN_MIN = 11'd700;
+    localparam TICKS_AFTER_TURN_MAX = 11'd800;
+    localparam TICKS_AFTER_TURN_AVG = 11'd750;
+    
+    // Direction Constants
+    localparam DIR_NORTH = 2'b00;
+    localparam DIR_EAST  = 2'b01;
+    localparam DIR_SOUTH = 2'b10;
+    localparam DIR_WEST  = 2'b11;
+    
+    // Navigation Parameters
+    localparam BASE_SPEED = 7'd60;       // Normal forward speed
+    localparam MED_SPEED = 7'd40;   // Medium speed for mid-approach
+    localparam SLOW_SPEED = 7'd20;  // Slower speed for final approach
+    localparam APPROACH_THRESHOLD_MID = 11'd400;  // Start medium slowdown
+    localparam APPROACH_THRESHOLD_FINAL = 11'd200; // Start final slowdown
+    localparam WAIT_DELAY = 27'd50_000_000;  // 1 seconds - longer settling
+    localparam IDLE_DELAY       = 27'd100_000_000;  // 2 seconds at 50MHz clock
+    
+    // ===== BLUETOOTH PARAMETERS =====
+    localparam BT_SEND_INTERVAL = 27'd250_000_000; // 5 seconds at 50MHz
+
+    // Ultrasonic Thresholds 
+    localparam thres_l = 16'd140; 
+    localparam thres_r = 16'd140;
+    localparam thres_f = 16'd110; 
+
+    // Turn Parameters
+    localparam TICKS_L_90   = 16'd620;
+    localparam TICKS_R_90   = 16'd720;
+    localparam TICKS_U_180  = 16'd1300;
+    localparam TURN_SPEED_H = 7'd50;
+    localparam TURN_SPEED_L = 7'd0;
+    localparam UTURN_SPEED  = 7'd50;
+
+    // FSM States
+    localparam S_IDLE        		= 4'd0;
+    localparam S_DECIDE      		= 4'd1;
+    localparam S_MOVE_NORMAL 		= 4'd2;
+    localparam S_MOVE_POST_TURN 	= 4'd3;
+    localparam S_TURN_L      		= 4'd4;
+    localparam S_TURN_R      		= 4'd5;
+    localparam S_WAIT        		= 4'd6;
+    localparam S_STOP        		= 4'd7;
+    localparam S_TURN_U      		= 4'd8;
+
+    // Motor Commands
+    localparam CMD_STOP      = 3'd0;
+    localparam CMD_FWD 		  = 3'd1;
+    localparam CMD_LEFT      = 3'd2;
+    localparam CMD_RIGHT     = 3'd3;
+    localparam CMD_UTURN     = 3'd4;
+
+    // ==========================================
+    // 2. INTERNAL SIGNALS
+    // ==========================================
+    reg [3:0] cmd;
+    reg [3:0] state;
+    reg [26:0] wait_counter;
+    reg [26:0] idle_counter;
+    
+    // Odometry Signals
+    wire signed [16:0] left_count_wire, right_count_wire;
+    reg odom_clear;
+    
+    // Turn Reference
+    reg signed [15:0] turn_ref_diff;
+    
+    // Heading Tracking
+    reg [1:0] heading;
+    
+    reg post_turn_flag;
+    
+    // Sensor Interface Signals
+    wire [15:0] distance_l, distance_r, distance_f;
+	 assign distance_f_debug = distance_f;
+    wire [2:0] wall;
+    wire deadend, mi_box, front_wall;
+
+    // Drive Signals
+    reg [6:0] final_duty_l, final_duty_r;
+    reg dir_l, dir_r;
+    reg signed [8:0] duty_l_tmp, duty_r_tmp;
+    
+    // PID Control Signals
+    wire signed [15:0] pd_input;
+    wire signed [15:0] pd_ref;
+    wire signed [15:0] pd_kp;
+    wire signed [15:0] pd_kd;
+    wire signed [6:0]  pd_clamp;
+    wire signed [6:0] corrected_val, pid_l, pid_r; 
+    
+    // Cell Crossing
+    wire cell_crossed_normal;
+    wire cell_crossed_post_turn;
+    wire cell_crossed;
+    
+    // Button Logic
+    reg prev_btn;
+    
+    // ===== POSITION TRACKING =====
+    reg [3:0] robot_x;
+    reg [3:0] robot_y;
+    
+    // ===== BLUETOOTH SIGNALS =====
+    wire bt_tx_wire;
+    wire bt_busy;
+    reg bt_send_trigger;
+    reg [26:0] bt_send_counter;
+    
+    // ===== ADAPTIVE SPEED CONTROL =====
+    reg [6:0] adaptive_speed;
+    
+    // ===== NEW ODOMETRY VARIABLES =====
+    wire signed [16:0] avg_ticks;
+    reg signed [16:0] cell_start_ticks;
+    wire [16:0] cell_current_ticks;
+    reg odom_clear_pulse;
+
+    // ===== MI_BOX EDGE DETECTION =====
+    reg mi_box_prev;   // Previous value of mi_box for rising edge detection
+
+    // ==========================================
+    // 3. LOGIC ASSIGNMENTS
+    // ==========================================
+    
+    assign avg_ticks = (left_count_wire + right_count_wire) >>> 1;
+    assign cell_current_ticks = avg_ticks - cell_start_ticks;
+    
+    assign cell_crossed_normal = (cell_current_ticks >= TICKS_PER_CELL_MIN);
+    assign cell_crossed_post_turn = (cell_current_ticks >= TICKS_AFTER_TURN_MIN);
+    assign cell_crossed = (state == S_MOVE_POST_TURN) ? cell_crossed_post_turn : cell_crossed_normal;
+	 
+	 assign debug_x = robot_x;
+	 assign debug_y = robot_y;
+	 assign debug_heading = heading;
+
+    // ===========================
+    // 4. PID PARAMETER SELECTION
+    // ===========================
+	 
+		  assign pd_ref = wall[1] ? 16'd70 : 16'd70;
+		  assign pid_l = wall[1] ? corrected_val : 7'sd0;
+ 		  assign pid_r = wall[1] ? 7'sd0 : corrected_val;
+ 		  assign pd_kp = wall[1] ? 16'sd18 : 16'sd12;
+		  assign pd_kd = wall[1] ? 16'sd30 : 16'sd30;
+		  assign pd_clamp = wall[1] ? 7'sd15 : 7'sd15;
+		  assign pd_input = wall[1] ? distance_l : distance_r;
+		  
+    // ======================================
+    // 5. ADAPTIVE SPEED CALCULATION 2 STAGE
+    // ======================================
+    always @(*) begin
+        if (state == S_MOVE_POST_TURN) begin
+            if (cell_current_ticks >= (TICKS_AFTER_TURN_AVG - APPROACH_THRESHOLD_FINAL))
+                adaptive_speed = SLOW_SPEED;
+            else if (cell_current_ticks >= (TICKS_AFTER_TURN_AVG - APPROACH_THRESHOLD_MID))
+                adaptive_speed = MED_SPEED;
+            else
+                adaptive_speed = BASE_SPEED;
+        end
+        else if (state == S_MOVE_NORMAL) begin
+            if (cell_current_ticks >= (TICKS_PER_CELL_AVG - APPROACH_THRESHOLD_FINAL))
+                adaptive_speed = SLOW_SPEED;
+            else if (cell_current_ticks >= (TICKS_PER_CELL_AVG - APPROACH_THRESHOLD_MID))
+                adaptive_speed = MED_SPEED;
+            else
+                adaptive_speed = BASE_SPEED;
+        end
+        else begin
+            adaptive_speed = BASE_SPEED;
+        end
+    end
+
+    // ===============
+    // 6. MOTOR MIXER
+    // ===============
+    always @(*) begin
+        final_duty_l = 0;
+        final_duty_r = 0;
+        dir_l = 1;
+        dir_r = 1;
+        duty_l_tmp = 0;
+        duty_r_tmp = 0;
+        
+        case (cmd)
+            CMD_FWD: begin
+                duty_l_tmp = $signed({1'b0, adaptive_speed}) + pid_l - pid_r;
+                duty_r_tmp = $signed({1'b0, adaptive_speed}) - pid_l + pid_r;
+                
+                if (duty_l_tmp < 20)       final_duty_l = 20;
+                else if (duty_l_tmp > 90)  final_duty_l = 90;
+                else                       final_duty_l = duty_l_tmp[6:0];
+                
+                if (duty_r_tmp < 20)       final_duty_r = 20;
+                else if (duty_r_tmp > 90)  final_duty_r = 90;
+                else                       final_duty_r = duty_r_tmp[6:0];
+            end
+            
+            CMD_LEFT: begin
+                final_duty_l = TURN_SPEED_L; dir_l = 1;
+                final_duty_r = TURN_SPEED_H; dir_r = 0;
+            end
+            
+            CMD_RIGHT: begin
+                final_duty_l = TURN_SPEED_H; dir_l = 0;
+                final_duty_r = TURN_SPEED_L; dir_r = 1;
+            end
+            
+            CMD_UTURN: begin
+                final_duty_l = UTURN_SPEED+5; dir_l = 1;
+                final_duty_r = UTURN_SPEED; dir_r = 0;
+            end
+            
+            CMD_STOP: begin
+                final_duty_l = 0;
+                final_duty_r = 0;
+            end
+            
+            default: begin
+                final_duty_l = 0;
+                final_duty_r = 0;
+            end
+        endcase
+    end
+
+    // ============
+    // 7. MAIN FSM
+    // ============
+    always @(posedge clk_50M or negedge reset_n) begin
+        speed_l <= final_duty_l;
+        speed_r <= final_duty_r;
+        state_check <= state;
+        pd_check <= corrected_val;
+
+        if (!reset_n) begin
+            state <= S_IDLE;
+            cmd <= CMD_STOP;
+            
+            heading <= DIR_NORTH;
+            post_turn_flag <= 1'b0;
+            
+            robot_x <= 4'd4;
+            robot_y <= 4'd0;
+            
+            uturn_count <= 4'd0;
+            
+            cell_start_ticks <= 16'd0;
+            turn_ref_diff <= 0;
+            wait_counter <= 0;
+            idle_counter <= 0;
+            prev_btn <= 0;
+				odom_clear <= 1'b1;
+            odom_clear_pulse <= 1'b0;
+            
+            bt_send_trigger <= 1'b0;
+            bt_send_counter <= 27'd0;
+
+            mi_box_prev <= 1'b0;   // Initialize mi_box previous value
+        end
+        else begin
+            prev_btn <= ir_top;
+            
+            odom_clear_pulse <= 1'b0;
+            if (cell_crossed) begin
+                cell_start_ticks <= avg_ticks;
+                odom_clear_pulse <= 1'b1;
+            end
+            odom_clear <= odom_clear_pulse;
+            
+            if (bt_send_counter >= BT_SEND_INTERVAL) begin
+                bt_send_trigger <= 1'b1;
+                bt_send_counter <= 27'd0;
+            end
+            else begin
+                bt_send_counter <= bt_send_counter + 27'd1;
+            end
+            
+            if (!bt_busy && bt_send_trigger) begin
+                bt_send_trigger <= 1'b0;
+            end
+            
+            case (state)
+				
+                S_IDLE: begin
+                    cmd <= CMD_STOP;
+                    post_turn_flag <= 1'b0;
+						  odom_clear <= 1'b1;
+                    
+                    if (idle_counter >= IDLE_DELAY && ir_top && !prev_btn) begin
+                        cell_start_ticks <= avg_ticks;
+                        idle_counter <= 0;
+								odom_clear <= 1'b0;
+                        state <= S_DECIDE;								
+                    end
+                    else idle_counter <= idle_counter + 1;
+                end
+
+                S_DECIDE: begin
+                    cmd <= CMD_STOP;
+                    odom_clear <= 1'b0;
+                    if (post_turn_flag) begin
+                        cell_start_ticks <= avg_ticks;
+                        post_turn_flag <= 1'b0;
+                        state <= S_MOVE_POST_TURN;
+                    end
+                    else begin
+                        if (wall[1] && wall[0] && wall[2]) begin
+                            turn_ref_diff <= right_count_wire - left_count_wire; // Snapshot of starting tick difference before turn
+                            state <= S_TURN_U;
+                        end
+                        else if (wall[1] == 1'b0) begin
+                            turn_ref_diff <= left_count_wire - right_count_wire;
+                            state <= S_TURN_L;
+                        end
+                        else if (wall[2] == 1'b0) begin
+                            cell_start_ticks <= avg_ticks;
+                            state <= S_MOVE_NORMAL;
+                        end
+                        else begin
+                            turn_ref_diff <= right_count_wire - left_count_wire;
+                            state <= S_TURN_R;
+                        end
+                    end
+                end
+				
+                // MODIFIED: Added mi_box rising edge detection for calibration
+                S_MOVE_NORMAL: begin
+                    cmd <= CMD_FWD;
+                    odom_clear <= 1'b0;
+                    
+                    // Force update if mi_box goes high (rising edge)
+                    if (distance_f > 16'd60 && distance_f < 16'd80) begin
+                        cell_start_ticks <= avg_ticks;
+                        
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end
+                    else if (cell_crossed_normal) begin
+                        cell_start_ticks <= avg_ticks;
+                        
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end
+                end
+
+                // MODIFIED: Added mi_box rising edge detection for calibration
+                S_MOVE_POST_TURN: begin
+                    cmd <= CMD_FWD;
+                    odom_clear <= 1'b0;
+                    
+                    if (distance_f > 16'd60 && distance_f < 16'd80) begin
+                        cell_start_ticks <= avg_ticks;
+                        
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end
+                    else if (cell_crossed_post_turn) begin
+                        cell_start_ticks <= avg_ticks;
+                        
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end
+                end
+
+                S_TURN_L: begin
+					 odom_clear <= 1'b0;
+					 
+                    if (($signed(left_count_wire - right_count_wire) - turn_ref_diff) >= $signed(TICKS_L_90)) begin
+                        cmd <= CMD_STOP;
+                        post_turn_flag <= 1'b1;
+                        
+                        case (heading)
+                            DIR_NORTH: heading <= DIR_WEST;
+                            DIR_WEST:  heading <= DIR_SOUTH;
+                            DIR_SOUTH: heading <= DIR_EAST;
+                            DIR_EAST:  heading <= DIR_NORTH;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end 
+                    else begin
+                        cmd <= CMD_LEFT;
+                    end
+                end
+
+                S_TURN_R: begin
+					 odom_clear <= 1'b0;
+					 
+                    if (($signed(right_count_wire - left_count_wire) - turn_ref_diff) >= $signed(TICKS_R_90)) begin
+                        cmd <= CMD_STOP;
+                        post_turn_flag <= 1'b1;
+                        
+                        case (heading)
+                            DIR_NORTH: heading <= DIR_EAST;
+                            DIR_EAST:  heading <= DIR_SOUTH;
+                            DIR_SOUTH: heading <= DIR_WEST;
+                            DIR_WEST:  heading <= DIR_NORTH;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end 
+                    else begin
+                        cmd <= CMD_RIGHT;
+                    end
+                end
+
+                S_TURN_U: begin
+					 odom_clear <= 1'b0;
+					 
+                    if (($signed(left_count_wire - right_count_wire) - turn_ref_diff) >= $signed(TICKS_U_180)) begin
+                        cmd <= CMD_STOP;
+                        post_turn_flag <= 1'b1;
+                        
+                        if (uturn_count < 4'd9) uturn_count <= uturn_count + 4'd1;
+                        
+                        case (heading)
+                            DIR_NORTH: heading <= DIR_SOUTH;
+                            DIR_EAST:  heading <= DIR_WEST;
+                            DIR_SOUTH: heading <= DIR_NORTH;
+                            DIR_WEST:  heading <= DIR_EAST;
+                        endcase
+                        
+                        state <= S_WAIT;
+                        wait_counter <= 0;
+                    end 
+                    else begin
+                        cmd <= CMD_UTURN;
+                    end
+                end
+
+                S_WAIT: begin
+                    cmd <= CMD_STOP;
+						  odom_clear <= 1'b0;
+                    if (wait_counter >= WAIT_DELAY) begin
+                        wait_counter <= 0;
+                        state <= S_DECIDE;
+                    end
+                    else begin
+                        wait_counter <= wait_counter + 1;
+                    end
+                end
+
+                S_STOP: begin
+                    cmd <= CMD_STOP;
+						  odom_clear <= 1'b1;
+                    if (ir_top && !prev_btn) state <= S_IDLE;
+                end
+
+                default: state <= S_IDLE;
+            endcase
+
+            // Update mi_box previous value for edge detection in next cycle
+            mi_box_prev <= mi_box;
+        end
+    end
+
+    // ==========================================
+    // 8. MODULE INSTANTIATIONS
+    // ==========================================
+
+    pd_control_dd u_pid_crawl (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .input_val(pd_input),
+        .ref_val(pd_ref),
+        .kp(pd_kp),
+        .kd(pd_kd),
+        .clamp(pd_clamp),
+        .corrected_val(corrected_val) 
+    );
+
+    drive u_drive (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .duty_l(final_duty_r), .duty_r(final_duty_l),
+        .dir_l(dir_l), .dir_r(dir_r),
+        .IN1(IN1), .IN2(IN2), .IN3(IN3), .IN4(IN4),
+        .ENA(ENA), .ENB(ENB)
+    );
+
+    odometry u_odom (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .enc_l_a(enc_l_a), .enc_r_a(enc_r_a),
+        .dir_l(dir_l), .dir_r(dir_r),
+        .clear(odom_clear), 
+        .left_count(left_count_wire),
+        .right_count(right_count_wire)
+    );
+    
+    sensor_interface u_sensors (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .us_echo_f(us_echo_f),
+        .us_echo_l(us_echo_l),
+        .us_echo_r(us_echo_r),
+        .ir_top(ir_top),
+        .ir_down(ir_down),
+		  .ir_middle(ir_middle),
+        .thres_f(thres_f), .thres_l(thres_l), .thres_r(thres_r),
+        .us_trig_f(us_trig_f),
+        .us_trig_l(us_trig_l),
+        .us_trig_r(us_trig_r),
+        .wall(wall),
+        .deadend(deadend),
+        .mi_box(mi_box),
+		  .front_wall(front_wall),
+        .distance_l(distance_l),
+        .distance_r(distance_r),
+        .distance_f(distance_f)
+    );
+
+    // ==========================================
+    // 9. UNUSED OUTPUTS
+    // ==========================================
+    assign servo_pwm_pin = 1'b0;
+    assign adc_cs_n = 1'b1;
+    assign adc_sclk = 1'b0;
+    assign adc_saddr = 1'b0;
+    assign bt_tx_pin = bt_tx_wire;
+    assign dht_data_pin = 1'bz;
+
+    always @(posedge clk_50M) begin
+        wall_status <= wall; 
+    end
+
+endmodule

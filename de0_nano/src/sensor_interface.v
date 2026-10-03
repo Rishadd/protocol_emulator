@@ -1,0 +1,78 @@
+/*
+# Team ID: 4093
+# Theme: MazeSolver Bot
+# Author List: Aayush Srinivasan, Sirigiri Tarun, Tejhuram Ravichandran, R Rishadd
+# Filename: sensor_interface.v
+# File Description: Aggregates ultrasonic and IR sensors and provides wall/detection outputs.
+# Global variables: None
+*/
+
+module sensor_interface(
+    input clk_50M, reset_n,
+    input us_echo_f, us_echo_l, us_echo_r,
+    input ir_top, ir_down, ir_middle,
+    input [15:0] thres_f, thres_l, thres_r,
+    output wire us_trig_f, us_trig_l, us_trig_r,
+    output wire [2:0] wall,
+    output wire deadend,
+    output wire mi_box,
+	 output wire front_wall,
+	output wire [15:0] distance_f, distance_r, distance_l
+);
+
+    
+
+    // Ultrasonic Instances
+    ultrasonic us_f(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n), 
+        .echo(us_echo_f),
+		  .threshold(thres_f),
+        .trig(us_trig_f),
+        .op(wall[2]),
+        .distance(distance_f)
+    );
+                    
+    ultrasonic us_l(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n), 
+        .echo(us_echo_l),
+		  .threshold(thres_l),
+        .trig(us_trig_l),
+        .op(wall[1]),
+        .distance(distance_l)
+    );                    
+                    
+    ultrasonic us_r(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n), 
+        .echo(us_echo_r),
+		  .threshold(thres_r),
+        .trig(us_trig_r),
+        .op(wall[0]),
+        .distance(distance_r)
+    );
+    
+    // IR Instances
+    ir inst_ir_top(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n),
+        .ir(ir_top),
+        .op(deadend)
+    );
+            
+    ir inst_ir_down(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n),
+        .ir(ir_down),
+        .op(mi_box)
+    );
+	 
+	 ir inst_ir_middle(
+        .clk_50M(clk_50M), 
+        .reset_n(reset_n),
+        .ir(ir_middle),
+        .op(front_wall)
+    );
+    
+endmodule

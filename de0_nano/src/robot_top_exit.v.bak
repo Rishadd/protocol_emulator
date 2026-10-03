@@ -1,0 +1,931 @@
+module robot_top_exit(
+    // Clock and Reset
+    input clk_50M, reset_n, start_n,
+
+    // Sensor Inputs
+    input us_echo_f, us_echo_l, us_echo_r,
+    input ir_top, ir_down, ir_middle,
+    input enc_l_a, enc_r_a,
+    inout dht_data_pin,
+
+    // Servo Output
+    output servo_pwm_pin,
+
+    // ADC Pins
+    input  adc_sdat,
+    output adc_cs_n,
+    output adc_sclk,
+    output adc_saddr,
+
+    // Bluetooth
+    input  bt_rx_pin,
+    output bt_tx_pin,
+
+    // Motor Driver Outputs
+    output IN1, IN2, IN3, IN4,
+    output ENA, ENB,
+
+    // Ultrasonic Triggers
+    output us_trig_f, us_trig_l, us_trig_r,
+
+    // Debug
+    output reg [2:0] wall_status,
+    output reg [4:0] state_check,
+
+    output reg signed [6:0] pd_check,
+    output reg [6:0] speed_l, speed_r,
+
+    output reg [3:0] uturn_count,
+
+    output reg [15:0] debug_us,
+    output [3:0] debug_x,
+    output [3:0] debug_y,
+    output [1:0] debug_heading
+);
+
+    // ==========================================
+    // PARAMETERS
+    // ==========================================
+    localparam TICKS_PER_CELL_AVG    = 11'd1200;
+    localparam TICKS_AFTER_TURN_AVG  = 11'd750;
+
+    localparam DIR_NORTH = 2'b00;
+    localparam DIR_EAST  = 2'b01;
+    localparam DIR_SOUTH = 2'b10;
+    localparam DIR_WEST  = 2'b11;
+
+    localparam HIGH_SPEED  = 7'd70;
+    localparam MED_SPEED   = 7'd40;
+    localparam SLOW_SPEED  = 7'd30;
+
+    localparam WAIT_DELAY  = 27'd10_000_000;
+    localparam IDLE_DELAY  = 27'd100_000_000;
+
+    localparam TURN_MIN_TIME = 27'd25_000_000;
+    localparam TURN_MAX_TIME = 27'd100_000_000;
+
+    localparam signed K_CENTER = 7'sd3;
+
+    localparam thres_l = 16'd140;
+    localparam thres_r = 16'd140;
+    localparam thres_f = 16'd140;
+
+    localparam TICKS_L_90  = 16'd680;
+    localparam TICKS_R_90  = 16'd730;
+    localparam TURN_SPEED_H = 7'd50;
+    localparam TURN_SPEED_L = 7'd0;
+
+    // ==========================================
+    // FSM STATE ENCODING
+    // ==========================================
+    // A* states (run once after reset before start)
+    localparam S_ASTAR_INIT     = 5'd0;
+    localparam S_ASTAR_FIND_MIN = 5'd1;
+    localparam S_ASTAR_EXPAND   = 5'd2;
+    localparam S_ASTAR_RETRACE  = 5'd3;
+    localparam S_ASTAR_REVERSE  = 5'd4;
+
+    // Idle / movement states
+    localparam S_IDLE           = 5'd5;
+    localparam S_PLAN_TURN      = 5'd6;
+    localparam S_TURN_L         = 5'd7;
+    localparam S_TURN_R         = 5'd8;
+    localparam S_MOVE_NORMAL    = 5'd9;
+    localparam S_MOVE_POST_TURN = 5'd10;
+    localparam S_WAIT           = 5'd11;
+    localparam S_STOP           = 5'd12;
+
+    // ==========================================
+    // MOTOR COMMAND ENCODING
+    // ==========================================
+    localparam CMD_STOP  = 3'd0;
+    localparam CMD_FWD   = 3'd1;
+    localparam CMD_LEFT  = 3'd2;
+    localparam CMD_RIGHT = 3'd3;
+
+    // ==========================================
+    // HARDCODED MAZE MEMORY
+    // ==========================================
+    // wall_north[id] : wall on north face of cell id
+    // wall_east[id]  : wall on east  face of cell id
+    // id = y*9 + x,  rows stored MSB = row8 downto LSB = row0
+    localparam [80:0] WALL_NORTH_CONST =
+        81'b111101111_010100001_001000110_010111011_000010110_011001001_001100001_110111010_001000110;
+    localparam [80:0] WALL_EAST_CONST  =
+        81'b100101000_101011110_110101010_111100100_110110100_110011110_101000010_101010101_110011000;
+
+    // Start / exit
+    localparam [3:0] START_X = 4'd4;
+    localparam [3:0] START_Y = 4'd0;
+    localparam [3:0] EXIT_X  = 4'd4;
+    localparam [3:0] EXIT_Y  = 4'd8;
+    localparam [6:0] START_ID = 7'd4;        // 0*9 + 4
+    localparam [6:0] EXIT_ID  = 7'd76;       // 8*9 + 4
+
+    localparam MAX_PATH = 6'd32;             // generous upper bound for path array
+
+    // ==========================================
+    // INTERNAL SIGNALS
+    // ==========================================
+    reg [4:0]  state;
+    reg [2:0]  cmd;
+    reg [26:0] wait_counter;
+    reg [26:0] idle_counter;
+    reg [4:0]  wait_return_state;
+
+    // Robot position / heading
+    reg [3:0] robot_x, robot_y;
+    reg [1:0] heading;
+    reg post_turn_flag;
+
+    // Odometry
+    wire signed [16:0] left_count_wire, right_count_wire;
+    reg  odom_clear, odom_clear_pulse;
+    wire signed [16:0] avg_ticks;
+    reg  signed [16:0] cell_start_ticks;
+    wire [16:0] cell_current_ticks;
+    wire cell_crossed_normal, cell_crossed_post_turn;
+
+    // Turn control
+    reg signed [16:0] saved_turn_ref;
+    reg turn_ref_captured;
+    reg [26:0] turn_timer;
+
+    // Sensor outputs
+    wire [15:0] distance_l, distance_r, distance_f;
+    wire [2:0]  wall;
+    wire deadend, mi_box, front_wall;
+
+    // PD control
+    wire signed [15:0] pd_input, pd_ref, pd_kp, pd_kd;
+    wire signed [6:0]  corrected_val, pid_l, pid_r;
+    reg  signed [6:0]  pd_clamp;
+
+    // Motor mixer
+    reg [6:0] final_duty_l, final_duty_r;
+    reg dir_l, dir_r;
+    reg signed [8:0] duty_l_tmp, duty_r_tmp;
+    reg [6:0] adaptive_speed;
+
+    // Bluetooth (start signal only)
+    wire start_flag;
+    wire [3:0] mpi_target;    // received but ignored
+    reg  prev_btn;
+
+    // ==========================================
+    // A* DATA STRUCTURES
+    // ==========================================
+    // g_score: cost from start (max 81 cells, 7 bits enough)
+    reg [6:0]  g_score   [0:80];
+    // came_from: parent cell id during A* (7 bits, 0x7F = none)
+    reg [6:0]  came_from [0:80];
+    // open_set / closed_set bitmasks
+    reg [80:0] open_set;
+    reg [80:0] closed_set;
+
+    // A* iteration registers
+    reg [6:0]  astar_current;          // cell being expanded
+    reg [6:0]  astar_scan_idx;         // scan index for FIND_MIN
+    reg [6:0]  astar_min_id;           // best cell found so far
+    reg [7:0]  astar_min_f;            // best f = g+h found so far
+    reg        astar_found;            // exit reached flag
+
+    // Path storage (forward: path_cells[0] = first step, [path_len-1] = exit)
+    reg [6:0] path_cells  [0:31];      // raw retrace (reversed)
+    reg [6:0] path_fwd    [0:31];      // forward path after reversal
+    reg [5:0] path_len;
+    reg [5:0] path_idx;                // current target waypoint
+    reg [5:0] retrace_idx;             // used during retrace/reverse
+
+    // Neighbour expansion (combinational)
+    reg [6:0] nb_id   [0:3];
+    reg       nb_valid[0:3];
+    reg [7:0] nb_g    [0:3];
+    integer   ni;
+
+    // ==========================================
+    // WALL LOOKUP FUNCTIONS (combinational)
+    // ==========================================
+    // Helpers: given a cell id, can we move in each direction?
+    function can_go_north;
+        input [6:0] id;
+        begin
+            can_go_north = (id[6:0] / 9 < 8) && !WALL_NORTH_CONST[id];
+        end
+    endfunction
+
+    function can_go_south;
+        input [6:0] id;
+        begin
+            can_go_south = (id[6:0] / 9 > 0) && !WALL_NORTH_CONST[id - 7'd9];
+        end
+    endfunction
+
+    function can_go_east;
+        input [6:0] id;
+        begin
+            can_go_east = (id[6:0] % 9 < 8) && !WALL_EAST_CONST[id];
+        end
+    endfunction
+
+    function can_go_west;
+        input [6:0] id;
+        begin
+            can_go_west = (id[6:0] % 9 > 0) && !WALL_EAST_CONST[id - 7'd1];
+        end
+    endfunction
+
+    // Manhattan distance heuristic to exit (4,8) = id 76
+    function [6:0] heuristic;
+        input [6:0] id;
+        reg [3:0] cx, cy;
+        begin
+            cx = id % 9;
+            cy = id / 9;
+            heuristic = ((cx > EXIT_X) ? (cx - EXIT_X) : (EXIT_X - cx))
+                      + ((cy > EXIT_Y) ? (cy - EXIT_Y) : (EXIT_Y - cy));
+        end
+    endfunction
+
+    // ==========================================
+    // DERIVED SIGNALS
+    // ==========================================
+    assign avg_ticks          = (left_count_wire + right_count_wire) >>> 1;
+    assign cell_current_ticks = avg_ticks - cell_start_ticks;
+
+    assign cell_crossed_normal    = (cell_current_ticks >= TICKS_PER_CELL_AVG);
+    assign cell_crossed_post_turn = (cell_current_ticks >= TICKS_AFTER_TURN_AVG);
+
+    assign debug_x       = robot_x;
+    assign debug_y       = robot_y;
+    assign debug_heading = heading;
+
+    // PD wiring (same logic as robot_top_integrated)
+    assign pd_ref   = wall[1] ? 16'd70 : 16'd60;
+    assign pd_input = wall[1] ? distance_l : (wall[0] ? distance_r : 16'd70);
+    assign pd_kp    = 16'sd30;
+    assign pd_kd    = 16'sd10;
+    assign pid_l    =  wall[1]               ? corrected_val : 7'sd0;
+    assign pid_r    = (!wall[1] && wall[0])  ? corrected_val : 7'sd0;
+
+    // ==========================================
+    // ADAPTIVE SPEED & PD CLAMP
+    // ==========================================
+    always @(*) begin
+        if (state == S_MOVE_NORMAL && distance_f > 16'd300) begin
+            adaptive_speed = HIGH_SPEED;
+            pd_clamp       = 7'sd20;
+        end else begin
+            adaptive_speed = MED_SPEED;
+            pd_clamp       = 7'sd15;
+        end
+    end
+
+    // ==========================================
+    // MOTOR MIXER
+    // ==========================================
+    always @(*) begin
+        final_duty_l = 0; final_duty_r = 0;
+        dir_l = 1;        dir_r = 1;
+        duty_l_tmp = 0;   duty_r_tmp = 0;
+
+        case (cmd)
+            CMD_FWD: begin
+                duty_l_tmp = $signed({1'b0, adaptive_speed}) + pid_l - pid_r;
+                duty_r_tmp = $signed({1'b0, adaptive_speed}) - pid_l + pid_r;
+
+                if      (duty_l_tmp < 20) final_duty_l = 20;
+                else if (duty_l_tmp > 90) final_duty_l = 90;
+                else                      final_duty_l = duty_l_tmp[6:0];
+
+                if      (duty_r_tmp < 20) final_duty_r = 20;
+                else if (duty_r_tmp > 90) final_duty_r = 90;
+                else                      final_duty_r = duty_r_tmp[6:0];
+            end
+
+            CMD_LEFT: begin
+                final_duty_l = TURN_SPEED_L; dir_l = 1;
+                final_duty_r = TURN_SPEED_H; dir_r = 0;
+            end
+
+            CMD_RIGHT: begin
+                final_duty_l = TURN_SPEED_H; dir_l = 0;
+                final_duty_r = TURN_SPEED_L; dir_r = 1;
+            end
+
+            CMD_STOP: begin
+                final_duty_l = 0; final_duty_r = 0;
+            end
+
+            default: begin
+                final_duty_l = 0; final_duty_r = 0;
+            end
+        endcase
+    end
+
+    // ==========================================
+    // NEXT-CELL HEADING HELPER (combinational)
+    // Given current cell id and next cell id, what heading is needed?
+    // ==========================================
+    reg [1:0] needed_heading;
+    always @(*) begin
+        if (path_idx < path_len) begin
+            if      (path_fwd[path_idx] == {(robot_y + 4'd1), robot_x} - (robot_y * 9 + robot_x - (robot_y+1)*9 + robot_x))
+                needed_heading = DIR_NORTH; // placeholder — computed properly below
+            else
+                needed_heading = DIR_NORTH;
+        end else
+            needed_heading = heading;
+    end
+
+    // Proper heading computation from id delta
+    // We compare robot_y*9+robot_x vs path_fwd[path_idx]
+    wire [6:0] id_current = robot_y * 4'd9 + robot_x;
+    wire [6:0] id_next    = (path_idx < path_len) ? path_fwd[path_idx] : id_current;
+
+    wire [3:0] next_x = id_next % 9;
+    wire [3:0] next_y = id_next / 9;
+
+    wire [1:0] required_heading =
+        (next_y > robot_y) ? DIR_NORTH :
+        (next_x > robot_x) ? DIR_EAST  :
+        (next_y < robot_y) ? DIR_SOUTH : DIR_WEST;
+
+    // ==========================================
+    // MAIN FSM
+    // ==========================================
+    integer i;
+
+    always @(posedge clk_50M or negedge reset_n) begin
+        speed_l     <= final_duty_l;
+        speed_r     <= final_duty_r;
+        state_check <= state;
+        pd_check    <= corrected_val;
+        debug_us    <= distance_f;
+
+        if (!reset_n) begin
+            // ---- Robot state ----
+            state          <= S_ASTAR_INIT;
+            cmd            <= CMD_STOP;
+            heading        <= DIR_NORTH;
+            robot_x        <= START_X;
+            robot_y        <= START_Y;
+            post_turn_flag <= 1'b0;
+            uturn_count    <= 4'd0;
+            prev_btn       <= 1'b0;
+
+            // ---- Odometry ----
+            odom_clear       <= 1'b1;
+            odom_clear_pulse <= 1'b0;
+            cell_start_ticks <= 17'sd0;
+
+            // ---- Turn ----
+            saved_turn_ref   <= 17'sd0;
+            turn_ref_captured<= 1'b0;
+            turn_timer       <= 27'd0;
+
+            // ---- Counters ----
+            wait_counter  <= 27'd0;
+            idle_counter  <= 27'd0;
+            wait_return_state <= S_IDLE;
+
+            // ---- Path ----
+            path_len  <= 6'd0;
+            path_idx  <= 6'd0;
+
+            // ---- A* structures ----
+            open_set   <= 81'b0;
+            closed_set <= 81'b0;
+            astar_current   <= 7'd0;
+            astar_scan_idx  <= 7'd0;
+            astar_min_id    <= 7'd0;
+            astar_min_f     <= 8'hFF;
+            astar_found     <= 1'b0;
+            retrace_idx     <= 6'd0;
+
+            for (i = 0; i < 81; i = i + 1) begin
+                g_score[i]   <= 7'h7F;
+                came_from[i] <= 7'h7F;
+            end
+            for (i = 0; i < 32; i = i + 1) begin
+                path_cells[i] <= 7'd0;
+                path_fwd[i]   <= 7'd0;
+            end
+        end
+        else begin
+            // ---- Odometry pulse ----
+            odom_clear_pulse <= 1'b0;
+            if (cell_crossed_normal || (state == S_MOVE_POST_TURN && cell_crossed_post_turn)) begin
+                cell_start_ticks <= avg_ticks;
+                odom_clear_pulse <= 1'b1;
+            end
+            odom_clear <= odom_clear_pulse;
+
+            prev_btn <= ir_top;
+
+            case (state)
+
+                // ============================================================
+                // A* PHASE — runs entirely before start_flag
+                // ============================================================
+
+                // ----- INIT: set g(start)=0, push start onto open_set -----
+                S_ASTAR_INIT: begin
+                    cmd <= CMD_STOP;
+                    odom_clear <= 1'b1;
+
+                    for (i = 0; i < 81; i = i + 1) begin
+                        g_score[i]   <= 7'h7F;   // infinity
+                        came_from[i] <= 7'h7F;   // no parent
+                    end
+
+                    g_score[START_ID] <= 7'd0;
+                    open_set          <= 81'b0;
+                    open_set[START_ID]<= 1'b1;
+                    closed_set        <= 81'b0;
+                    astar_found       <= 1'b0;
+                    astar_scan_idx    <= 7'd0;
+                    astar_min_f       <= 8'hFF;
+                    astar_min_id      <= START_ID;
+
+                    state <= S_ASTAR_FIND_MIN;
+                end
+
+                // ----- FIND_MIN: scan open_set for lowest f = g + h -----
+                // One cell checked per clock cycle; 81 cycles max per iteration
+                S_ASTAR_FIND_MIN: begin
+                    cmd <= CMD_STOP;
+
+                    if (open_set == 81'b0) begin
+                        // Open set empty — no path found (shouldn't happen with valid map)
+                        // Go idle and wait — bot will stay stopped
+                        state <= S_IDLE;
+                    end
+                    else if (astar_scan_idx < 7'd81) begin
+                        if (open_set[astar_scan_idx]) begin
+                            // f = g + h
+                            if ((g_score[astar_scan_idx] + heuristic(astar_scan_idx)) < astar_min_f) begin
+                                astar_min_f  <= g_score[astar_scan_idx] + heuristic(astar_scan_idx);
+                                astar_min_id <= astar_scan_idx;
+                            end
+                        end
+                        astar_scan_idx <= astar_scan_idx + 7'd1;
+                    end
+                    else begin
+                        // Scan complete — move to expand
+                        astar_current  <= astar_min_id;
+                        astar_scan_idx <= 7'd0;
+                        astar_min_f    <= 8'hFF;
+
+                        if (astar_min_id == EXIT_ID) begin
+                            // Reached exit — begin retrace
+                            astar_found <= 1'b1;
+                            retrace_idx <= 6'd0;
+                            state <= S_ASTAR_RETRACE;
+                        end
+                        else begin
+                            state <= S_ASTAR_EXPAND;
+                        end
+                    end
+                end
+
+                // ----- EXPAND: generate 4 neighbours, update g/came_from -----
+                S_ASTAR_EXPAND: begin
+                    cmd <= CMD_STOP;
+
+                    // Remove current from open, add to closed
+                    open_set[astar_current]   <= 1'b0;
+                    closed_set[astar_current] <= 1'b1;
+
+                    // --- North neighbour ---
+                    if (can_go_north(astar_current)) begin
+                        nb_id[0]    = astar_current + 7'd9;
+                        nb_valid[0] = !closed_set[astar_current + 7'd9];
+                        nb_g[0]     = g_score[astar_current] + 8'd1;
+                    end else begin
+                        nb_valid[0] = 1'b0;
+                        nb_id[0]    = 7'd0;
+                        nb_g[0]     = 8'hFF;
+                    end
+
+                    // --- South neighbour ---
+                    if (can_go_south(astar_current)) begin
+                        nb_id[1]    = astar_current - 7'd9;
+                        nb_valid[1] = !closed_set[astar_current - 7'd9];
+                        nb_g[1]     = g_score[astar_current] + 8'd1;
+                    end else begin
+                        nb_valid[1] = 1'b0;
+                        nb_id[1]    = 7'd0;
+                        nb_g[1]     = 8'hFF;
+                    end
+
+                    // --- East neighbour ---
+                    if (can_go_east(astar_current)) begin
+                        nb_id[2]    = astar_current + 7'd1;
+                        nb_valid[2] = !closed_set[astar_current + 7'd1];
+                        nb_g[2]     = g_score[astar_current] + 8'd1;
+                    end else begin
+                        nb_valid[2] = 1'b0;
+                        nb_id[2]    = 7'd0;
+                        nb_g[2]     = 8'hFF;
+                    end
+
+                    // --- West neighbour ---
+                    if (can_go_west(astar_current)) begin
+                        nb_id[3]    = astar_current - 7'd1;
+                        nb_valid[3] = !closed_set[astar_current - 7'd1];
+                        nb_g[3]     = g_score[astar_current] + 8'd1;
+                    end else begin
+                        nb_valid[3] = 1'b0;
+                        nb_id[3]    = 7'd0;
+                        nb_g[3]     = 8'hFF;
+                    end
+
+                    // Update neighbours that have a better g score
+                    for (ni = 0; ni < 4; ni = ni + 1) begin
+                        if (nb_valid[ni] && (nb_g[ni] < g_score[nb_id[ni]])) begin
+                            g_score[nb_id[ni]]   <= nb_g[ni][6:0];
+                            came_from[nb_id[ni]] <= astar_current;
+                            open_set[nb_id[ni]]  <= 1'b1;
+                        end
+                    end
+
+                    // Reset min tracking for next FIND_MIN pass
+                    astar_min_f    <= 8'hFF;
+                    astar_min_id   <= 7'd0;
+                    astar_scan_idx <= 7'd0;
+                    state <= S_ASTAR_FIND_MIN;
+                end
+
+                // ----- RETRACE: walk came_from[] from exit back to start -----
+                // Stores path in path_cells[] in REVERSE order (exit first)
+                S_ASTAR_RETRACE: begin
+                    cmd <= CMD_STOP;
+
+                    if (astar_current == START_ID || came_from[astar_current] == 7'h7F) begin
+                        // Retrace complete — path_cells[0..retrace_idx-1] = exit..start
+                        path_cells[retrace_idx] <= START_ID;
+                        path_len  <= retrace_idx + 6'd1;
+                        retrace_idx <= 6'd0;
+                        state <= S_ASTAR_REVERSE;
+                    end
+                    else begin
+                        path_cells[retrace_idx] <= astar_current;
+                        retrace_idx   <= retrace_idx + 6'd1;
+                        astar_current <= came_from[astar_current];
+                    end
+                end
+
+                // ----- REVERSE: flip path_cells[] into path_fwd[] -----
+                // path_fwd[0] = first step after start, path_fwd[path_len-1] = exit
+                S_ASTAR_REVERSE: begin
+                    cmd <= CMD_STOP;
+
+                    if (retrace_idx < path_len) begin
+                        path_fwd[retrace_idx] <= path_cells[(path_len - 6'd1) - retrace_idx];
+                        retrace_idx <= retrace_idx + 6'd1;
+                    end
+                    else begin
+                        // Path ready — skip start cell (index 0 is start itself)
+                        // path_fwd[0] = START_ID, path_fwd[1] = first move, ..., path_fwd[path_len-1] = EXIT
+                        path_idx <= 6'd1;   // skip [0] which equals start position
+                        state    <= S_IDLE;
+                    end
+                end
+
+                // ============================================================
+                // IDLE — wait for start_flag from BT receiver
+                // ============================================================
+                S_IDLE: begin
+                    cmd      <= CMD_STOP;
+                    odom_clear <= 1'b1;
+                    post_turn_flag <= 1'b0;
+
+                    if (idle_counter >= IDLE_DELAY && start_flag) begin
+                        cell_start_ticks <= avg_ticks;
+                        idle_counter     <= 27'd0;
+                        odom_clear       <= 1'b0;
+                        // Determine if we need to turn first before moving
+                        state <= S_PLAN_TURN;
+                    end
+                    else
+                        idle_counter <= idle_counter + 27'd1;
+                end
+
+                // ============================================================
+                // PLAN_TURN — check if heading matches required heading to
+                //             reach next waypoint; turn or go straight
+                // ============================================================
+                S_PLAN_TURN: begin
+                    cmd <= CMD_STOP;
+
+                    if (path_idx >= path_len) begin
+                        // All waypoints reached
+                        state <= S_STOP;
+                    end
+                    else if (required_heading == heading) begin
+                        // Already aligned — drive forward
+                        cell_start_ticks <= avg_ticks;
+                        state <= S_MOVE_NORMAL;
+                    end
+                    else if (required_heading == ((heading + 2'd1) & 2'd3)) begin
+                        // Need to turn right
+                        wait_return_state <= S_PLAN_TURN;
+                        state <= S_TURN_R;
+                    end
+                    else if (required_heading == ((heading + 2'd3) & 2'd3)) begin
+                        // Need to turn left
+                        wait_return_state <= S_PLAN_TURN;
+                        state <= S_TURN_L;
+                    end
+                    else begin
+                        // 180 degrees — avoid U-turn: prefer two rights
+                        // Turn right first; on returning to PLAN_TURN another right follows
+                        wait_return_state <= S_PLAN_TURN;
+                        state <= S_TURN_R;
+                    end
+                end
+
+                // ============================================================
+                // MOVE_NORMAL — drive forward to next waypoint
+                // ============================================================
+                S_MOVE_NORMAL: begin
+                    cmd        <= CMD_FWD;
+                    odom_clear <= 1'b0;
+
+                    if (front_wall) begin
+                        // Safety override — wall appeared; treat as cell reached
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+
+                        path_idx <= path_idx + 6'd1;
+                        cmd      <= CMD_STOP;
+                        wait_return_state <= S_PLAN_TURN;
+                        state    <= S_WAIT;
+                        wait_counter <= 27'd0;
+                    end
+                    else if (cell_crossed_normal) begin
+                        cell_start_ticks <= avg_ticks;
+
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+
+                        path_idx <= path_idx + 6'd1;
+
+                        if (path_idx + 6'd1 >= path_len) begin
+                            // Reached exit
+                            state <= S_STOP;
+                        end
+                        else begin
+                            state <= S_PLAN_TURN;
+                        end
+                    end
+                end
+
+                // ============================================================
+                // MOVE_POST_TURN — short forward burst after a turn
+                // ============================================================
+                S_MOVE_POST_TURN: begin
+                    cmd        <= CMD_FWD;
+                    odom_clear <= 1'b0;
+
+                    if (front_wall) begin
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+
+                        path_idx <= path_idx + 6'd1;
+                        cmd      <= CMD_STOP;
+                        wait_return_state <= S_PLAN_TURN;
+                        state    <= S_WAIT;
+                        wait_counter <= 27'd0;
+                    end
+                    else if (cell_crossed_post_turn) begin
+                        cell_start_ticks <= avg_ticks;
+
+                        case (heading)
+                            DIR_NORTH: if (robot_y < 4'd8) robot_y <= robot_y + 4'd1;
+                            DIR_EAST:  if (robot_x < 4'd8) robot_x <= robot_x + 4'd1;
+                            DIR_SOUTH: if (robot_y > 4'd0) robot_y <= robot_y - 4'd1;
+                            DIR_WEST:  if (robot_x > 4'd0) robot_x <= robot_x - 4'd1;
+                        endcase
+
+                        path_idx <= path_idx + 6'd1;
+
+                        if (path_idx + 6'd1 >= path_len) begin
+                            state <= S_STOP;
+                        end
+                        else begin
+                            state <= S_PLAN_TURN;
+                        end
+                    end
+                end
+
+                // ============================================================
+                // TURN_L — left 90° using encoder differential (same as original)
+                // ============================================================
+                S_TURN_L: begin
+                    odom_clear <= 1'b0;
+
+                    if (!turn_ref_captured) begin
+                        saved_turn_ref    <= left_count_wire - right_count_wire;
+                        turn_ref_captured <= 1'b1;
+                        cmd               <= CMD_LEFT;
+                        turn_timer        <= 27'd0;
+                    end
+                    else begin
+                        turn_timer <= turn_timer + 27'd1;
+                        cmd        <= CMD_LEFT;
+
+                        if (turn_timer >= TURN_MIN_TIME) begin
+                            if (($signed(left_count_wire - right_count_wire) - saved_turn_ref) >= $signed(TICKS_L_90)
+                                || turn_timer >= TURN_MAX_TIME)
+                            begin
+                                cmd               <= CMD_STOP;
+                                heading           <= (heading + 2'd3) & 2'd3;  // -1 mod 4
+                                turn_ref_captured <= 1'b0;
+                                post_turn_flag    <= 1'b1;
+
+                                // Brief post-turn forward burst
+                                cell_start_ticks  <= avg_ticks;
+                                state             <= S_MOVE_POST_TURN;
+                            end
+                        end
+                    end
+                end
+
+                // ============================================================
+                // TURN_R — right 90° using encoder differential
+                // ============================================================
+                S_TURN_R: begin
+                    odom_clear <= 1'b0;
+
+                    if (!turn_ref_captured) begin
+                        saved_turn_ref    <= right_count_wire - left_count_wire;
+                        turn_ref_captured <= 1'b1;
+                        cmd               <= CMD_RIGHT;
+                        turn_timer        <= 27'd0;
+                    end
+                    else begin
+                        turn_timer <= turn_timer + 27'd1;
+                        cmd        <= CMD_RIGHT;
+
+                        if (turn_timer >= TURN_MIN_TIME) begin
+                            if (($signed(right_count_wire - left_count_wire) - saved_turn_ref) >= $signed(TICKS_R_90)
+                                || turn_timer >= TURN_MAX_TIME)
+                            begin
+                                cmd               <= CMD_STOP;
+                                heading           <= (heading + 2'd1) & 2'd3;
+                                turn_ref_captured <= 1'b0;
+                                post_turn_flag    <= 1'b1;
+
+                                cell_start_ticks  <= avg_ticks;
+                                state             <= S_MOVE_POST_TURN;
+                            end
+                        end
+                    end
+                end
+
+                // ============================================================
+                // WAIT — generic delay state
+                // ============================================================
+                S_WAIT: begin
+                    cmd <= CMD_STOP;
+                    odom_clear <= 1'b0;
+
+                    if (wait_counter >= WAIT_DELAY) begin
+                        wait_counter <= 27'd0;
+                        state        <= wait_return_state;
+                    end
+                    else
+                        wait_counter <= wait_counter + 27'd1;
+                end
+
+                // ============================================================
+                // STOP — bot has reached exit (4,8)
+                // ============================================================
+                S_STOP: begin
+                    cmd        <= CMD_STOP;
+                    odom_clear <= 1'b1;
+
+                    // Allow restart via IR top button (same as original)
+                    if (ir_top && !prev_btn) state <= S_IDLE;
+                end
+
+                default: state <= S_IDLE;
+
+            endcase
+        end
+    end
+
+    // ==========================================
+    // DEBUG OUTPUT
+    // ==========================================
+    always @(posedge clk_50M) begin
+        wall_status <= wall;
+    end
+
+    // ==========================================
+    // MODULE INSTANTIATIONS
+    // ==========================================
+
+    // BT receiver — used only for start_flag; mpi_target ignored
+    bt_receiver u_bt_rx (
+        .clk_50(clk_50M),
+        .reset(~reset_n),
+        .rx(bt_rx_pin),
+        .start_signal(start_flag),
+        .mpi_count(mpi_target)
+    );
+
+    // PD controller — wall-following correction
+    pd_control_dd u_pid (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .input_val(pd_input),
+        .ref_val(pd_ref),
+        .kp(pd_kp),
+        .kd(pd_kd),
+        .clamp(pd_clamp),
+        .corrected_val(corrected_val)
+    );
+
+    // Motor driver
+    drive u_drive (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .duty_l(final_duty_r),   // swapped as in original
+        .duty_r(final_duty_l),
+        .dir_l(dir_l),
+        .dir_r(dir_r),
+        .IN1(IN1), .IN2(IN2), .IN3(IN3), .IN4(IN4),
+        .ENA(ENA), .ENB(ENB)
+    );
+
+    // Odometry
+    odometry u_odom (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .enc_l_a(enc_l_a),
+        .enc_r_a(enc_r_a),
+        .dir_l(dir_l),
+        .dir_r(dir_r),
+        .clear(odom_clear),
+        .left_count(left_count_wire),
+        .right_count(right_count_wire)
+    );
+
+    // Sensor interface
+    sensor_interface u_sensors (
+        .clk_50M(clk_50M),
+        .reset_n(reset_n),
+        .us_echo_f(us_echo_f),
+        .us_echo_l(us_echo_l),
+        .us_echo_r(us_echo_r),
+        .ir_top(ir_top),
+        .ir_down(ir_down),
+        .ir_middle(ir_middle),
+        .thres_f(thres_f),
+        .thres_l(thres_l),
+        .thres_r(thres_r),
+        .us_trig_f(us_trig_f),
+        .us_trig_l(us_trig_l),
+        .us_trig_r(us_trig_r),
+        .wall(wall),
+        .deadend(deadend),
+        .mi_box(mi_box),
+        .front_wall(front_wall),
+        .distance_l(distance_l),
+        .distance_r(distance_r),
+        .distance_f(distance_f)
+    );
+
+    // ==========================================
+    // UNUSED PORT TIE-OFFS
+    // ==========================================
+    // dht_data_pin — bidirectional, leave floating (high-Z)
+    assign dht_data_pin = 1'bz;
+
+    // Servo — not used in exit run
+    assign servo_pwm_pin = 1'b0;
+
+    // ADC — not used
+    assign adc_cs_n  = 1'b1;
+    assign adc_sclk  = 1'b0;
+    assign adc_saddr = 1'b0;
+
+    // BT TX — no messages sent in exit run
+    assign bt_tx_pin = 1'b1;   // UART idle high
+
+endmodule

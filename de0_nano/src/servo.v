@@ -1,0 +1,47 @@
+/*
+# Team ID: 4093
+# Theme: MazeSolver Bot
+# Author List: Aayush Srinivasan, Sirigiri Tarun, Tejhuram Ravichandran, R Rishadd
+# Filename: servo.v
+# File Description: Servo PWM generator with two positions.
+# Global variables: None
+*/
+
+module servo(
+    input clk,            // 3.125 MHz clock
+    input reset,          
+    input dip_signal,     // Low = 45 deg offset, High = 180 deg opposite sweep
+    output reg pwm_out    
+);
+    // TOTAL_PERIOD: 20ms @ 3.125MHz = 62500 cycles
+    localparam TOTAL_PERIOD = 62500;  // 20ms
+    
+    // --- CALIBRATION ---
+    // COUNT_START: Your "straight" angle (approx 45 degrees from one edge)
+    localparam COUNT_START = 7812;   // ~1.0ms pulse
+    
+    // COUNT_OPP_180: Full 180 degrees in the opposite direction
+    localparam COUNT_OPP_180 = 2500; // ~2.5ms pulse
+    
+    /* NOTE: If the direction is still reversed, simply swap 
+       the numbers for COUNT_START and COUNT_OPP_180.
+    */
+
+    reg [15:0] counter;
+    wire [15:0] target_pulse_width = (dip_signal) ? COUNT_OPP_180 : COUNT_START;
+
+    /*
+    Purpose:
+    ---
+    Generate 20ms period PWM with pulse width depending on dip_signal.
+    */
+    always @(posedge clk) begin
+        if (!reset) begin
+            counter <= 0;
+            pwm_out <= 0;
+        end else begin
+            counter <= (counter < TOTAL_PERIOD - 1) ? counter + 1 : 0;
+            pwm_out <= (counter < target_pulse_width);
+        end
+    end
+endmodule
