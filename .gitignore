@@ -1,4 +1,6 @@
 build/
+quartus/db/
+quartus/output_files/
 __pycache__/
 *.vvp
 
