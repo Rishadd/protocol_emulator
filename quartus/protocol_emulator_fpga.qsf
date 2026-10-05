@@ -65,3 +65,37 @@ set_global_assignment -name VERILOG_FILE ../src/delay_counter.v
 set_global_assignment -name VERILOG_FILE ../src/control_unit.v
 set_global_assignment -name VERILOG_FILE ../src/fpga/msg_sender.v
 set_global_assignment -name VERILOG_FILE ../src/fpga/de0_nano_top.v
+
+# ---- isa.vh is `included with no path; this project's copies of the sources ----
+# ---- live one directory up from the ones that already resolve it directly ----
+set_global_assignment -name SEARCH_PATH ../src
+
+# ---- uart_tx_prog.hex lives in src/fpga, not next to this .qpf, so the ----
+# ---- de0_nano_top default parameter ("uart_tx_prog.hex") can't find it; ----
+# ---- override it here with a path relative to this project directory ----
+set_parameter -name PROG_FILE "../src/fpga/uart_tx_prog.hex"
+set_global_assignment -name MISC_FILE ../src/fpga/uart_tx_prog.hex
+set_global_assignment -name SDC_FILE ../src/fpga/de0_nano.sdc
+
+# ---- DE0-Nano pin assignments (same board wiring as src/fpga/de0_nano.qsf) ----
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED WITH WEAK PULL-UP"
+set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA1_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+
+set_location_assignment PIN_R8  -to clk_50M
+set_location_assignment PIN_J15 -to reset_n     ;# KEY0
+set_location_assignment PIN_E1  -to start_n     ;# KEY1
+set_location_assignment PIN_J14 -to bt_tx_pin   ;# FPGA TX -> HC-05 RXD
+set_location_assignment PIN_J13 -to bt_rx_pin   ;# FPGA RX <- HC-05 TXD
+set_location_assignment PIN_A15 -to led[0]
+set_location_assignment PIN_A13 -to led[1]
+set_location_assignment PIN_B13 -to led[2]
+set_location_assignment PIN_A11 -to led[3]
+set_location_assignment PIN_D1  -to led[4]
+set_location_assignment PIN_F3  -to led[5]
+set_location_assignment PIN_B1  -to led[6]
+set_location_assignment PIN_L3  -to led[7]
