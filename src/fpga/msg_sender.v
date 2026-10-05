@@ -12,7 +12,7 @@ module msg_sender (
     // ---- EDIT HERE: message and its exact length in bytes ----
     // The literal is left-padded with NUL if shorter than MSG_LEN, truncated if longer.
     localparam integer           MSG_LEN = 17;
-    localparam [8*MSG_LEN-1:0]   MSG     = "HELLO FROM FPGA\r\n";
+    localparam [8*MSG_LEN-1:0]   MSG     = "JANESTREET\r\n";
     // -----------------------------------------------------------
 
     localparam IDX_W = (MSG_LEN > 1) ? $clog2(MSG_LEN) : 1;
