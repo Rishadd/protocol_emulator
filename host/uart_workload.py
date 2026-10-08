@@ -40,7 +40,7 @@ def word(op, operand=0):
 def uart_tx_program(D):
     """The verified 12-word program from instructions.md; bit period = D+2 cycles."""
     prog = [
-        word("CFG", 0), word("DIRO", 0), word("SETH", 0),
+        word("CFG", 0), word("SETH", 0), word("DIRO", 0),
         word("PULL"), word("SETL", 8), word("SETLO", 0), word("WAIT", D),
         word("OUT1", D), word("DJNZ", 7), word("SETH", 0), word("WAIT", D), word("JMP", 3),
     ]

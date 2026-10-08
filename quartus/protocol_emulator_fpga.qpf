@@ -19,13 +19,15 @@
 #
 # Quartus Prime
 # Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
-# Date created = 20:35:39  October 05, 2026
+# Date created = 23:29:47  October 08, 2026
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "20.1"
-DATE = "20:35:39  October 05, 2026"
+DATE = "23:29:47  October 08, 2026"
 
 # Revisions
 
+PROJECT_REVISION = "protocol_emulator_duplex"
+PROJECT_REVISION = "protocol_emulator_rx"
 PROJECT_REVISION = "protocol_emulator_fpga"
