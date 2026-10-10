@@ -1,11 +1,19 @@
 // Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
 // In a testbench: $readmemh("program.hex", <inst>.imem.mem);
+// run=0 holds the execution core (PC, control, counters, shifters, pins) in reset:
+// PC=0, pins released. FIFOs and instruction memory keep their contents.
+// run must come from a flop (it gates an asynchronous reset).
 module engine_top #(
     parameter INIT_FILE = ""
 )(
     input  wire        clk,
     input  wire        rst_n,
+    input  wire        run,
+    // host -> instruction memory (management write port)
+    input  wire        imem_we,
+    input  wire [5:0]  imem_waddr,
+    input  wire [31:0] imem_wdata,
     // host -> engine data
     input  wire        tx_wr_en,
     input  wire [31:0] tx_wr_data,
@@ -23,6 +31,7 @@ module engine_top #(
     output wire        fault,
     output wire [5:0]  pc
 );
+    wire        core_rst_n = rst_n & run;
     wire [31:0] instr;
     wire        pc_advance, pc_jump;
     wire [5:0]  jump_addr;
@@ -43,13 +52,17 @@ module engine_top #(
     wire        cfg_osr_msb, cfg_isr_msb;
 
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
+        .clk   (clk),
         .addr  (pc),
-        .instr (instr)
+        .instr (instr),
+        .we    (imem_we),
+        .waddr (imem_waddr),
+        .wdata (imem_wdata)
     );
 
     pc_reg pc_i (
         .clk       (clk),
-        .rst_n     (rst_n),
+        .rst_n     (core_rst_n),
         .advance   (pc_advance),
         .jump      (pc_jump),
         .jump_addr (jump_addr),
@@ -58,7 +71,7 @@ module engine_top #(
 
     delay_counter dc (
         .clk        (clk),
-        .rst_n      (rst_n),
+        .rst_n      (core_rst_n),
         .load       (dc_load),
         .load_value (dc_load_value),
         .busy       (),
@@ -67,7 +80,7 @@ module engine_top #(
 
     loop_counter lc (
         .clk        (clk),
-        .rst_n      (rst_n),
+        .rst_n      (core_rst_n),
         .load       (lc_load),
         .load_value (lc_load_value),
         .dec        (lc_dec),
@@ -98,7 +111,7 @@ module engine_top #(
 
     shift_reg osr (
         .clk        (clk),
-        .rst_n      (rst_n),
+        .rst_n      (core_rst_n),
         .msb_first  (cfg_osr_msb),
         .load       (osr_load),
         .load_value (tx_rd_data),
@@ -112,7 +125,7 @@ module engine_top #(
 
     shift_reg isr (
         .clk        (clk),
-        .rst_n      (rst_n),
+        .rst_n      (core_rst_n),
         .msb_first  (cfg_isr_msb),
         .load       (1'b0),
         .load_value (32'd0),
@@ -126,7 +139,7 @@ module engine_top #(
 
     pin_block pins (
         .clk         (clk),
-        .rst_n       (rst_n),
+        .rst_n       (core_rst_n),
         .pin_wr      (pin_wr),
         .pin_wr_idx  (pin_wr_idx),
         .pin_wr_val  (pin_wr_val),
@@ -141,7 +154,7 @@ module engine_top #(
 
     control_unit cu (
         .clk           (clk),
-        .rst_n         (rst_n),
+        .rst_n         (core_rst_n),
         .instr         (instr),
         .pc_advance    (pc_advance),
         .pc_jump       (pc_jump),

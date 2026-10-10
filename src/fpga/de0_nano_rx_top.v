@@ -24,6 +24,7 @@ module de0_nano_rx_top #(
 
     engine_top #(.INIT_FILE(PROG_FILE)) u_engine (
         .clk        (clk_50M),
+        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
         .rst_n      (rst_n),
         .tx_wr_en   (1'b0),
         .tx_wr_data (32'd0),

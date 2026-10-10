@@ -1,3 +1,0 @@
-Warning (10268): Verilog HDL information at ultrasonic.v(68): always construct contains both blocking and non-blocking assignments File: C:/Data/E-Yantra-Mazesolver-Bot/Task6/mb_4093_task6/src/ultrasonic.v Line: 68
-Warning (10268): Verilog HDL information at pd_controller_dd.v(74): always construct contains both blocking and non-blocking assignments File: C:/Data/E-Yantra-Mazesolver-Bot/Task6/mb_4093_task6/src/pd_controller_dd.v Line: 74
-Warning (10268): Verilog HDL information at exit_nav.v(199): always construct contains both blocking and non-blocking assignments File: C:/Data/E-Yantra-Mazesolver-Bot/Task6/mb_4093_task6/src/exit_nav.v Line: 199

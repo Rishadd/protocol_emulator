@@ -22,6 +22,7 @@ module de0_nano_duplex_top #(
 
     engine_top #(.INIT_FILE(RX_PROG)) u_rx (
         .clk(clk_50M), .rst_n(rst_n),
+        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
         .tx_wr_en(1'b0), .tx_wr_data(32'd0), .tx_full(),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in({6'd0, bt_rx_pin, 1'b0}), .pin_out(rx_out), .pin_oe(rx_oe),
@@ -33,6 +34,7 @@ module de0_nano_duplex_top #(
 
     engine_top #(.INIT_FILE(TX_PROG)) u_tx (
         .clk(clk_50M), .rst_n(rst_n),
+        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
         .tx_wr_en(rx_rd_en), .tx_wr_data({24'd0, rx_rd_data[31:24]}), .tx_full(tx_full),
         .rx_rd_en(1'b0), .rx_rd_data(tx_rd_unused), .rx_empty(),
         .pin_in(8'd0), .pin_out(tx_out), .pin_oe(tx_oe),
