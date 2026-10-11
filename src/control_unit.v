@@ -25,6 +25,7 @@ module control_unit (
     output reg         tx_rd_en,        // signal to read from the transmit FIFO
     input  wire        rx_full,         // indicates if the receive FIFO is full
     output reg         rx_wr_en,        // signal to write to the receive FIFO
+    output reg         push_imm,        // with rx_wr_en: write the operand (PUSHI), not the ISR
     // shift registers
     output reg         osr_load,        // signal to load the output shift register
     output reg         osr_shift,       // signal to shift the output shift register
@@ -68,7 +69,7 @@ module control_unit (
 
     // blocking instructions: hold PC with no side effects until the condition clears
     wire stall = (opcode == `OP_PULL)  ? tx_empty :          // PULL needs a word in the TX FIFO
-                 (opcode == `OP_PUSH)  ? rx_full  :          // PUSH needs space in the RX FIFO
+                 (opcode == `OP_PUSH || opcode == `OP_PUSHI) ? rx_full :   // PUSH/PUSHI need RX FIFO space
                  (opcode == `OP_WAITH) ? ~pin_in[pin_sel] :  // WAITH waits for pin to go high
                  (opcode == `OP_WAITL) ?  pin_in[pin_sel] :  // WAITL waits for pin to go low
                                           1'b0;              // all other opcodes never stall
@@ -114,6 +115,7 @@ module control_unit (
         lc_dec     = 1'b0;
         tx_rd_en   = 1'b0;
         rx_wr_en   = 1'b0;
+        push_imm   = 1'b0;
         osr_load   = 1'b0;
         osr_shift  = 1'b0;
         isr_shift  = 1'b0;
@@ -183,6 +185,16 @@ module control_unit (
                         `OP_JPH, `OP_JPL: begin
                             pc_jump    = jp_taken;
                             pc_advance = !jp_taken;
+                        end
+                        `OP_JPO: begin
+                            osr_shift  = 1'b1;
+                            pc_jump    = osr_bit;
+                            pc_advance = !osr_bit;
+                        end
+                        `OP_PUSHI: begin
+                            rx_wr_en   = 1'b1;
+                            push_imm   = 1'b1;
+                            pc_advance = 1'b1;
                         end
                         default: ;
                     endcase

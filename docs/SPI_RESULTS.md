@@ -4,6 +4,10 @@ Date: 2026-10-11. Simulation only (Icarus Verilog 12, IHP SRAM functional models
 Design: [SPI_PLAN.md](SPI_PLAN.md). Full log of the final run: [../results/spi_2026-10-11/full_run.txt](../results/spi_2026-10-11/full_run.txt).
 
 **Final run: `python host/spi_test.py` -> `RESULT spi_test: PASS (312/312 cases as expected)`, 5 min 23 s.**
+
+> **Re-run 2026-10-12** after the pin manager and `JPO`/`PUSHI`: engine phases 260/260 and chip phase 52/52 (pads 2-5
+> now claimed over `0x0200`), every measured limit identical. Workload results through the link with varied host
+> behaviour: [WORKLOAD_RESULTS.md](WORKLOAD_RESULTS.md) §4.
 Plus the non-UART unit regression (`tb_control_unit`, `tb_fetch_equiv`, `tb_instr_mem`, `tb_pc_reg`, `tb_delay_counter`,
 `tb_loop_counter`, `tb_fifo`, `tb_shift_reg`, `tb_pin_block`): 9/9 PASS; `tb_fetch_equiv` 177,995 cycles, 0 mismatches
 against the pre-change engine. UART tests were not run (out of scope by request).
@@ -53,7 +57,7 @@ All times below are in system clocks (sim clock 10 ns). At 50 MHz, 1 clock = 20 
 |---|---|---|
 | Opcodes `JPH p,a` (17), `JPL p,a` (18): jump if synchronized pin high / low | `src/isa.vh`, `src/control_unit.v` | +2 defines, +1 wire, +4 lines |
 | Unit tests for JPH/JPL; trap tests moved to opcodes 19/20 | `tb/tb_control_unit.v` | +10 lines |
-| Random illegal opcodes drawn from 19..31 (reference engine predates JPH/JPL) | `tb/tb_fetch_equiv.v` | 2 lines |
+| Random illegal opcodes drawn from 19..31 (17/18 are legal now; later moved to 21..31 for JPO/PUSHI) | `tb/tb_fetch_equiv.v` | 2 lines |
 | SPI firmware generator (8 variants, any bit order, 1-32 bits) | `host/spi_prog.py` | new |
 | Runner, reference waveform, decoder, checks, sweeps, mutants | `host/spi_test.py` | new |
 | Verilog peers + pad logger | `tb/spi_peer.vh` | new |

@@ -6,7 +6,7 @@ Architecture proposal v0.1 | 2026-09-26, revised 2026-10-11 | Status: long-term 
 
 This document is the full-chip target. What exists in `src/` today is two protocol engines of §4 with the datapath
 subset below, an SPI slave and a management controller with an interim 7-byte frame, and the Tiny Tapeout top that wires
-them. The event fabric, trace, BIST, safety latch, pin ownership and CRC frame are still plan. Measured area numbers and
+them. Pin ownership (pin manager, open-drain per pad) is built since 2026-10-11; the event fabric, trace, BIST, safety latch and CRC frame are still plan. Measured area numbers and
 the SRAM/pin-ownership analysis are in [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md); where this document's
 text predates them (notably §3's resource table, §6's frame and §11's storage ledger) the study and the status notes win.
 Two decisions made during RTL work supersede text further down:
@@ -27,11 +27,11 @@ Two decisions made during RTL work supersede text further down:
 | Private instruction storage (64×32 per engine) | Built **in flip-flops** with a host write port (only while the engine is held); **no parity**. Flops are 80 % of the chip (§11), so this is to be replaced by SRAM |
 | Per-engine TX/RX FIFOs | Built as 32-bit × 4 (plan says 16-bit × 8). Four FIFOs are 41k um^2; to be shrunk |
 | Serial datapath (shifters) | Built as 32-bit OSR + ISR, LSB/MSB-first selectable |
-| Pin control + synchronizers | Built (8 pins, 2-stage sync). **Ownership mux not built**: pads of both engines are merged and engine 0 wins (prototype in `synth/experiments/pin_mgr.v`, §5); edge detect not needed so far |
+| Pin control + synchronizers | Built (8 pins, 2-stage sync). **Pin manager built** (`src/pin_mgr.v`): owner per pad, claim refused while the owner runs, per-pad open-drain, sticky violations; management window `0x0200`. No diagnostic owner, no remap. Edge detect not needed so far |
 | Event fabric, timestamp, deadline | Not built |
 | Management port, CSR, frame decode | **Built, interim frame v1** (7 bytes, big endian, no CRC/sequence), simulation only. Windows as built are in [MGMT_PLAN.md](MGMT_PLAN.md) |
 | Safety latch (abort, `ena`), watchdog, trace, BIST | Not built (reset synchronizer and `run` gating already release all pins) |
-| Firmware | UART TX (12 words) and RX (9 words) verified cycle-exact in simulation **and on the DE0-Nano at 115200, including full-duplex echo**; SPI/I2C/JTAG drafted, not run on RTL |
+| Firmware | UART TX (12 words) and RX (9 words) verified cycle-exact in simulation **and on the DE0-Nano at 115200, including full-duplex echo**; SPI master/slave (4 modes, 16-18 words) and I2C master (46 words, 100/400/1000 kHz) verified in simulation incl. through the management link; I2C slave deferred (word budget); JTAG drafted |
 | FPGA | DE0-Nano + HC-05: TX to a phone, RX to LEDs, duplex echo — done. The SPI management link has not been put on the FPGA |
 | Synthesis | Yosys on the real CMOS5L cell library: 414,137 um^2 (57.5 % of nominal) with flop memory, 143,425 with SRAM macros. No LibreLane flow run yet |
 
@@ -213,7 +213,7 @@ Fixed 32-bit words, one flat operand:
 
 | Bits | Meaning |
 | --- | --- |
-| 31:27 | Opcode: 32 encodings, 19 implemented, reserved ones trap |
+| 31:27 | Opcode: 32 encodings, 21 implemented, reserved ones trap |
 | 26:0 | Operand — meaning fixed per opcode: delay, address, count, pin index, or `CFG` bits |
 
 The earlier proposal split the low bits into a 6-bit post-commit delay, 3
@@ -231,11 +231,11 @@ Implemented families (details and cycle costs in [../instructions.md](../instruc
 | --- | --- | --- |
 | Control | `NOP`, `WAIT d`, `JMP a`, `HALT` | `WAIT d` holds exactly d+1 cycles |
 | Loop | `SETL n`, `DJNZ a` | 16-bit loop counter; `DJNZ` jumps while the decremented value is nonzero |
-| Data movement | `PULL`, `PUSH` | Blocking FIFO ↔ shifter transfer; stall holds PC with no side effects |
+| Data movement | `PULL`, `PUSH`, `PUSHI v` | Blocking FIFO ↔ shifter transfer; `PUSHI` pushes an immediate (event/status code); stall holds PC with no side effects |
 | Serial | `OUT1 d`, `IN1 d` | One bit between the mapped pin and OSR/ISR, then hold d cycles; bit order from `CFG` |
 | Pins | `SETH p`, `SETLO p`, `DIRO p`, `DIRI p` | Per-pin data / direction; open-drain = `DIRO` to drive low, `DIRI` to release |
 | Wait on pin | `WAITH p`, `WAITL p` | Level waits (I2C stretch, handshakes) |
-| Branch on pin | `JPH p,a`, `JPL p,a` | Jump if the synchronized pin is high / low (SPI slave CS abort); added 2026-10-11 |
+| Branch | `JPH p,a`, `JPL p,a`, `JPO a` | Jump if the synchronized pin is high / low (SPI slave CS abort); `JPO`: jump on the next OSR bit, consuming it (host data steers firmware); added 2026-10-11 |
 | Config | `CFG v` | out_pin, in_pin, OSR/ISR MSB-first |
 
 Planned families from the original proposal, not yet needed by any verified
@@ -317,12 +317,11 @@ mode change only while affected engines are halted and outputs disarmed.
 Inputs remain observable independently of ownership. Hardware rejects writes
 outside an engine's ownership; it does not arbitrate competing writers.
 
-*Status 2026-10-11:* **not built.** The current top merges the pads (`uio_oe` = enable of engine 0 OR engine 1, engine 0
-wins), so engine 1 can drive a pad engine 0 is using, and a protocol loaded later can take a pin from a running one. A
-prototype directory (`synth/experiments/pin_mgr.v`, area study only, not simulated) implements: owner per pad (none /
-engine 0 / engine 1 / diagnostic), drive allowed only for the owner and only while it runs, claim refused if the pad's owner is
-running (sticky `deny`), sticky per-engine violation bits, per-pad open-drain, and optional pad remap. Area 5.2k um^2
-(0.7 % of nominal), 14.7k with remap. It lives at the `0x0200` management window. See study §5.
+*Status 2026-10-11:* **built** as `src/pin_mgr.v` (simplified from the area-study prototype): owner per pad (none /
+engine 0 / engine 1), only the owner's enable and data reach a pad, a claim is refused (management `err`) while the pad's
+owner runs, sticky per-engine violation bits with write-one-to-clear, per-pad open-drain. No diagnostic owner and no remap
+yet. Management window `0x0200+4p` (pad) and `0x0220` (violations). Synthesized area 3.7k um^2. Verified by `tb_pin_mgr`
+(exhaustive mux), `tb_mgmt_pins` (through the link) and every chip-level protocol test, which now claims its pads.
 
 In open-drain mode (a per-pad mode of the directory; today open-drain is only a firmware idiom with `DIRO`/`DIRI`), logical
 zero requests a low drive and logical one releases the pin. This makes `OUT1`/`SETH`/`SETLO` I2C-safe and replaces the
@@ -492,8 +491,10 @@ synchronization, pad/wrapper timing, external electronics, and buffering.
 
 *Measured so far (2026-10-11, 50 MHz FPGA clock, not the 48 MHz target):* UART TX and RX 8N1 at 9.6-115.2 kbaud are
 cycle-exact in simulation and work on a DE0-Nano with an HC-05 module, including full-duplex echo at 115200 with TX and RX
-on separate engines (RX has no stop-bit check; tolerates about -4.5 % / +6 % peer baud error). SPI, I2C and JTAG exist only
-as draft firmware in [../instructions.md](../instructions.md); none has been run on the RTL.
+on separate engines (RX has no stop-bit check; tolerates about -4.5 % / +6 % peer baud error). SPI master and slave (all
+4 modes) and the I2C master (100/400/1000 kHz, UM10204 timing checked) are verified in simulation at engine level and on
+the full chip through the management link, also concurrently on the two engines ([SPI_RESULTS.md](SPI_RESULTS.md),
+[I2C_RESULTS.md](I2C_RESULTS.md), [WORKLOAD_RESULTS.md](WORKLOAD_RESULTS.md)). JTAG exists only as draft firmware.
 
 | Protocol | Baseline or extension | Firmware responsibilities and limits |
 | --- | --- | --- |

@@ -1,0 +1,22 @@
+payload 1024 bytes (256 distinct values), UART 115200, SPI half period in clocks noted per case
+
+live loopback (echo peer in the tb sends each byte back as soon as it is received):
+live_ideal_spi8        tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2803 polls=   21 frames= 5005 Mcyc= 4.58 wall= 63.6s  PASS
+live_spi13.3           tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries=  897 polls=   10 frames= 3088 Mcyc= 4.66 wall= 62.1s  PASS
+live_peer+2%           tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2803 polls=   21 frames= 5005 Mcyc= 4.58 wall= 61.4s  PASS
+live_peer-2%           tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2822 polls=   98 frames= 5101 Mcyc= 4.67 wall= 63.0s  PASS
+live_jitter20ns        tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2803 polls=   21 frames= 5005 Mcyc= 4.58 wall= 65.2s  PASS
+
+replay (pass 1 records P0 to a file, pass 2 sends that file back on P1):
+replay_ideal           tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2803 polls=   21 frames= 5005 Mcyc= 4.58 wall=132.1s  PASS
+replay_-1.5%_jit15     tx_rec=1024 echo=1024 rx_spi=1024 exact=1024 retries= 2817 polls=   78 frames= 5076 Mcyc= 4.65 wall=139.1s  PASS
+
+negative check (replay keeps sending at line rate while the host stops servicing SPI
+for 12 byte-times in pass 2: RX FIFO overflows, the compare must catch the loss):
+neg_host_stall         tx_rec= 256 echo= 256 rx_spi= 247 exact= 256 retries=  672 polls=   95 frames= 1403 Mcyc= 1.34 wall= 35.4s  PASS (loss detected)  first-bad=99
+
+ALL PASS
+
+real	10m22.227s
+user	0m0.000s
+sys	0m0.015s

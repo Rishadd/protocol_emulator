@@ -144,6 +144,7 @@ module tb_mgmt_frame;
         $display("--- F6 RUN released the pins it drove (word 0 = DIRO 4, word 1 = HALT)");
         wr_instr(6'd1, W_HALT);
         wr_instr(6'd0, {`OP_DIRO, 27'd4});
+        wr(16'h0210, 32'd1);                         // pin manager: pad 4 -> engine 0
         wr(A_CTRL, 32'd1);
         `CHECK(uio_oe === 8'h10 && halted == 1, "DIRO 4 drove pin 4, then HALT")
         wr(A_CTRL, 32'd0);

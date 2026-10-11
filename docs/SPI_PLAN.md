@@ -63,7 +63,12 @@ CPHA=1:  b: JPH CS,top ; Jx SCLK,b ; OUT1 0 ; c: JPH CS,top ; Jx SCLK,c ; IN1 0 
 - CPHA=0 ends at the last sample (no wait for the last trailing edge), so CS may rise right after the last SCLK edge.
 - Partial ISR bits after an abort are harmless: the host extracts exactly `n` bits.
 
-## Host rules (slave role)
+## Host rules
+
+**Both roles (since the pin manager, 2026-10-11):** claim pads 2..5 for the engine (`0x0200+4p` = owner, push-pull)
+before RUN; an unclaimed pad is never driven.
+
+**Slave role:**
 
 The slave cannot pause its master. The host must keep the TX FIFO non-empty before every CS fall (else the frame is
 missed: MISO stays released) and drain the RX FIFO (else `PUSH` blocks and later frames are missed). Both failures are

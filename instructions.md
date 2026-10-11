@@ -3,8 +3,9 @@
 Companion to the RTL in [src/](src/) and the tests in [tb/](tb/). This is the
 contract the host loader must follow when it writes programs into instruction
 memory. Anything marked **VERIFIED** has passed simulation (`run_tests.ps1` and the management/duplex testbenches);
-UART TX and RX have also run on a DE0-Nano; SPI master and slave (all 4 modes) are verified in simulation only. Anything
-marked **DRAFT** (I2C, JTAG) is derived from the same cycle rules but has not been run on the RTL yet. Status as of 2026-10-11.
+UART TX and RX have also run on a DE0-Nano; SPI master and slave (all 4 modes) and the I2C master (100/400/1000 kHz) are
+verified in simulation only. Anything marked **DRAFT** (JTAG) is derived from the same cycle rules but has not been run on
+the RTL yet. Status as of 2026-10-12.
 
 ---
 
@@ -41,7 +42,9 @@ One operand, one meaning per opcode. No sub-fields except `CFG`.
 | 16 | `10000` | `CFG v` | see below | shifter / pin routing config | 1 |
 | 17 | `10001` | `JPH p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==1, else advance | 1 |
 | 18 | `10010` | `JPL p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==0, else advance | 1 |
-| 19–31 | | *(reserved)* | | | trap |
+| 19 | `10011` | `JPO a` | addr[5:0] | jump to a if the next OSR bit is 1, else advance; OSR shifts (bit consumed) | 1 |
+| 20 | `10100` | `PUSHI v` | value[26:0] | block until rx_fifo not full; rx_fifo ← zero-extended v; ISR untouched | 1 (+wait) |
+| 21–31 | | *(reserved)* | | | trap |
 
 `CFG` operand: `[2:0]` out_pin, `[5:3]` in_pin, `[6]` OSR MSB-first, `[7]` ISR MSB-first.
 
@@ -215,38 +218,48 @@ Measured slave contract (system clocks; at 50 MHz multiply by 20 ns): SCLK half 
 CS fall to first edge >= 6 (CPHA=0) / 1 (CPHA=1), CS inactive >= 4. Response: samples MOSI 1-3 clocks after the edge,
 updates MISO 3-5 clocks after the shift edge, releases MISO 3 clocks after CS rises.
 
-## 4. I2C master write — **DRAFT, needs one ISA addition**
+## 4. I2C master — **VERIFIED** (simulation only, `host/i2c_test.py`); I2C slave deferred
 
-Pin map: `6`=SDA, `7`=SCL. Open-drain is done in firmware: `pin_out` is preset to 0
-once, then **`DIRO` = drive low, `DIRI` = release (high via pull-up)**. `WAITH 7`
-after releasing SCL handles clock stretching for free.
+Design and limits: [docs/I2C_PLAN.md](docs/I2C_PLAN.md); results: [docs/I2C_RESULTS.md](docs/I2C_RESULTS.md).
+Program from `host/i2c_prog.py` (`master(khz, f_clk)`, 46 words, 100 / 400 / 1000 kHz; delays follow the UM10204
+minimums with 2 clocks of margin and the period padded to the nominal speed).
 
-Primitive sequences (each `WAIT t` sets the quarter-period `t`):
+**Pins and electrical:** `6`=SDA, `7`=SCL. The host claims both pads for the engine **open-drain** through the pin
+manager (`0x0200+4p` = `{od=1, owner}`), so `SETH` / `OUT1 1` release a line and `SETLO` / `OUT1 0` pull it low; the
+engine can never drive a 1. External pull-ups. `WAITH 7` after releasing SCL absorbs clock stretching and slow rise.
+
+**One TX word per byte** (MSB-first OSR; flags are consumed with `JPO` in shift order):
+
+| Bits | Field | Meaning |
+|---|---|---|
+| `[31]` | S | START before this byte (repeated START inside a transfer) |
+| `[30:22]` | slot | 9 bits driven: write `{data, 1}`, read `{0xFF, 0=ACK / 1=NACK}` (reading = sending 0xFF while sampling) |
+| `[21]` | C | check ACK: on NACK send STOP, push event `0x4000003`, drop queued words until one with S |
+| `[20]` | P | STOP after this byte |
+
+**RX word per byte:** `[8:0] = {sampled byte, sampled ACK}` (event words have bit 26 set). After a STOP the master
+drops words without S (no byte can be sent on an idle bus). Helper: `i2c_prog.transaction(addr, wr=[..] | rd=n,
+stop=True)`; chain `stop=False` + a second transaction for a repeated START.
+
+**Listing, 400 kHz at 50 MHz** (delays `tA=65 tH=53 tL=63 su_sta=hd_sta=su_sto=32 buf=67`):
 
 ```
-init:        SETLO 6 ; SETLO 7 ; DIRI 6 ; DIRI 7          both released, idle
-START:       DIRO 6 ; WAIT t ; DIRO 7                      SDA low while SCL high, then SCL low
-STOP:        DIRO 6 ; WAIT t ; DIRI 7 ; WAITH 7 ; WAIT t ; DIRI 6
-bit=0:       DIRO 6 ; WAIT t ; DIRI 7 ; WAITH 7 ; WAIT t ; DIRO 7 ; WAIT t
-bit=1:       DIRI 6 ; WAIT t ; DIRI 7 ; WAITH 7 ; WAIT t ; DIRO 7 ; WAIT t
-ACK slot:    DIRI 6 ; WAIT t ; DIRI 7 ; WAITH 7 ; IN1 0 ; WAIT t ; DIRO 7 ; PUSH
+ 0 CFG 0xF6         OUT1/IN1 on SDA, MSB-first        24 check: JPH 6,26     live ACK level while SCL high
+ 1 SETH 6 ; 2 SETH 7 ; 3 DIRO 6 ; 4 DIRO 7  release    25 JMP 20
+ 5 WAITH 7 ; 6 WAITH 6   bus idle                      26 nack: SETLO 7 ; 27 PUSH ; 28 PUSHI 0x4000003
+ 7 idle: PULL ; 8 JPO 37 (start) ; 9 JMP 7 (drop)      29 stop: SETLO 6 ; 30 WAIT tL ; 31 SETH 7 ; 32 WAITH 7
+10 next: PULL ; 11 JPO 37 (start)                      33 WAIT su_sto ; 34 SETH 6 ; 35 WAIT buf ; 36 JMP 7
+12 slot: SETL 9                                        37 start: SETH 6 ; 38 WAIT tL ; 39 SETH 7 ; 40 WAITH 7
+13 bit: SETLO 7 ; 14 OUT1 tA ; 15 SETH 7 ; 16 WAITH 7  41 WAITH 6 ; 42 WAIT su_sta ; 43 SETLO 6
+17 IN1 tH ; 18 DJNZ 13                                 44 WAIT hd_sta ; 45 JMP 12
+19 JPO 24 (C)  20 back: SETLO 7 ; 21 PUSH ; 22 JPO 29 (P) ; 23 JMP 10
 ```
 
-**Gap:** `OUT1` writes `pin_out`, so it cannot express "release for 1 / drive-low for 0"
-and a data byte would have to be unrolled as 8 hand-written bit sequences (too many
-words). Proposed fix before implementing I2C: a `CFG` bit **`[8] OUT1 open-drain`**
-that makes `OUT1` write `pin_oe[out_pin] ← ~bit` instead of `pin_out`.
+Measured: SCL low `tA+2` clocks, high `tH+3` plus 1-2 clocks of synchronizer after the line is really high. Every
+UM10204 minimum met at 100/400/1000 kHz incl. maximum rise time; max SCL with a zero-delay slave 6.25 MHz.
 
-> **Update 2026-10-11:** the preferred fix is now a **per-pad open-drain mode in the planned pin-management block**
-> (pad data forced 0, pad enable = `oe & ~out`), which needs no ISA change; `OUT1`/`SETH`/`SETLO` then behave as
-> open-drain on that pad. That block is only a prototype (see [docs/ASIC_AREA_AND_MEMORY_STUDY.md](docs/ASIC_AREA_AND_MEMORY_STUDY.md) §5),
-> so the gap stays open in the RTL. The `CFG` bit below is the fallback if the pin manager is dropped.
-
-With the open-drain `OUT1`, a
-data bit is `OUT1 t ; DIRI 7 ; WAITH 7 ; WAIT t ; DIRO 7` and the byte fits in a
-`SETL 8`/`DJNZ` loop like UART/SPI. The ACK is captured with `IN1` into the ISR and
-pushed to the host, who decides retry/abort. (`JPH`/`JPL`, added for the SPI slave, can now
-branch on the ACK level in firmware; not used by any I2C program yet.)
+**I2C slave:** not implemented. The design (host-decided address ACK, stretching at byte boundaries) counts ~64-67
+words against 64 (no CALL/RET, two-path STOP/Sr watch copied three times); see I2C_PLAN §6.4.1.
 
 ---
 
@@ -286,6 +299,8 @@ Capture → Shift) are pure `SETH/SETLO 5` + `SETH/SETLO 2` pairs.
 | Read `pc`, `halted`, `fault` | debug | yes; SPI `base+0x000` read |
 | Read back instruction memory | verify after load | **no** (flop memory has no read port for the host; becomes possible with SRAM) |
 | Per-protocol pin idle levels | all | firmware, not host — every program's init block sets them |
+| Claim pads (owner, push-pull / open-drain) | all | **yes** — pin manager, `0x0200+4p`; nothing is driven until claimed; refused while the owner runs |
+| Distinguish data from events in the RX FIFO | SPI abort (future), I2C NACK | **yes** — `PUSHI` codes have bit 26 set; data words are narrower |
 
 Every program above starts at address 0 with its own `CFG` + `DIRx` + idle-level init,
 so switching protocol is: stop the engine (`run`=0) → load new words → start it (reset also works). No shared state

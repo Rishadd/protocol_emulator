@@ -131,7 +131,11 @@ isolation: engine 1 can enable a pin engine 0 is using as an input and corrupt t
 protocol can silently steal a pin from a running one. A directory fixes this and also implements
 architecture-doc obligations V01-V03.
 
-Prototype `synth/experiments/pin_mgr.v` (**not simulated, not integrated, area study only**):
+> **Update 2026-10-11:** built and integrated as `src/pin_mgr.v` (ownership + claim rule + open-drain + violations; no
+> diagnostic owner, no REMAP). Synthesized in the full chip: **3,680 um^2**; whole chip now **150,000 um^2 (20.8 %)**
+> with the SRAM instruction memory, JPO/PUSHI and the `0x0200` management window included.
+
+Prototype `synth/experiments/pin_mgr.v` (**area study only**; superseded by `src/pin_mgr.v`):
 
 - 8 pads, each with an owner: none / engine 0 / engine 1 / diagnostic (host-driven). Reset = none, so
   nothing drives until the host claims it.

@@ -4,7 +4,8 @@
 // Step 5: route instruction writes to engine 0 (0x1xxx) or engine 1 (0x2xxx).
 // Two golden engines (images loaded directly, RUN tied to the DUT's RUN bits) run in
 // lockstep with the SPI-loaded engines: PC, pin_out, pin_oe every clock. The pad mux is
-// checked too: uio_oe = oe0|oe1 and every driven bit carries the right engine's value.
+// checked too: each pad shows only its owner's enable and value (pin manager; pads are claimed per
+// scenario over the link, push-pull).
 module tb_mgmt_dual;
     reg        clk = 0, rst_n = 0;
     reg        sclk = 0, mosi = 0, cs_n = 1;
@@ -47,7 +48,14 @@ module tb_mgmt_dual;
 
     wire [7:0] d_out0 = dut.u_eng0.pin_out, d_oe0 = dut.u_eng0.pin_oe;
     wire [7:0] d_out1 = dut.u_eng1.pin_out, d_oe1 = dut.u_eng1.pin_oe;
-    wire [7:0] pad_exp = (g_oe[0] & g_out[0]) | (~g_oe[0] & g_out[1]);
+    wire [7:0] own0, own1;                           // owner bits as claimed (pin_mgr registers)
+    genvar gp;
+    generate for (gp = 0; gp < 8; gp = gp + 1) begin : own
+        assign own0[gp] = dut.u_pins.owner[2*gp +: 2] == 2'd1;
+        assign own1[gp] = dut.u_pins.owner[2*gp +: 2] == 2'd2;
+    end endgenerate
+    wire [7:0] oe_exp  = (own0 & g_oe[0]) | (own1 & g_oe[1]);
+    wire [7:0] pad_exp = (own0 & g_out[0]) | (own1 & g_out[1]);
 
     always @(negedge clk) if (rst_n) begin
         if (dut.u_mgmt.eng_run[0]) run_cyc0 = run_cyc0 + 1;
@@ -60,7 +68,7 @@ module tb_mgmt_dual;
             if (mism1 < 5) $display("  ENG1 MISMATCH @%0t pc %0d/%0d", $time, dut.u_eng1.pc, g_pc[1]);
             mism1 = mism1 + 1;
         end
-        if (uio_oe !== (g_oe[0] | g_oe[1]) || ((uio_out ^ pad_exp) & uio_oe) !== 8'h00) begin
+        if (uio_oe !== oe_exp || ((uio_out ^ pad_exp) & uio_oe) !== 8'h00) begin
             if (padmis < 5) $display("  PAD MISMATCH @%0t oe %h out %h exp %h", $time, uio_oe, uio_out, pad_exp);
             padmis = padmis + 1;
         end
@@ -134,6 +142,9 @@ module tb_mgmt_dual;
         end
     endtask
 
+    task claim(input [7:0] pads, input [1:0] owner);   // pin manager window 0x0200
+        integer p; begin for (p = 0; p < 8; p = p + 1) if (pads[p]) wr(16'h0200 + 4 * p, {30'd0, owner}); end
+    endtask
     task fill_halt(input e); integer j; begin for (j = 0; j < 64; j = j + 1) img[64 * e + j] = W_HALT; end endtask
 
     // pin-pattern program on pins p..p+2 (OUT1 on p), WAITH on P7
@@ -190,7 +201,7 @@ module tb_mgmt_dual;
         `CHECK(dut.u_mgmt.eng_run == 2'b00 && uio_oe === 8'h00, "reset: both held, pins released")
 
         $display("--- D1 only engine 0 loaded and run; engine 1 never written, stays held");
-        pattern(0, 3'd0, 7); load(0);
+        pattern(0, 3'd0, 7); load(0); claim(8'h07, 1);
         max_pc0 = 0; ctrl(0, 1); repeat (3000) @(posedge clk); #1;
         `CHECK(max_pc0 == 18 && uio_oe === 8'h07, "engine 0 pattern on P0..P2")
         `CHECK(dut.u_eng1.pc == 0 && d_oe1 === 8'h00, "engine 1 held at PC 0, no pins")
@@ -198,7 +209,7 @@ module tb_mgmt_dual;
 
         $display("--- D2 only engine 1 loaded and run; engine 0 held, its memory kept");
         do_reset;
-        pattern(1, 3'd4, 9); load(1);
+        pattern(1, 3'd4, 9); load(1); claim(8'h70, 2);
         max_pc1 = 0; ctrl(1, 1); repeat (3000) @(posedge clk); #1;
         `CHECK(max_pc1 == 18 && uio_oe === 8'h70, "engine 1 pattern on P4..P6")
         `CHECK(dut.u_eng0.pc == 0 && d_oe0 === 8'h00, "engine 0 held at PC 0, no pins")
@@ -206,7 +217,7 @@ module tb_mgmt_dual;
 
         $display("--- D3 both loaded word-interleaved, both run (P0..P2 and P4..P6)");
         do_reset;
-        pattern(0, 3'd0, 5); pattern(1, 3'd4, 11); load_both_interleaved;
+        pattern(0, 3'd0, 5); pattern(1, 3'd4, 11); load_both_interleaved; claim(8'h07, 1); claim(8'h70, 2);
         max_pc0 = 0; max_pc1 = 0; ctrl(0, 1); ctrl(1, 1); repeat (5000) @(posedge clk); #1;
         `CHECK(max_pc0 == 18 && max_pc1 == 18 && uio_oe === 8'h77, "both patterns running")
         lockstep_ok("D3 lockstep");
@@ -214,7 +225,7 @@ module tb_mgmt_dual;
         $display("--- D4 engine 0 = UART TX image, engine 1 = UART RX image");
         do_reset;
         hex_image(0, "src/fpga/uart_tx_prog.hex"); hex_image(1, "src/fpga/uart_rx_prog.hex");
-        load(0); load(1);
+        load(0); load(1); claim(8'h01, 1);
         `CHECK(dut.u_eng0.imem.peek(3) === 32'h3000_0000, "TX image in engine 0")
         uio_in = 8'b0000_0010;                       // RX line (P1) idle high
         ctrl(1, 1); ctrl(0, 1); repeat (1000) @(posedge clk); #1;
@@ -225,7 +236,7 @@ module tb_mgmt_dual;
         $display("--- D5 swapped: engine 0 = RX, engine 1 = TX");
         do_reset;
         hex_image(0, "src/fpga/uart_rx_prog.hex"); hex_image(1, "src/fpga/uart_tx_prog.hex");
-        load_both_interleaved;
+        load_both_interleaved; claim(8'h01, 2);
         uio_in = 8'b0000_0010;
         ctrl(0, 1); ctrl(1, 1); repeat (1000) @(posedge clk); #1;
         `CHECK(dut.u_eng1.pc == 3 && uio_oe === 8'h01 && uio_out[0] === 1'b1, "TX from engine 1 idles high on P0")
@@ -234,7 +245,7 @@ module tb_mgmt_dual;
 
         $display("--- D6 load engine 1 while engine 0 runs; engine 0 writes refused, never disturbed");
         do_reset; uio_in = 8'b1000_0000;
-        pattern(0, 3'd0, 6); load(0);
+        pattern(0, 3'd0, 6); load(0); claim(8'h07, 1); claim(8'h70, 2);
         max_pc0 = 0; ctrl(0, 1);
         pattern(1, 3'd4, 4); load(1);                // engine 0 keeps running throughout
         wr(16'h1100, W_HALT);
@@ -253,12 +264,15 @@ module tb_mgmt_dual;
         `CHECK(max_pc1 == 18, "engine 1 restarted")
         lockstep_ok("D7 lockstep");
 
-        $display("--- D8 pin conflict: both engines drive P0, engine 0 wins");
+        $display("--- D8 pin conflict: both engines drive P0, owned by engine 0 (pin manager)");
         do_reset;
         fill_halt(0); img[0] = I(`OP_DIRO, 0); img[1] = I(`OP_SETH, 0);  img[2] = I(`OP_HALT, 0);
         fill_halt(1); img[64] = I(`OP_DIRO, 0); img[65] = I(`OP_SETLO, 0); img[66] = I(`OP_HALT, 0);
-        load(0); load(1); ctrl(1, 1); ctrl(0, 1);
-        `CHECK(uio_oe[0] === 1'b1 && uio_out[0] === 1'b1, "P0 shows engine 0's high")
+        load(0); load(1); claim(8'h01, 1); ctrl(1, 1); ctrl(0, 1);
+        `CHECK(uio_oe[0] === 1'b1 && uio_out[0] === 1'b1, "P0 shows its owner's (engine 0) high")
+        `CHECK(dut.u_pins.viol === 16'h0100, "engine 1's drive on P0 blocked and recorded as a violation")
+        wr(16'h0200, 32'd2);
+        `CHECK(dut.u_mgmt.err == 1 && dut.u_pins.owner[1:0] == 2'd1, "P0 cannot be taken while engine 0 runs")
         lockstep_ok("D8 lockstep");
 
         $display("--- D9 rejected addresses");

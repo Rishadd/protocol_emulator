@@ -43,7 +43,7 @@ module engine_top #(
     wire [15:0] lc_load_value, lc_count;
     wire        tx_empty, tx_rd_en;
     wire [31:0] tx_rd_data;
-    wire        rx_full, rx_wr_en;
+    wire        rx_full, rx_wr_en, push_imm;
     wire        osr_load, osr_shift, osr_bit;
     wire [31:0] osr_data, isr_data;
     wire        isr_shift, isr_clear;
@@ -110,7 +110,7 @@ module engine_top #(
         .clk     (clk),
         .rst_n   (rst_n),
         .wr_en   (rx_wr_en & core_rst_n),
-        .wr_data (isr_data),
+        .wr_data (push_imm ? {5'd0, instr[26:0]} : isr_data),   // PUSHI immediate or ISR
         .full    (rx_full),
         .rd_en   (rx_rd_en),
         .rd_data (rx_rd_data),
@@ -178,6 +178,7 @@ module engine_top #(
         .tx_rd_en      (tx_rd_en),
         .rx_full       (rx_full),
         .rx_wr_en      (rx_wr_en),
+        .push_imm      (push_imm),
         .osr_load      (osr_load),
         .osr_shift     (osr_shift),
         .osr_bit       (osr_bit),

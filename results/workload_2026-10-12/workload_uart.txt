@@ -1,0 +1,45 @@
+UART (TX = engine 0 / P0, RX = engine 1 / P1, 115200 at the 434-clock bit used by the UART suite)
+ full duplex (live echo peer), every host behaviour
+  PASS     duplex 256 B, host interleaved                       tx=256 echo=256 rx=256 exact=256 retries=690 frames=1356 aborts=0 noise=0
+  PASS     duplex 256 B, host burst                             tx=256 echo=256 rx=256 exact=256 retries=345 frames=1356 aborts=0 noise=0
+  PASS     duplex 256 B, host aborts/5                          tx=256 echo=256 rx=256 exact=256 retries=579 frames=1243 aborts=248 noise=0
+  PASS     duplex 256 B, host noise/3                           tx=256 echo=256 rx=256 exact=256 retries=391 frames=1050 aborts=0 noise=350
+  PASS     duplex 256 B, host slow host 5us                     tx=256 echo=256 rx=256 exact=256 retries=268 frames=924 aborts=0 noise=0
+  PASS     duplex 256 B, host all                               tx=256 echo=256 rx=256 exact=256 retries=50 frames=749 aborts=149 noise=249
+ TX only / RX only
+  PASS     TX only 256 B, interleaved                           tx=256 exact=256 retries=939 frames=1423 aborts=0
+  PASS     TX only 256 B, host all                              tx=256 exact=256 retries=173 frames=784 aborts=156
+  PASS     TX only 64 B, host 100 us per frame (line idles)     tx=64 exact=64 retries=0 frames=205 aborts=0
+  PASS     RX only 256 B back-to-back                           rx=256/256 first_diff=None polls=1078 frames=1467
+  PASS     RX only 256 B, host all                              rx=256/256 first_diff=None polls=416 frames=805
+ RX corner cases (no framing / start-bit validation in the 9-word RX program)
+  ok       RX break (30 bit times low) between bytes            rx=17/17 first_diff=None polls=192 frames=342
+  fails    RX 1 us glitch on an idle line                       rx=17/16 first_diff=8 polls=183 frames=333 got_tail=6f776e20
+  PASS     RX bytes with 0..3 idle bits between                 rx=64/64 first_diff=None polls=396 frames=593
+ peer baud error (full duplex, 128 B)
+  ok       duplex peer -4%                                      tx=128 echo=128 rx=128 exact=128 retries=342 frames=773 aborts=0 noise=0
+  ok       duplex peer -5%                                      tx=128 echo=128 rx=128 exact=128 retries=344 frames=779 aborts=0 noise=0
+  fails    duplex peer -6%                                      tx=128 echo=128 rx=128 exact=128 retries=345 frames=786 aborts=0 noise=0
+  ok       duplex peer +4%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=748 aborts=0 noise=0
+  fails    duplex peer +6%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=748 aborts=0 noise=0
+  fails    duplex peer +8%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=748 aborts=0 noise=0
+ management link speed sweep (full duplex 115200, 128 B): half period in clocks
+  ok       duplex mgmt half 8 clk                               tx=128 echo=128 rx=128 exact=128 retries=338 frames=748 aborts=0 noise=0
+  ok       duplex mgmt half 12 clk                              tx=128 echo=128 rx=128 exact=128 retries=146 frames=547 aborts=0 noise=0
+  ok       duplex mgmt half 16 clk                              tx=128 echo=128 rx=128 exact=128 retries=49 frames=445 aborts=0 noise=0
+  ok       duplex mgmt half 20 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=389 aborts=0 noise=0
+  ok       duplex mgmt half 24 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=389 aborts=0 noise=0
+  ok       duplex mgmt half 32 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=389 aborts=0 noise=0
+ negative: host stops servicing for 12 byte-times while the peer keeps sending
+  DETECTED duplex host stall (RX overflow must be detected)     tx=256 echo=256 rx=255 exact=256 retries=671 frames=1431 aborts=0 noise=0
+ baud sweep, full duplex, fastest management link (8 clocks per half period)
+  ok       duplex 230400 baud (bit 217 clk)                     tx=96 echo=96 rx=96 exact=96 retries=34 frames=366 aborts=0 noise=0
+  ok       duplex 460800 baud (bit 109 clk)                     tx=96 echo=96 rx=96 exact=96 retries=0 frames=325 aborts=0 noise=0
+  ok       duplex 921600 baud (bit 54 clk)                      tx=96 echo=96 rx=96 exact=96 retries=0 frames=325 aborts=0 noise=0
+  ok       duplex 1500000 baud (bit 33 clk)                     tx=96 echo=96 rx=96 exact=96 retries=0 frames=325 aborts=0 noise=0
+
+RESULT workload: PASS (13/13 cases as expected)
+
+real	6m31.049s
+user	0m0.000s
+sys	0m0.015s

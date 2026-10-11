@@ -92,6 +92,7 @@ module tb_mgmt_load;
         end
     endtask
 
+    task claim_all; integer p; begin for (p = 0; p < 8; p = p + 1) wr(16'h0200 + 4 * p, 32'd1); end endtask  // pads -> engine 0
     task fill_halt; integer j; begin for (j = 0; j < 64; j = j + 1) img[j] = W_HALT; end endtask
 
     initial begin
@@ -99,6 +100,7 @@ module tb_mgmt_load;
         $dumpvars(0, tb_mgmt_load);
         repeat (3) @(posedge clk); #1 rst_n = 1;
         repeat (4) @(posedge clk); #1;
+        claim_all;
 
         $display("--- L1 pin-pattern program (19 words, every non-FIFO opcode), HALT fill");
         fill_halt;
@@ -119,6 +121,7 @@ module tb_mgmt_load;
         wr(A_IMEM, W_HALT);
         `CHECK(dut.u_mgmt.err == 1 && dut.u_eng0.imem.peek(0) === img[0], "write while running refused")
         rst_n = 0; repeat (2) @(posedge clk); #1 rst_n = 1; repeat (2) @(posedge clk); #1;  // clear err
+        claim_all;
 
         $display("--- L3 64-word program that executes every word");
         img[0] = I(`OP_CFG, 0); img[1] = I(`OP_DIRO, 0); img[2] = I(`OP_DIRO, 1);

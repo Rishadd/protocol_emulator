@@ -64,7 +64,8 @@ def compile_tb():
 
 
 def run_sim(vvp, d, payload, half_ns=80, rxedges=None, peer_err=0.0, jitter=0,
-            stall_at=-1, stall_cyc=0, seed=1, out="sim.txt"):
+            stall_at=-1, stall_cyc=0, seed=1, out="sim.txt", extra=None):
+    """extra: more plusargs, e.g. workload knobs {"BURST": 1} (see tb/host_knobs.vh)."""
     pay_f, out_f = os.path.join(d, "payload.hex"), os.path.join(d, out)
     with open(pay_f, "w") as f:
         f.writelines(f"{b:02x}\n" for b in payload)
@@ -75,6 +76,7 @@ def run_sim(vvp, d, payload, half_ns=80, rxedges=None, peer_err=0.0, jitter=0,
             f"+JITTER_NS={jitter}", f"+STALL_AT={stall_at}", f"+STALL_CYC={stall_cyc}"]
     if rxedges:
         args.append(f"+RXEDGES={rxedges}")
+    args += [f"+{k}={v}" for k, v in (extra or {}).items()]
     t0 = time.time()
     subprocess.run(args, check=True, capture_output=True)
     return parse(out_f), time.time() - t0
@@ -119,7 +121,7 @@ def make_echo_edges(frames, path, bit_cyc, err=0.0, jitter_ns=0, seed=1):
         f.writelines(f"{t} {v}\n" for t, v in edges)
 
 
-def compare(d, payload, log, tx_frames, tx_wf, echo_frames, peer_bit):
+def compare(d, payload, log, tx_frames, tx_wf, echo_frames, peer_bit, allow_err=False):
     tx_rec = bytes(f[1] for f in tx_frames)
     echo_rec = bytes(f[1] for f in echo_frames)
     rx_spi = bytes(log["R"])
@@ -134,7 +136,7 @@ def compare(d, payload, log, tx_frames, tx_wf, echo_frames, peer_bit):
                      None if len(rx_spi) == len(payload) else min(len(rx_spi), len(payload)))
     ok = (tx_rec == payload and echo_rec == payload and rx_spi == payload and
           exact == len(payload) and framing and bytes(log["W"]) == payload and
-          st.get("fault0") == "0" and st.get("fault1") == "0" and st.get("err") == "0" and
+          st.get("fault0") == "0" and st.get("fault1") == "0" and (allow_err or st.get("err") == "0") and
           st.get("timeout") == "0")
     return ok, dict(tx=len(tx_rec), echo=len(echo_rec), rx=len(rx_spi), exact=exact,
                     framing=framing, first_bad=first_bad, st=st)

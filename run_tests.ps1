@@ -8,7 +8,8 @@ $src  = Get-ChildItem src\*.v | ForEach-Object { $_.FullName }
 $sim  = @('sim\ihp_sram\RM_IHPSG13_1P_core_behavioral.v', 'sim\ihp_sram\RM_IHPSG13_1P_64x16_c2.v')
 $tbs = @('tb_instr_mem', 'tb_pc_reg','tb_delay_counter', 'tb_loop_counter', 'tb_fifo', 'tb_shift_reg',
          'tb_pin_block', 'tb_control_unit', 'tb_engine_top', 'tb_rx_led_sink',
-         'tb_mgmt_frame', 'tb_mgmt_load', 'tb_mgmt_dual', 'tb_mgmt_read', 'tb_mgmt_tx', 'tb_fetch_equiv')
+         'tb_mgmt_frame', 'tb_mgmt_load', 'tb_mgmt_dual', 'tb_mgmt_read', 'tb_mgmt_tx', 'tb_fetch_equiv',
+         'tb_engine_ops', 'tb_pin_mgr', 'tb_mgmt_pins')
 New-Item -ItemType Directory -Force build | Out-Null
 
 foreach ($t in $tbs) {

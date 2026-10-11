@@ -89,7 +89,7 @@ module tb_fetch_equiv;
             else if (p < 92) rand_instr_raw = {`OP_WAITH, 27'd0} | rnd(8);
             else if (p < 95) rand_instr_raw = {`OP_WAITL, 27'd0} | rnd(8);
             else if (p < 99) rand_instr_raw = {`OP_CFG,   27'd0} | rnd(256);
-            else begin op = 5'd19 + rnd(13); rand_instr_raw = {op, 27'd0} | rnd(64); end   // illegal -> fault (17/18 = JPH/JPL, not in the reference engine)
+            else begin op = 5'd21 + rnd(11); rand_instr_raw = {op, 27'd0} | rnd(64); end   // illegal -> fault (17-20 are legal now; not generated: PUSHI needs the RX mux the frozen reference lacks)
         end
     endfunction
 
@@ -170,7 +170,7 @@ module tb_fetch_equiv;
         `CHECK(instr_mism == 0, "instruction bus identical every cycle")
         `CHECK(cycles > 100000, "enough cycles compared")
         for (k = 0; k <= 16; k = k + 1) `CHECK(ophist[k] > 100, "every legal opcode executed")
-        `CHECK(ophist[19] + ophist[20] + ophist[21] + ophist[22] + ophist[23] + ophist[24] +
+        `CHECK(ophist[21] + ophist[22] + ophist[23] + ophist[24] +
                ophist[25] + ophist[26] + ophist[27] + ophist[28] + ophist[29] + ophist[30] + ophist[31] > 0, "illegal opcodes executed (fault path)")
         `REPORT("tb_fetch_equiv")
         $finish;

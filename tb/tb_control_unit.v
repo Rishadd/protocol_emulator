@@ -11,7 +11,7 @@ module tb_control_unit;
 
     wire        pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en;
     wire        osr_load, osr_shift, isr_shift, isr_clear, pin_wr, dir_wr;
-    wire        pin_wr_val, dir_wr_val, halted, fault, dc_busy, dc_last;
+    wire        pin_wr_val, dir_wr_val, halted, fault, dc_busy, dc_last, push_imm;
     wire [5:0]  jump_addr;
     wire [26:0] dc_load_value;
     wire [15:0] lc_load_value, lc_count;
@@ -25,7 +25,7 @@ module tb_control_unit;
         .pc_advance(pc_advance), .pc_jump(pc_jump), .jump_addr(jump_addr),
         .dc_load(dc_load), .dc_load_value(dc_load_value), .dc_last(dc_last),
         .lc_load(lc_load), .lc_dec(lc_dec), .lc_load_value(lc_load_value), .lc_count(lc_count),
-        .tx_empty(tx_empty), .tx_rd_en(tx_rd_en), .rx_full(rx_full), .rx_wr_en(rx_wr_en),
+        .tx_empty(tx_empty), .tx_rd_en(tx_rd_en), .rx_full(rx_full), .rx_wr_en(rx_wr_en), .push_imm(push_imm),
         .osr_load(osr_load), .osr_shift(osr_shift), .osr_bit(osr_bit),
         .isr_shift(isr_shift), .isr_clear(isr_clear),
         .pin_wr(pin_wr), .pin_wr_idx(pin_wr_idx), .pin_wr_val(pin_wr_val),
@@ -99,7 +99,20 @@ module tb_control_unit;
         rx_full = 1; set(`OP_PUSH, 0);
         `CHECK(ctl == NONE, "A7 PUSH stalls on full") tick;
         rx_full = 0; #1;
-        `CHECK(ctl == (ADV | RXW | ISC), "A7 PUSH fires when space") tick;
+        `CHECK(ctl == (ADV | RXW | ISC) && push_imm == 0, "A7 PUSH fires when space, pushes the ISR") tick;
+
+        // PUSHI: like PUSH but writes the operand (push_imm) and leaves the ISR alone (no ISC)
+        rx_full = 1; set(`OP_PUSHI, 27'h4000003);
+        `CHECK(ctl == NONE && push_imm == 0, "A7 PUSHI stalls on full") tick;
+        rx_full = 0; #1;
+        `CHECK(ctl == (ADV | RXW) && push_imm == 1, "A7 PUSHI fires when space, immediate, ISR kept") tick;
+
+        // JPO: consumes one OSR bit, jumps if it is 1; one cycle either way
+        osr_bit = 1; set(`OP_JPO, 12);
+        `CHECK(ctl == (JMP | OSS) && jump_addr == 12, "A7 JPO taken on 1, shifts OSR") tick;
+        osr_bit = 0; #1;
+        `CHECK(ctl == (ADV | OSS), "A7 JPO falls through on 0, shifts OSR") tick;
+        osr_bit = 1;
 
         osr_bit = 1;
         hold_test(`OP_OUT1, 0, PW | OSS | DCL, "A7 OUT1 d=0");
@@ -153,11 +166,11 @@ module tb_control_unit;
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 halted engine ignores NOP") tick;
 
-        do_reset; set(5'd19, 0);
-        `CHECK(ctl == NONE, "A7 opcode 19 no strobes") tick;
-        `CHECK(halted == 1 && fault == 1, "A7 opcode 19 traps")
-        do_reset; set(5'd20, 0); tick;
-        `CHECK(halted == 1 && fault == 1, "A7 opcode 20 traps")
+        do_reset; set(5'd21, 0);
+        `CHECK(ctl == NONE, "A7 opcode 21 no strobes") tick;
+        `CHECK(halted == 1 && fault == 1, "A7 opcode 21 traps")
+        do_reset; set(5'd22, 0); tick;
+        `CHECK(halted == 1 && fault == 1, "A7 opcode 22 traps")
         do_reset; set(5'd31, 0); tick;
         `CHECK(halted == 1 && fault == 1, "A7 opcode 31 traps")
         set(`OP_NOP, 0);

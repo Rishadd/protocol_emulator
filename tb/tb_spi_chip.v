@@ -22,6 +22,7 @@ module tb_spi_chip;
     wire       p_cs, p_sclk, p_mosi, p_miso;                 // protocol SPI pads
 
     `include "spi_master.vh"
+    `include "host_knobs.vh"
     `include "spi_peer.vh"
 
     // 1 ns inertial pad delay: filters the zero-width pulse the uio_out mux makes in zero-delay
@@ -39,7 +40,7 @@ module tb_spi_chip;
     reg [8*256-1:0] prog_f, htx_f, mtx_f, stx_f, out_f;
     reg [31:0] htx [0:4095];
     reg [31:0] img [0:63];
-    integer role = 0, eng = 0, n = 0, tmax = 5000000, half = 100;
+    integer role = 0, eng = 0, n = 0, tmax = 5000000, half = 100, k;
     integer cyc = 0, sent = 0, recv = 0, retries = 0, polls = 0, frames = 0, oe_other = 0, idle = 0;
     reg [7:0]  st;
     reg [15:0] mid, base;
@@ -56,6 +57,7 @@ module tb_spi_chip;
 
     task frame(input [7:0] op, input [15:0] a, input [31:0] d);
         begin
+            host_extra((a[15:12] == 4'h2) ? 16'h2000 : 16'h1000);    // workload knobs (host_knobs.vh)
             spi_begin; spi_bits({72'd0, op, a, d}, 56); spi_end;
             {st, mid, rd} = spi_rx[55:0];
             frames = frames + 1;
@@ -78,7 +80,7 @@ module tb_spi_chip;
             !$value$plusargs("HTX=%s", htx_f)) begin
             $display("ERROR: missing plusargs"); $finish;
         end
-        p_args;
+        p_args; hk_args;
         if ($value$plusargs("ENG=%d", eng)) ;
         if ($value$plusargs("TMAX=%d", tmax)) ;
         if ($value$plusargs("MGMT_HALF_NS=%d", half)) spi_half_ns = half;
@@ -92,6 +94,7 @@ module tb_spi_chip;
 
         repeat (3) @(posedge clk); #1 rst_n = 1;
         repeat (4) @(posedge clk);
+        for (k = 2; k < 6; k = k + 1) frame(OP_WR, 16'h0200 + 4 * k, eng + 1);   // pin manager: pads 2..5
         load(prog_f);
         frame(OP_WR, base, 32'd1);                                  // RUN
         $fdisplay(p_fd, "LOADED %0d", $time);
@@ -109,22 +112,23 @@ module tb_spi_chip;
                             polls = polls + 1;
                             if (peer_done && role == 1) idle = idle + 1;   // slave: nothing more will come
                         end
-                        want_rx = 1'b0;          // this STATUS predates the pop: write next
+                        want_rx = hk_burst ? st[eng] : 1'b0;   // this STATUS predates the pop: write next
+                                                               // (burst: keep reading while reads return data)
                     end else begin
                         frame(OP_WR, base + 16'h200, htx[sent]);
                         if (!st[2 + eng]) begin
                             $fdisplay(p_fd, "W %0d %h", $time, htx[sent]);
                             sent = sent + 1;
                         end else retries = retries + 1;
-                        want_rx = st[eng];
+                        want_rx = hk_burst ? st[2 + eng] : st[eng];   // burst: read only once TX is full
                     end
                 end
             end
         join
         repeat (200) @(posedge clk);
-        $fdisplay(p_fd, "END cyc=%0d sent=%0d recv=%0d retries=%0d polls=%0d frames=%0d fault=%0d err=%0d oe_other=%0d s_frames=%0d",
+        $fdisplay(p_fd, "END cyc=%0d sent=%0d recv=%0d retries=%0d polls=%0d frames=%0d fault=%0d err=%0d oe_other=%0d s_frames=%0d aborts=%0d noises=%0d",
                   cyc, sent, recv, retries, polls, frames, eng ? dut.u_eng1.fault : dut.u_eng0.fault,
-                  dut.u_mgmt.err, oe_other, s_idx);
+                  dut.u_mgmt.err, oe_other, s_idx, hk_aborts, hk_noises);
         $fclose(p_fd);
         $finish;
     end

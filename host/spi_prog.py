@@ -12,7 +12,7 @@ Run directly to print every variant:  python host/spi_prog.py [--bits 8] [--h 4]
 import argparse
 
 OP = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9,
-          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18)
+          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20)
 SCLK, MOSI, MISO, CS = 2, 3, 4, 5
 
 

@@ -22,7 +22,9 @@
 `define OP_CFG    5'd16  // [2:0] out_pin, [5:3] in_pin, [6] OSR msb-first, [7] ISR msb-first
 `define OP_JPH    5'd17  // [5:0] addr, [8:6] pin : jump if pin_in[pin] == 1, else advance
 `define OP_JPL    5'd18  // [5:0] addr, [8:6] pin : jump if pin_in[pin] == 0, else advance
+`define OP_JPO    5'd19  // [5:0] addr : jump if the next OSR bit is 1, else advance; OSR shifts (bit consumed)
+`define OP_PUSHI  5'd20  // v      : block until rx_fifo not full; rx_fifo <= zero-extended v; ISR untouched
 // All others trap.
-`define OP_LAST_LEGAL 5'd18
+`define OP_LAST_LEGAL 5'd20
 
 `endif

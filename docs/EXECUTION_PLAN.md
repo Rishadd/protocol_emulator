@@ -1,7 +1,7 @@
 # Protocol Emulator ASIC — Execution Plan
 
 Companion to [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md) | 2026-09-27, revised 2026-10-11 |
-Status: **two-engine RTL and SPI management link done in simulation; UART TX, RX and full duplex proven on the DE0-Nano; area study says instruction memory must move to SRAM; GDS flow not started**
+Status (2026-10-12): **two engines, SRAM instruction memory, pin manager and SPI management link done in simulation; UART TX/RX/duplex proven on the DE0-Nano; SPI master+slave and I2C master verified in simulation (engine, full chip, concurrent); chip 150k um^2 (20.8 %) after synthesis; GDS flow not started**
 
 Challenge deadline: **2027-01-18** (about 14 weeks from this revision). Target shuttle: March 2027 CMOS5L.
 
@@ -31,8 +31,8 @@ Challenge deadline: **2027-01-18** (about 14 weeks from this revision). Target s
    64x32 stores are 80 % of the chip (414k um^2 total, 57.5 % of the nominal 720k). SRAM (or a smaller store) is now a
    gating decision, and the first thing to settle with the organizers is whether the SG13G2 macros are accepted on
    CMOS5L.
-4. **I2C open-drain**: the proposed `CFG` open-drain bit (an ISA change) is superseded by a per-pad open-drain mode
-   in the planned pin-management block, which also provides pin ownership. Prototype area 5.2k um^2.
+4. **I2C open-drain**: done as a per-pad open-drain mode of the pin manager (`src/pin_mgr.v`, built 2026-10-11,
+   3.7k um^2), which also provides pin ownership. No ISA change was needed for open-drain.
 5. **UART RX needed no new opcode**: the 9-word program uses `WAITH`/`WAITL` level waits. `WAITR`/`WAITF` stay
    reserved but are no longer on any critical path.
 
@@ -103,9 +103,9 @@ Detailed module status lives in [WORKSTREAM2_RTL_IMPLEMENTATION.md](WORKSTREAM2_
 | ID | Task | Status |
 |---|---|---|
 | R1 | Reset/abort safety-disarm latch (`ena`, abort pin, synchronized release) | Not built. The TT top has an async-assert/sync-release reset synchronizer, and `run`=0 or reset already release all pins. Formal proof (V01) pending |
-| R2 | Pin ownership + electrical mode | **Prototype only** (`synth/experiments/pin_mgr.v`, 5.2k um^2, not simulated). Today a shared pin is simply "engine 0 wins". Open-drain becomes a per-pad mode here |
+| R2 | Pin ownership + electrical mode | **DONE in simulation** (`src/pin_mgr.v`, 3.7k um^2): owner per pad, claim refused while running, per-pad open-drain, violations; `tb_pin_mgr`, `tb_mgmt_pins`. Diagnostic owner and remap not built |
 | R3 | Input synchronizer | **DONE** in `pin_block` (2-clock latency verified) |
-| R4 | Instruction storage | **DONE for flops** with host write port and `run` gate; no parity. **R4d: SRAM wrapper** with next-PC fetch is the open item (A9) |
+| R4 | Instruction storage | **DONE with SRAM in simulation** (2 x IHP 1P 64x16 per engine, next-PC fetch, `tb_fetch_equiv` 0 mismatches; [SRAM_INSTR_MEM_RESULTS.md](SRAM_INSTR_MEM_RESULTS.md)); no parity. Open: CMOS5L acceptance of the macro (A9) |
 | R5 | Engine core | **DONE** (no ALU in the current ISA) |
 | R6 | Shifters + FIFOs | **DONE** (32-bit OSR/ISR, 32 x 4 FIFOs). **R13: shrink the FIFOs** — four FIFOs are 41k um^2, the largest block after instruction memory |
 | R7 | Timestamp/event fabric | Not built |
@@ -113,7 +113,7 @@ Detailed module status lives in [WORKSTREAM2_RTL_IMPLEMENTATION.md](WORKSTREAM2_
 | R9 | Trace + first-fault | Not built |
 | R10 | Memory BIST (March C-) | Not built (and changes with SRAM: macros need their own BIST path) |
 | R11 | Top-level integration | **DONE for 2 engines + management** (`tt_um_protocol_emulator.v`) |
-| R12 | Full-chip simulation of firmware against RTL | **UART TX, RX and full duplex DONE** (also through SPI). **SPI master + slave, 4 modes, DONE** through the management link (`tb_spi_chip`). I2C pending |
+| R12 | Full-chip simulation of firmware against RTL | **UART TX, RX and full duplex DONE** (also through SPI). **SPI master + slave, 4 modes, DONE** through the management link (`tb_spi_chip`). **I2C master DONE** (`tb_i2c_chip`); SPI + I2C concurrently (`tb_combo_chip`) |
 | R-FPGA | DE0-Nano wrappers | **DONE**: TX (`de0_nano_top`), RX (`de0_nano_rx_top`), duplex echo (`de0_nano_duplex_top`) at 115200 on hardware |
 
 ---
@@ -143,11 +143,11 @@ Also required before G1: put the RTL flat in the template's `src/`, keep `src/fp
 | F1 | ISA cycle model + assembler | **Partial.** `host/uart_workload.py` has the word encoder, a UART reference model and an independent receiver. A general per-opcode model is still needed for SPI/I2C differential tests |
 | F2 | UART TX/RX firmware | **DONE and proven on hardware** (TX 12 words, RX 9 words) |
 | F3 | SPI controller firmware | **DONE in simulation**: master and slave, modes 0-3, 1-32 bits, both bit orders (`host/spi_prog.py`, [SPI_PLAN.md](SPI_PLAN.md)). New opcodes `JPH`/`JPL` |
-| F4 | I2C controller firmware | Draft primitives (§4). Open-drain `OUT1` is now planned as a pin-manager mode rather than a `CFG` bit; a conditional branch on a pin for ACK/NACK is still missing |
+| F4 | I2C controller firmware | **Master DONE in simulation** (`host/i2c_prog.py`, 46 words, 100/400/1000 kHz, [I2C_RESULTS.md](I2C_RESULTS.md)); uses `JPO`/`PUSHI` and pin-manager open-drain. **Slave deferred**: ~64-67 words vs 64 ([I2C_PLAN.md](I2C_PLAN.md) §6.4.1) |
 | F5 | Pico frame builder (op/addr/data, CRC-16) | The only host-side frame code today is the Verilog SPI master model (`tb/spi_master.vh`) and the pacing logic inside `tb_mgmt_*`; `host/mgmt_duplex_stress.py` just orchestrates runs and compares files. Pico/Python frame builder and CRC not started |
 | F6 | Pico command dispatcher | Not started |
 | F7 | Laptop control script | Not started |
-| F8 | Firmware against RTL cosimulation | **UART DONE** (`tb_mgmt_*`, `tb_uart_*`). **SPI DONE** (`host/spi_test.py`, [SPI_RESULTS.md](SPI_RESULTS.md)). I2C pending |
+| F8 | Firmware against RTL cosimulation | **UART DONE** (`tb_mgmt_*`, `tb_uart_*`). **SPI DONE** (`host/spi_test.py`, [SPI_RESULTS.md](SPI_RESULTS.md)). **I2C master DONE** (`host/i2c_test.py`). Workload campaign through the link: `host/workload.py`, [WORKLOAD_RESULTS.md](WORKLOAD_RESULTS.md) |
 | F9 | Trace readout tooling | Not started (needs R9) |
 | F10 | Protocol-switch procedure (halt, load, verify, arm, run) | The primitives exist (RUN bit, write frames). Read-back verify becomes possible with SRAM |
 

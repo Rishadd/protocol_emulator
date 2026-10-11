@@ -143,6 +143,7 @@ module tb_mgmt_tx;
         repeat (4) @(posedge clk); #1;
 
         $display("--- T1 engine 0 = UART TX image, one byte over SPI -> P0");
+        wr(16'h0200, 32'd1);                         // pin manager: P0 -> engine 0
         load_tx_image(0); ctrl(0, 1);
         repeat (20) @(posedge clk);
         `CHECK(uio_oe[0] === 1'b1 && uio_out[0] === 1'b1, "TX idles high")
@@ -182,6 +183,7 @@ module tb_mgmt_tx;
         rst_n = 0; repeat (2) @(posedge clk); #1 rst_n = 1; repeat (2) @(posedge clk); #1;   // clear err
 
         $display("--- T5 engine 1 = UART TX image (engine 0 held); writes to engine 1 only");
+        wr(16'h0200, 32'd2);                         // pin manager: P0 -> engine 1
         load_tx_image(1); ctrl(1, 1);
         repeat (20) @(posedge clk);
         for (k = 0; k < 16; k = k + 1) msg[k] = 8'h30 + k;

@@ -1,0 +1,17 @@
+UART RX open-loop limits (peer streams back-to-back bytes; the host only reads)
+  ok       RX only 128 B, mgmt half 8 clk                       rx=128/128 first_diff=None polls=586 frames=847
+  ok       RX only 128 B, mgmt half 16 clk                      rx=128/128 first_diff=None polls=233 frames=494
+  ok       RX only 128 B, mgmt half 24 clk                      rx=128/128 first_diff=None polls=115 frames=376
+  ok       RX only 128 B, mgmt half 32 clk                      rx=128/128 first_diff=None polls=55 frames=316
+  fails    RX only 128 B, mgmt half 40 clk                      rx=126/128 first_diff=84 polls=23 frames=282 got_tail=73742c20
+  ok       RX only 96 B at 230400 (bit 217 clk), fastest link   rx=96/96 first_diff=None polls=186 frames=415
+  ok       RX only 96 B at 460800 (bit 109 clk), fastest link   rx=96/96 first_diff=None polls=46 frames=275
+  fails    RX only 96 B at 921600 (bit 54 clk), fastest link    rx=60/96 first_diff=8 polls=14 frames=207 got_tail=552a8185
+
+LIMIT UART RX 115200 (434-clk bit) open loop: slowest mgmt half period: last pass 32 clk, first fail 40 clk
+LIMIT UART RX open loop, fastest link: max baud (bit clocks): last pass 460800 (109 clk), first fail 921600 (54 clk)
+RESULT workload: PASS (0/0 cases as expected)
+
+real	1m24.204s
+user	0m0.000s
+sys	0m0.030s

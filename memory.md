@@ -68,7 +68,8 @@ Plan: two engines (one TX program, one RX program, both existing and verified), 
 Design: [docs/SPI_PLAN.md](docs/SPI_PLAN.md). Results: [docs/SPI_RESULTS.md](docs/SPI_RESULTS.md). Run: `python host/spi_test.py`.
 - Decisions: add a pin-conditional jump; no loopback yet; 1-32 bits per CS frame.
 - **ISA:** `JPH p,a` (17) / `JPL p,a` (18), operand `[8:6]` pin, `[5:0]` addr, 1 cycle. `tb_control_unit` traps moved to 19/20;
-  `tb_fetch_equiv` draws illegal opcodes from 19-31 (the reference engine predates JPH/JPL).
+  `tb_fetch_equiv` draws illegal opcodes from 19-31 (now 21-31; note: tb/ref/ref_engine.v shares src/control_unit.v,
+  only its fetch path is frozen, so PUSHI is kept out of its random programs: the reference RX FIFO has no immediate path).
 - Firmware from `host/spi_prog.py`: master 17/18 words, slave 18/16 words (CPHA 0/1). Slave polls CS in every edge wait,
   so CS inactive mid-frame aborts cleanly (no PUSH). CPHA=0 slave ends at the last sample (CS may rise right after the last edge).
 - Master timing exact in all modes: lead H+2, idle H+3, CS setup H+2 clocks. Master samples MISO 1 clock before its own
@@ -80,3 +81,65 @@ Design: [docs/SPI_PLAN.md](docs/SPI_PLAN.md). Results: [docs/SPI_RESULTS.md](doc
   to filter the zero-width `uio_out` mux pulse (same lesson as UART); (3) a slave answering a whole half-period late still
   passes data checks with a slow peer, so the slave's sample/response time is now a checked limit; (4) CS setup must
   mean CS fall to first edge in the master model, else the sweep never stresses it.
+
+## I2C + pin manager (PLAN, 2026-10-11, nothing implemented yet)
+Plan: [docs/I2C_PLAN.md](docs/I2C_PLAN.md). Update this section at the end of every phase.
+- **D1** RTL may change only to enable more protocols; the engine stays protocol agnostic (no I2C-specific logic anywhere).
+- **D2** New instructions only if fundamental and reusable: `JPO a` (19, jump if next OSR bit is 1, consumes it) and
+  `PUSHI v` (20, push 27-bit immediate into RX FIFO; event/status codes). Each has listed non-I2C uses.
+- **D3** Build the pin manager (`src/pin_mgr.v`): owner per pad (none/eng0/eng1), claim refused while owner runs,
+  per-pad open-drain (`uio_oe = oe & ~out`, `uio_out = 0`), sticky violation bits. No diag owner, no REMAP.
+  Mgmt window `0x0200` (pad config `0x0200+4p`, violations `0x0220`). Reset = nothing driven.
+  Consequence: all chip-level tbs (tb_mgmt_*, tb_spi_chip) must claim pads before RUN; re-run once as regression.
+- **D4** Slave address match is decided by the host (slave pushes the address and stretches SCL until the host answers).
+- **D5** Speeds 100 kHz / 400 kHz / 1 MHz; I2C tbs run at 50 MHz (20 ns) so timing checks are in real ns.
+- **D6** Minimal logic, no FPGA, nothing outside this task.
+- Key idea: one uniform 9-bit slot (read = send 0xFF while sampling) in both roles -> no read/write branch in firmware;
+  clock stretching at byte boundaries is the flow control (slave never loses data).
+- Phase order: 0a ISA, 0b pin manager + chip regression, 1 models/decoder/word counts, 2 peers, 3 engine master,
+  4 engine slave, 5 full chip, 6 mutants + docs.
+- **D7** Chip-level tbs (tb_mgmt_*, tb_spi_chip) get pad claims and are re-run only AFTER the I2C implementation.
+- **D8** I2C slave NOT implemented now: paper count ~64-67 words vs 64 (no CALL/RET -> STOP/Sr watch copied 3x; SDA-change
+  needs 2 poll paths; first and 9th bit unrolled; separate address phase). Options recorded in I2C_PLAN §6.4.1
+  (CALL/RET saves ~10-14 words). My earlier "<= 50 words" estimate was wrong.
+- **Phase 0a DONE** (2026-10-11): `JPO a` (19) and `PUSHI v` (20) in isa.vh / control_unit (`push_imm` output, 11 lines) /
+  engine_top (RX FIFO write-data mux). Tests: tb_control_unit (+JPO/PUSHI cases, traps now 21/22), tb_fetch_equiv
+  (illegal 21-31), new tb_engine_ops (JPO both bit orders, PUSHI immediate + ISR kept + full-FIFO stall), all PASS;
+  7 mutations caught. Fact: tb/ref/ref_engine.v shares src/control_unit.v (only fetch is frozen) - PUSHI kept out of
+  its random programs. Test trap: an IN1 right after RUN reads the synchronizer's reset 0 (WAITH first).
+  Regression after 0a: 10 non-UART unit tbs PASS; SPI engine-level suite (selftest/peers/master/slave/mutants)
+  260/260, all measured limits identical to results/spi_2026-10-11. Chip-level tbs not re-run (D7).
+- **Phase 0b DONE** (2026-10-11): `src/pin_mgr.v` (owner none/eng0/eng1 per pad, claim refused while owner runs or
+  owner=3, per-pad open-drain `oe & ~(od & out)` / `out & ~od`, sticky viol {eng1,eng0} with W1C, new event wins).
+  `mgmt`: window 0x0200+4p (W {od,owner}, refused -> err; R readback), 0x0220 (R viol, W W1C). TT top: old
+  `oe0|oe1` merge replaced. Tests: tb_pin_mgr (768 mux combos exhaustive, claim rules, viol) and tb_mgmt_pins (full
+  chip through mgmt frames: readback, 5 refusal kinds, violation, open-drain at the pads) PASS; 7 mutations caught;
+  12 non-UART unit tbs PASS. FPGA tops do not use the TT top (unaffected). The old tb_mgmt_*/tb_spi_chip now need pad
+  claims (D7: done after I2C).
+- **I2C master DONE** (2026-10-11, simulation): `host/i2c_prog.py` (46 words, any of 100/400/1000 kHz at any f_clk),
+  `host/i2c_test.py` (phases selftest/peers/master/chip/mutants), `tb/i2c_slave_model.v` (spec model, EEPROM pointer,
+  stretch, tVD, forced NACK), `tb/tb_i2c_engine.v` (engine + real pin_mgr + wired-AND bus with T_RISE + Verilog master
+  model), `tb/tb_i2c_chip.v` (mgmt link only). Results: selftest 12/12, peers 7/7, master 24/24, chip 10/10, mutants 7/7.
+  Timing checked against UM10204 minimums (values cross-checked with TI/ROHM/AMS/Microchip datasheets) at every speed,
+  incl. rise time at spec max. Max SCL with ideal slave 6.25 MHz (tVD 100 ns: 3.57 MHz; 200 ns: 1.92 MHz).
+- Findings while building: slave-model bit counter counted the SCL fall after START (model bug); decoder must commit
+  bits on SCL fall (the rise before STOP/Sr is not a bit); generator period padding was 1 clock short after a slave
+  stretch (one SCL period 2499 ns at 400 kHz) - fixed in `delays()`; float ceil made 25 clocks 26 (integer ceil now).
+- **D7 regression DONE** (2026-10-12): pad claims added to tb_mgmt_frame/load/dual/tx/duplex and tb_spi_chip
+  (tb_mgmt_dual D8 now checks ownership: owner's value on the pad, non-owner blocked + viol bit, re-claim while running
+  refused). run_tests.ps1 19/19 PASS; mgmt_duplex_stress.py (UART 1 KB full duplex) ALL PASS; spi_test chip 52/52.
+- Synthesis after pin_mgr + JPO/PUSHI: whole chip 150,000 um^2 (was 143,421; 20.8% of 720k), pin_mgr 3,680 um^2.
+- Workload campaign (`host/workload.py`, sections uart/spi/i2c/combo): host knobs in tb/host_knobs.vh
+  (+BURST, +ABORT_EVERY truncated frames, +NOISE_EVERY register reads, +HOSTGAP_NS); new tb/tb_combo_chip.v runs SPI
+  master (eng0) + I2C master (eng1) at once. Finding: SPI slave with a slowed host needs wider CS spacing (host-bound).
+- **Workload campaign DONE** (2026-10-12): `python host/workload.py [uart uartlimits spi i2c combo]`, report
+  docs/WORKLOAD_RESULTS.md, logs results/workload_2026-10-12/. UART 13/13, SPI+I2C+combo 42/42. Findings: UART RX
+  takes a 1 us glitch as a start bit (spurious byte; fix candidate JPH re-check ~2 words, NOT applied), break -> 0x00,
+  peer baud window about -5%..+4% (all bytes wrong at +-6%); closed-loop echo is self-pacing (no loss at any link speed,
+  works to 1.5 Mbaud / 33-clk bit); open-loop RX needs one READ frame per byte time (115200: half <= 32 clk);
+  SPI slave min CS spacing 25 us (interleaved/burst), 50 us (host all); thousands of aborted frames never pushed/popped.
+  I2C master through the link ~27 kB/s at 1 MHz (link-bound). SPI+I2C concurrently on both engines: no interference.
+- Testbench lessons: case folder names must keep +/- (peer +6%/-6% runs overwrote each other's evidence); RX-only
+  waveforms must start relative to LOADED and within the host's 200-bit no-progress timeout.
+- Docs added/updated 2026-10-12: I2C_RESULTS.md, WORKLOAD_RESULTS.md, CHALLENGE_CHECK.md (rules check + to-do),
+  I2C_PLAN status, instructions.md §4/§6, MGMT_PLAN registers, architecture/area-study/execution-plan statuses, README.

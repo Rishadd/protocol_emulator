@@ -287,6 +287,7 @@ def check(L, role, mode, bits, lsb, hv, mv, sv, h=None, abort=-1):
 
 # ------------------------------------------------------------------ case runners
 RESULTS = []
+LAST_END = {}                  # END line of the last chip case (workload.py reads it)
 
 
 LIMITS = []
@@ -343,10 +344,11 @@ def engine_case(name, role, mode, bits=8, lsb=0, n=None, h=4, seed=1, expect="pa
     errs, st = check(L, role, mode, bits, lsb, hv, mv, sv, h=h if role == 0 else None, abort=abort)
     if tb == "tb_spi_chip":
         e = L["END"]
-        if e.get("err") != "0" or e.get("oe_other") != "0":
+        if (e.get("err") != "0" and e.get("aborts", "0") == "0") or e.get("oe_other") != "0":   # aborts set err
             errs.append(f"management err={e.get('err')}, idle engine drove pins {e.get('oe_other')} cycles")
         us = int(e["cyc"]) * CLK / 1000
         st = f"{e['frames']} mgmt frames ({e['retries']} TX retries, {e['polls']} empty reads), {us:.0f} us | " + st
+        LAST_END.clear(); LAST_END.update(e)
     return report(name, errs, st, expect)
 
 
