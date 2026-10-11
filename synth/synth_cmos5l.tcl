@@ -3,7 +3,7 @@
 # enough for area and cell-count planning. It is NOT the sign-off netlist: no CTS, no
 # resizing, no hold buffers, no tie/fill cells.
 #
-#   yosys -c synth/synth_cmos5l.tcl            (see synth/run_synth.ps1 for the wrapper)
+#   yosys -c synth/synth_cmos5l.tcl            (see synth/run_synth.sh for the wrapper)
 #
 # Environment variables (all optional):
 #   SYNTH_TOP    top module                      default tt_um_protocol_emulator
@@ -15,6 +15,7 @@
 #   SYNTH_EXTRA  extra source files to read (experiments), space-separated
 #   SYNTH_NOSRC  1 = read only SYNTH_EXTRA (synthesise an experiment module on its own)
 #   SYNTH_MACROS macro liberty files: read as black boxes, areas added to the report
+#                default: the 1P 64x16 SRAM instantiated by src/instr_mem.v
 #   SYNTH_CHPARAM  "module:PARAM=value" list passed to chparam
 #   CMOS5L_PDK   dir holding typ.lib + maps      default C:/tools/ihp-cmos5l
 proc envdef {name def} { if {[info exists ::env($name)]} { return $::env($name) } else { return $def } }
@@ -28,7 +29,7 @@ set defs  [envdef SYNTH_DEFS ""]
 set skip  [envdef SYNTH_SKIP ""]
 set extra [envdef SYNTH_EXTRA ""]
 set nosrc [envdef SYNTH_NOSRC 0]
-set macros [envdef SYNTH_MACROS ""]
+set macros [envdef SYNTH_MACROS C:/tools/ihp-sram/RM_IHPSG13_1P_64x16_c2_typ_1p20V_25C.lib]
 set chp   [envdef SYNTH_CHPARAM ""]
 set lib   $pdk/sg13cmos5l_stdcell_typ_1p20V_25C.lib
 

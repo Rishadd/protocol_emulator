@@ -22,8 +22,10 @@ import os
 import random
 import subprocess
 import sys
+import argparse
 import time
 
+import uart_rx_prog as rxp
 import uart_workload as uw
 
 CYC_NS = 10                      # tb: 10 ns per system clock
@@ -31,6 +33,23 @@ CPB = 434                        # UART bit, clocks (115200 @ 50 MHz)
 BUILD = os.path.join(uw.ROOT, "build", "mgmt_duplex")
 PROG0 = os.path.join(uw.ROOT, "src", "fpga", "uart_tx_prog.hex")
 PROG1 = os.path.join(uw.ROOT, "src", "fpga", "uart_rx_prog.hex")
+BAUD = 115200
+
+
+def set_baud(baud):
+    """Retarget to another baud: bit time plus TX/RX firmware generated for it
+    (the committed hex files are the 115200 build)."""
+    global CPB, BAUD, BUILD, PROG0, PROG1
+    BAUD, CPB = baud, round(uw.F_CLK / baud)
+    if baud == 115200:
+        return
+    BUILD = f"{BUILD}_{baud}"          # own dir: may run next to the 115200 suite
+    os.makedirs(BUILD, exist_ok=True)
+    tx_f = os.path.join(BUILD, f"uart_tx_prog_{baud}.hex")
+    rx_f = os.path.join(BUILD, f"uart_rx_prog_{baud}.hex")
+    uw.write_hex(tx_f, uw.uart_tx_program(CPB - 2), 8)
+    rxp.write_hex(rx_f, CPB - 2, baud)
+    PROG0, PROG1 = tx_f, rx_f
 
 
 def compile_tb():
@@ -38,9 +57,9 @@ def compile_tb():
     vvp = os.path.join(BUILD, "tb_mgmt_duplex.vvp")
     src = sorted(os.path.join(uw.ROOT, "src", f) for f in os.listdir(os.path.join(uw.ROOT, "src"))
                  if f.endswith(".v"))
-    subprocess.run(["iverilog", "-g2012", "-I", os.path.join(uw.ROOT, "src"),
+    subprocess.run(["iverilog", "-g2012", *uw.SIM_DEFS, "-I", os.path.join(uw.ROOT, "src"),
                     "-I", os.path.join(uw.ROOT, "tb"), "-o", vvp,
-                    os.path.join(uw.ROOT, "tb", "tb_mgmt_duplex.v")] + src, check=True)
+                    os.path.join(uw.ROOT, "tb", "tb_mgmt_duplex.v")] + src + uw.SIM_LIBS, check=True)
     return vvp
 
 
@@ -51,7 +70,7 @@ def run_sim(vvp, d, payload, half_ns=80, rxedges=None, peer_err=0.0, jitter=0,
         f.writelines(f"{b:02x}\n" for b in payload)
     args = ["vvp", "-n", vvp, f"+PROG0={PROG0}", f"+PROG1={PROG1}", f"+PAYLOAD={pay_f}",
             f"+N={len(payload)}", f"+OUT={out_f}", f"+SPIHALF_NS={half_ns}",
-            f"+TMAX={len(payload) * 40 * CPB + 2_000_000}", f"+SEED={seed}",
+            f"+TMAX={len(payload) * 40 * CPB + 2_000_000}", f"+SEED={seed}", f"+BIT={CPB}",
             f"+PEERBIT_PS={round(CPB * CYC_NS * 1000 / (1 + peer_err / 100))}",
             f"+JITTER_NS={jitter}", f"+STALL_AT={stall_at}", f"+STALL_CYC={stall_cyc}"]
     if rxedges:
@@ -136,7 +155,7 @@ def live_case(vvp, tag, payload, expect_ok=True, peer_err=0.0, **kw):
     d = os.path.join(BUILD, tag)
     os.makedirs(d, exist_ok=True)
     log, wall = run_sim(vvp, d, payload, peer_err=peer_err, **kw)
-    tx_wf, tx_frames = record_line(log["T"], uw.F_CLK / 115200)
+    tx_wf, tx_frames = record_line(log["T"], uw.F_CLK / BAUD)
     _, echo_frames = record_line(log["E"], CPB / (1 + peer_err / 100))
     ok, r = compare(d, payload, log, tx_frames, tx_wf, echo_frames, CPB)
     return report(tag, ok, r, wall, expect_ok)
@@ -149,7 +168,7 @@ def replay_case(vvp, tag, payload, err=0.0, jitter=0, expect_ok=True, pass2_kw=N
     open(idle, "w").close()
     # pass 1: P1 idle, record what the chip transmits
     log1, w1 = run_sim(vvp, d, payload, rxedges=idle, out="pass1.txt", **kw)
-    _, frames1 = record_line(log1["T"], uw.F_CLK / 115200)
+    _, frames1 = record_line(log1["T"], uw.F_CLK / BAUD)
     with open(os.path.join(d, "tx_rec_pass1.bin"), "wb") as f:
         f.write(bytes(fr[1] for fr in frames1))
     # send the recording back, byte by byte as it was received
@@ -157,7 +176,7 @@ def replay_case(vvp, tag, payload, err=0.0, jitter=0, expect_ok=True, pass2_kw=N
     make_echo_edges(frames1, echo, CPB, err, jitter)
     # pass 2: same host program, P1 driven from the file
     log2, w2 = run_sim(vvp, d, payload, rxedges=echo, out="pass2.txt", **dict(kw, **(pass2_kw or {})))
-    tx_wf, tx_frames = record_line(log2["T"], uw.F_CLK / 115200)
+    tx_wf, tx_frames = record_line(log2["T"], uw.F_CLK / BAUD)
     _, echo_frames = record_line(log2["E"], CPB / (1 + err / 100))
     ok, r = compare(d, payload, log2, tx_frames, tx_wf, echo_frames, CPB)
     ok = ok and bytes(fr[1] for fr in frames1) == payload
@@ -165,9 +184,12 @@ def replay_case(vvp, tag, payload, err=0.0, jitter=0, expect_ok=True, pass2_kw=N
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--baud", type=int, default=115200)
+    set_baud(ap.parse_args().baud)
     vvp = compile_tb()
-    pay = uw.make_payload()
-    print(f"payload {len(pay)} bytes ({len(set(pay))} distinct values), UART 115200, "
+    pay = uw.make_payload()[:1024 if BAUD == 115200 else 128]   # slow bits cost sim time
+    print(f"payload {len(pay)} bytes ({len(set(pay))} distinct values), UART {BAUD}, "
           f"SPI half period in clocks noted per case\n")
     fails = 0
     print("live loopback (echo peer in the tb sends each byte back as soon as it is received):")
@@ -182,7 +204,7 @@ def main():
     print("\nnegative check (replay keeps sending at line rate while the host stops servicing SPI\n"
           "for 12 byte-times in pass 2: RX FIFO overflows, the compare must catch the loss):")
     fails += not replay_case(vvp, "neg_host_stall", pay[:256], expect_ok=False,
-                             pass2_kw=dict(stall_at=100, stall_cyc=12 * 10 * CPB))
+                             pass2_kw=dict(stall_at=min(100, len(pay) // 2), stall_cyc=12 * 10 * CPB))
     print(f"\n{'ALL PASS' if not fails else str(fails) + ' FAILURE(S)'}")
     return 1 if fails else 0
 

@@ -1,43 +1,51 @@
+%% Full-chip block diagram, status as of 2026-10-11 (matches src/tt_um_protocol_emulator.v).
+%% Solid = built and simulated. Dashed outline / "PLANNED" = not built yet.
 flowchart LR
-    HOST(["Host — e.g. Raspberry Pi Pico"])
+    HOST(["Host — Pico or testbench"])
 
     subgraph CHIP["Protocol Emulator ASIC (Tiny Tapeout tile)"]
         direction LR
 
-        MGMT["Management / SPI Host Interface<br/>frame decode, register windows,<br/>routes to Core 0 / Core 1"]
+        SPI["spi_slave<br/>mode 0, 2-flop sync,<br/>SCLK edge-detected<br/>BUILT"]
+        MGMT["mgmt (frame v1, 7 bytes)<br/>per-engine RUN, program load,<br/>TX push, RX pop, STATUS, err<br/>BUILT — CRC / seq / ID PLANNED"]
 
-        SAFETY["Safety Latch<br/>reset/abort dominates all pin drive"]
-
-        subgraph CORE0BOX["Core 0 — independent engine"]
-            CORE0["Core 0<br/>engine + datapath<br/>(see detailed diagram)"]
+        subgraph ENG0["Engine 0"]
+            CORE0["engine_top<br/>control, PC, counters,<br/>OSR/ISR, TX/RX FIFO 32x4<br/>BUILT"]
+            IMEM0["instr_mem 64x32<br/>(flops today)"]
         end
 
-        subgraph CORE1BOX["Core 1 — independent engine"]
-            CORE1["Core 1<br/>engine + datapath<br/>(see detailed diagram)"]
+        subgraph ENG1["Engine 1"]
+            CORE1["engine_top<br/>BUILT"]
+            IMEM1["instr_mem 64x32<br/>(flops today)"]
         end
 
-        PINMUX["Pin Ownership Mux<br/>per-pin: which core, if any, owns it"]
+        SRAM["PLANNED: SRAM macros replace both flop memories<br/>4 x 1P 64x16, or one 2P 256x32 with page select<br/>(decision pending, see ASIC_AREA_AND_MEMORY_STUDY)"]
+
+        MERGE["Pad merge today:<br/>oe = oe0 OR oe1, engine 0 wins<br/>BUILT (no ownership)"]
+        PINMGR["pin_mgr — PLANNED<br/>owner per pad, claim/deny,<br/>violation flags, per-pad open-drain<br/>prototype 5.2k um^2, not simulated"]
+        SAFETY["Safety latch — PLANNED<br/>abort pin, ena, synchronized release<br/>(reset sync + run gating exist)"]
     end
 
-    IOPINS(["Tiny Tapeout IO<br/>ui_in[7:0], uo_out[7:0],<br/>uio[7:0], clk, rst_n, ena"])
+    IOPINS(["Tiny Tapeout IO<br/>ui_in[2:0] SCLK/MOSI/CS_N, uo_out[0] MISO,<br/>uio[7:0] protocol pins, clk, rst_n, ena"])
 
-    HOST -- "SPI: SCLK / MOSI / MISO / CS_N" --> MGMT
-    IOPINS -- "ui_in / uo_out mgmt pins" --> MGMT
+    HOST -- "SPI" --> IOPINS
+    IOPINS --> SPI
+    SPI <--> MGMT
 
-    MGMT -- "program load, control/status, TX/RX data" --> CORE0
-    MGMT -- "program load, control/status, TX/RX data" --> CORE1
+    MGMT -- "RUN, imem write (RUN=0 only), TX push, RX pop, status" --> CORE0
+    MGMT -- "RUN, imem write (RUN=0 only), TX push, RX pop, status" --> CORE1
+    IMEM0 --- CORE0
+    IMEM1 --- CORE1
+    SRAM -. "replaces" .-> IMEM0
+    SRAM -. "replaces" .-> IMEM1
 
-    CORE0 -- "pin data + oe requests" --> PINMUX
-    CORE1 -- "pin data + oe requests" --> PINMUX
-    PINMUX -- "uio[7:0]" --> IOPINS
+    CORE0 -- "pin out + oe" --> MERGE
+    CORE1 -- "pin out + oe" --> MERGE
+    MERGE -- "uio[7:0]" --> IOPINS
+    PINMGR -. "replaces" .-> MERGE
+    SAFETY -. "disarm" .-> PINMGR
 
-    SAFETY -- "disarm — overrides all pin drive" --> PINMUX
-    IOPINS -- "clk, rst_n, ena" --> SAFETY
-    IOPINS -- "clk, rst_n, ena" --> MGMT
-    IOPINS -- "clk, rst_n, ena" --> CORE0
-    IOPINS -- "clk, rst_n, ena" --> CORE1
-
-    classDef core0style fill:#dbeeff,stroke:#4a90d9,stroke-width:1px;
-    classDef core1style fill:#e6ffe6,stroke:#4ac96a,stroke-width:1px;
-    class CORE0BOX core0style
-    class CORE1BOX core1style
+    classDef built fill:#dbeeff,stroke:#4a90d9,stroke-width:1px;
+    classDef planned fill:#fff4d6,stroke:#d9a441,stroke-width:1px,stroke-dasharray: 4 3;
+    class SPI,MGMT,CORE0,CORE1,IMEM0,IMEM1,MERGE built
+    class SRAM,PINMGR,SAFETY planned

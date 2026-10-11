@@ -25,6 +25,12 @@ F_CLK = 50_000_000
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 
+# instr_mem is two IHP SG13 SRAM macros (1P 64x16), simulated with the PDK functional models in
+# sim/ihp_sram. Every harness compiles the RTL with these two lists.
+SIM_DEFS = ["-DFUNCTIONAL"]
+SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
+            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+
 STANDARD_BAUDS = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400,
                   57600, 76800, 115200, 230400, 460800, 921600,
                   1_000_000, 1_500_000, 2_000_000, 3_000_000]
@@ -122,8 +128,8 @@ def compile_tb():
     vvp = os.path.join(BUILD, "tb_uart_workload.vvp")
     srcs = [os.path.join(ROOT, "src", f) for f in sorted(os.listdir(os.path.join(ROOT, "src")))
             if f.endswith(".v")]
-    cmd = ["iverilog", "-g2012", "-I", os.path.join(ROOT, "src"),
-           "-o", vvp, os.path.join(ROOT, "tb", "tb_uart_workload.v")] + srcs
+    cmd = ["iverilog", "-g2012", *SIM_DEFS, "-I", os.path.join(ROOT, "src"),
+           "-o", vvp, os.path.join(ROOT, "tb", "tb_uart_workload.v")] + srcs + SIM_LIBS
     subprocess.run(cmd, check=True)
     return vvp
 

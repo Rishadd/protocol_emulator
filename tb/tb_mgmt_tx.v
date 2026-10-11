@@ -108,7 +108,7 @@ module tb_mgmt_tx;
             ctrl(e, 0);
             for (j = 0; j < 64; j = j + 1) begin
                 wr(base(e) + 16'h100 + 4 * j, img[j]);
-                if (e) gold[1].eng.imem.mem[j] = img[j]; else gold[0].eng.imem.mem[j] = img[j];
+                if (e) gold[1].eng.imem.poke(j, img[j]); else gold[0].eng.imem.poke(j, img[j]);
             end
         end
     endtask

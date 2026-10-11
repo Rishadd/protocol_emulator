@@ -1,11 +1,14 @@
-%% Core-internal block diagram — matches src/engine_top.v as of 2026-10-03.
+%% Core-internal block diagram — matches src/engine_top.v as of 2026-10-11.
 %% Every block below exists and is unit-tested. Nothing here is protocol-specific.
+%% Changes since 2026-10-03: `run` input (core held in reset while 0, FIFOs and memory kept) and the
+%% instr_mem write port (imem_we/waddr/wdata, driven by the management block, only while run=0).
+%% Planned: instr_mem becomes an SRAM macro with a next-PC fetch (see ASIC_AREA_AND_MEMORY_STUDY.md).
 flowchart TD
     CLKRST(["clk, rst_n<br/>(fan to every sequential module)"])
-    HOST(["Host side (testbench today,<br/>msg_host / management block later)"])
+    HOST(["Host side: management block<br/>(testbench / on-FPGA host for the FPGA builds)"])
     PADS(["8 protocol pins"])
 
-    IMEM["<b>instr_mem</b> 64×32<br/>─ in ─<br/>addr [5:0]<br/>─ out ─<br/>instr [31:0]<br/><i>(host write port: not yet)</i>"]
+    IMEM["<b>instr_mem</b> 64×32 (flops)<br/>─ in ─<br/>addr [5:0]<br/>we, waddr [5:0], wdata [31:0] (host, run=0 only)<br/>─ out ─<br/>instr [31:0]"]
 
     PCREG["<b>pc_reg</b><br/>─ in ─<br/>advance, jump<br/>jump_addr [5:0]<br/>─ out ─<br/>pc [5:0]"]
 
@@ -23,6 +26,9 @@ flowchart TD
     PINS["<b>pin_block</b> 8 pins<br/>out/oe registers, 2-stage sync<br/>─ in ─ pin_wr*, dir_wr*, pin_in [7:0]<br/>─ out ─ pin_out [7:0], pin_oe [7:0], pin_in_sync [7:0]"]
 
     CLKRST --> PCREG & CTRL & DCNT & LCNT & TXF & RXF & OSR & ISR & PINS
+
+    HOST -->|"imem_we, imem_waddr, imem_wdata (run=0 only)"| IMEM
+    HOST -->|"run: 0 holds PC, control, counters, shifters, pins in reset"| CLKRST
 
     PCREG -->|pc| IMEM
     IMEM -->|instr| CTRL

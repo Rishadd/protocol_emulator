@@ -1,94 +1,101 @@
 # Workstream 2 — RTL Implementation Plan
 
 Companion to [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md),
-[EXECUTION_PLAN.md](EXECUTION_PLAN.md), [WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md)
-and the ISA contract in [../instructions.md](../instructions.md) | revised 2026-10-03 |
-Status: **v0.1 engine implemented and verified in simulation**
+[EXECUTION_PLAN.md](EXECUTION_PLAN.md), [WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md),
+[MGMT_PLAN.md](MGMT_PLAN.md), [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md)
+and the ISA contract in [../instructions.md](../instructions.md) | revised 2026-10-11 |
+Status: **two engines + SPI management link implemented and verified in simulation; UART TX/RX/duplex proven on FPGA; ASIC memory architecture under decision**
 
-## What changed from the original plan (2026-09-27 → 2026-10-03)
+## Design history in one table
 
-The first plan built UART-shaped hardware: a 10-bit "TX shift register with
-frame packing", a single `TX_DATA` register + valid flag, and opcodes
-(`LDBYTE`, `OUT1` with an embedded delay field) that only made sense for UART.
-During review we replaced that with a protocol-agnostic datapath in the
-RP2040-PIO spirit, so that UART, SPI, I2C, JTAG and future protocols differ
-only in firmware:
+The first plan built UART-shaped hardware. Review (2026-10-03) replaced it with a protocol-agnostic datapath in the
+RP2040-PIO spirit, so UART, SPI, I2C, JTAG and later protocols differ only in firmware. Nothing in `src/` knows what
+UART is.
 
 | Original (UART-specific) | Implemented (generic) |
 |---|---|
-| `tx_shift_reg`, 10-bit, hardwired `{stop, byte, start}` | `shift_reg` (32-bit, LSB/MSB-first selectable), instantiated twice as **OSR** and **ISR** |
-| `tx_handshake` / `rx_handshake` single-byte registers | `fifo` (32-bit × 4, first-word-fall-through), instantiated twice as `tx_fifo` and `rx_fifo` |
-| Single `pin_driver` for 1 pin | `pin_block`: 8 pins, per-pin `out`/`oe` registers, 2-stage input synchronizer |
-| No loop counter in v0.1 | `loop_counter` (16-bit) + `SETL`/`DJNZ`, needed to fit 8-bit loops in 64 words |
-| 18-bit delay operand | 27-bit flat operand (covers 2.68 s at 50 MHz) |
-| Opcode 5 bits + delay 6 + side-set 3 + operand 18 | Opcode 5 bits + **one flat 27-bit operand**; delay *is* the operand of timed instructions |
-| 3–7 opcodes | 17 opcodes (see [../instructions.md](../instructions.md) §1) |
+| `tx_shift_reg`, 10-bit, hardwired `{stop, byte, start}` | `shift_reg` (32-bit, LSB/MSB-first), instantiated as **OSR** and **ISR** |
+| `tx_handshake` / `rx_handshake` single-byte registers | `fifo` (32-bit x 4, first-word-fall-through), as `tx_fifo` and `rx_fifo` |
+| Single `pin_driver` | `pin_block`: 8 pins, per-pin `out`/`oe`, 2-stage input synchronizer |
+| 18-bit delay operand, side-set field | 5-bit opcode + **one flat 27-bit operand**; delay is the operand of the timed opcodes |
+| 3-7 opcodes | 17 opcodes ([../instructions.md](../instructions.md) §1) |
 
-Framing (start/stop bits, CS, SCLK, TMS…) is now entirely firmware
-(`SETH`/`SETLO`/`DIRO`/`DIRI`). Nothing in `src/` knows what UART is.
+## Module map — current state (2026-10-11)
 
-## Module map — current state
-
-| Module | File | Status | Notes / what grows later |
+| Module | File | Status | Notes |
 |---|---|---|---|
 | Program counter | `pc_reg.v` | **Done, unit-tested** | 6-bit; jump beats advance |
-| Instruction memory | `instr_mem.v` | **Done** (64×32, combinational read) | Loaded by `$readmemh` / FPGA power-up init. **Host write port and parity not yet built** (RTL-5b, RTL-5c) |
-| Delay counter | `delay_counter.v` | **Done, unit-tested** | 27-bit, `busy` + `last`; `last` lets the control unit release one cycle early so a timed instruction costs exactly d+1 |
-| Loop counter | `loop_counter.v` | **Done, unit-tested** | 16-bit, saturates at 0 |
-| FIFO | `fifo.v` | **Done, unit-tested** | DEPTH parameter; 4 today. Host must honor `tx_full` (proven in the workload limit test) |
-| Shift register | `shift_reg.v` | **Done, unit-tested** | One module for OSR and ISR |
-| Pin block | `pin_block.v` | **Done, unit-tested** | Reset releases all pins (`oe=0`). Edge detect (v0.3), ownership mux (multi-engine), abort/`ena` latch (RTL-1) still to add |
-| Control unit | `control_unit.v` | **Done, unit-tested** | 2-state FSM (EXEC / HOLD), stall logic for PULL/PUSH/WAITH/WAITL, `CFG` registers, trap on reserved opcodes |
-| Engine top | `engine_top.v` | **Done, integration-tested** | Host-facing: `tx_fifo` write port, `rx_fifo` read port, 8 pins, `halted`/`fault`/`pc` |
-| Safety latch (abort, `ena`) | — | Not built | Reset already releases pins; async abort + synchronized release is RTL-1 |
-| Management / CSR + SPI frame decode | — | Not built | RTL-8; needed before the chip is host-loadable |
-| Input edge detect | — | Not built | For `WAITR`/`WAITF` (opcodes 17/18, reserved) — UART RX |
-| Side-set | — | **Open decision** | Flat format gave up the reserved bits; options are a dedicated opcode or a `CFG`-selected pin that `OUT1`/`IN1` toggle automatically. Needed for I3C-class speeds |
-| Trace / first-fault / BIST / watchdog | — | Not built | v0.6 |
+| Instruction memory | `instr_mem.v` | **Done, unit-tested** (64x32 flops) | Combinational read, **synchronous host write port** (`we/waddr/wdata`), no parity. **Cannot be the tape-out store**: two copies are 80 % of the chip. SRAM wrapper pending, see below |
+| Delay counter | `delay_counter.v` | Done, unit-tested | 27-bit; `last` releases one cycle early so a timed instruction costs exactly d+1 |
+| Loop counter | `loop_counter.v` | Done, unit-tested | 16-bit, saturates at 0 |
+| FIFO | `fifo.v` | Done, unit-tested | 32 x 4. Four of them are 41k um^2, the biggest block after instruction memory |
+| Shift register | `shift_reg.v` | Done, unit-tested | One module for OSR and ISR |
+| Pin block | `pin_block.v` | Done, unit-tested | Reset releases all pins. No ownership logic yet |
+| Control unit | `control_unit.v` | Done, unit-tested | EXEC/HOLD FSM, stalls on PULL/PUSH/WAITH/WAITL, `CFG`, trap on reserved opcodes |
+| Engine top | `engine_top.v` | Done, integration-tested | New since v0.1: `run` input (holds PC, control, counters, shifters and pins in reset while `run`=0; FIFOs and instruction memory keep contents) and `imem_*` write port |
+| **SPI slave** | `spi_slave.v` | **Done, tested** | Mode 0, 2-flop synchronizers, SCLK edge-detected (no SCLK clock tree); needs >= 8 system clocks per SCLK half-period |
+| **Management** | `mgmt.v` | **Done (frame v1), tested** | 7-byte frames, per-engine RUN, instruction load, TX push, RX pop, status, sticky `err`. No CRC/sequence/ID yet |
+| **TT top** | `tt_um_protocol_emulator.v` | **Done** | Two engines, management, reset synchronizer. Pad merge: enable = `oe0` OR `oe1`, **engine 0 wins** a shared pin |
+| RX LED sink | `rx_led_sink.v` | Done, tested | FPGA/test helper that lives in `src/`; keep it out of the ASIC source list |
+| FPGA wrappers | `src/fpga/` | Done | `de0_nano_top` (TX), `de0_nano_rx_top` (RX), `de0_nano_duplex_top` (echo), `msg_sender.v`, SDC |
+| Safety latch (abort, `ena`) | — | Not built | Reset synchronizer and `run` gating already release pins; abort/`ena` path and formal proof (V01) pending |
+| Pin ownership / directory | `synth/experiments/pin_mgr.v` | **Prototype, area-only** | 5.2k um^2 (277 cells); +REMAP 14.7k. Not simulated, not in `src/`. See study §5 |
+| Edge detect | — | Not built, **no longer needed for UART** | RX firmware uses `WAITH`/`WAITL`. `WAITR`/`WAITF` (opcodes 17/18) stay reserved |
+| Side-set | — | **Open decision** | Needed for I3C-class SPI speeds only. Options: dedicated opcode, or a `CFG`-selected clock pin toggled by `OUT1`/`IN1` |
+| Trace / first-fault / BIST / watchdog | — | Not built | Area-dependent; first-fault capture is the last thing to drop |
 
 ## Verification status
 
 | Level | Harness | Result |
 |---|---|---|
-| Unit (7 modules) | `tb/tb_<module>.v`, self-checking, X-safe (`!==`) | All PASS |
-| Control unit | `tb/tb_control_unit.v` — every opcode's exact strobe set, d+1 timing for d∈{0,1,2,3,5}, stall with zero side-effects, trap on 17/18/31 | PASS |
-| Integration | `tb/tb_engine_top.v` B1–B8: PC flow, 11-cycle stall, DJNZ loop, PULL blocking, trap freeze, UART TX 115200 + 9600 decoded, reset mid-frame | PASS (136 checks total across suite) |
-| Workload | `host/uart_workload.py` + `tb/tb_uart_workload.v`: Python reference model + ideal receiver, 1 KB payload with all 256 byte values, runs of 0x00/0xFF/0x55, UTF-8, host silence gaps | 9600–115200 all cycle-exact; rx clock tolerance ±5.25%; D=0 (25 Mbaud) still exact; host ignoring `tx_full` drops whole bytes cleanly, never corrupts |
+| Unit (8 modules) | `tb_instr_mem`, `_pc_reg`, `_delay_counter`, `_loop_counter`, `_fifo`, `_shift_reg`, `_pin_block`, `_control_unit` — self-checking, X-safe (`!==`) | All PASS (re-run 2026-10-11) |
+| Engine integration | `tb_engine_top`: PC flow, stall, DJNZ loop, PULL blocking, trap freeze, UART TX 115200 + 9600, reset mid-frame | PASS |
+| Firmware on RTL | `tb_rx_led_sink`, `tb_de0_nano_rx_top` (UART RX through the FPGA top) | PASS |
+| Management | `tb_mgmt_frame` (frame rules, bad length, abort, reset mid-frame), `tb_mgmt_load` (64-word loads vs a golden engine, lockstep), `tb_mgmt_dual` (both engines, pin conflict, bad addresses), `tb_mgmt_read` (RX pop, in order, abort, SCLK sweep), `tb_mgmt_tx` (101 bytes decoded, flow-control resends) | All PASS; each had mutations that were caught |
+| Full duplex over SPI | `tb_mgmt_duplex` + `host/mgmt_duplex_stress.py`: 1 KB at 115200, live echo and replay, peer +-2 %, 20 ns jitter, plus a negative case where loss must be detected | PASS when recorded 2026-10-11; **not in `run_tests.ps1`, not re-run for this revision** |
+| UART workloads | `tb_uart_workload`, `tb_uart_rx`, `tb_uart_duplex` with `host/uart_*workload.py` (Python reference model + independent receiver) | Recorded results in [../memory.md](../memory.md) and `results/`; not re-run for this revision |
+| FPGA | DE0-Nano + HC-05: TX message on a phone, RX byte on LEDs, full-duplex echo at 115200 | Works (commits `2403f22`, `ea4ff82`) |
 
-One RTL bug found and fixed by the suite: the combinational stall `case` had no
-match for an X opcode (before first fetch) and propagated X onto every control
-strobe. Replaced with a `?:` chain. One firmware bug found before simulation:
-`SETL` placed after the start-bit `WAIT` stretched the start bit by one cycle.
+`run_tests.ps1` runs 17 names; **16 PASS and `tb_de0_nano_top` hangs** (pre-existing, FPGA TX top, not touched).
 
-Timing contract that everything depends on, now **verified**: non-timed
-instruction = 1 cycle; `WAIT d` / `OUT1 d` / `IN1 d` = exactly d+1 cycles;
-blocking instructions hold PC with zero side-effects; pin inputs are 2 clocks old.
+Bugs found and fixed so far: the combinational stall `case` propagated X before the first fetch (replaced by a `?:`
+chain); `SETL` between the start-bit `WAIT` and the first `OUT1` stretched the start bit (firmware order); the RX
+synchronizer resets to 0, which looks like a start bit (firmware waits for idle first); management read decode must use
+`frame[23:0]` when the address completes; testbench receivers must sample on clock edges because the pad mux creates a
+zero-width glitch when a pin is enabled.
+
+Timing contract everything depends on, **verified**: non-timed instruction = 1 cycle; `WAIT d`/`OUT1 d`/`IN1 d` = exactly
+d+1 cycles; blocking instructions hold PC with zero side effects; pin inputs are 2 clocks old.
+
+## Area as measured (Yosys, real CMOS5L cells, pre-CTS)
+
+Whole chip 414,137 um^2 / 15.5k cells = **57.5 % of the nominal 720k**. Per instance: `instr_mem` 165,955 (x2), `fifo`
+10,211 (x4), `mgmt` 8,959, `shift_reg` 3,114 (x4), `delay_counter` 2,540 (x2), `pin_block` 2,083 (x2), `spi_slave` 2,468,
+`loop_counter` 1,694 (x2), `control_unit` 1,598 (x2), `pc_reg` 559 (x2). With 4 x 1P 64x16 SRAM macros the chip is
+143,425 um^2 (20 %). Details and the flop/latch/SRAM comparison: [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md).
 
 ## Remaining RTL tasks (ordered)
 
 | ID | Task | Depends on | Validation |
 |---|---|---|---|
-| RTL-F1 | **FPGA wrapper for DE0-Nano**: `msg_host.v` (string → `tx_fifo`, honors `tx_full`), `de0_nano_top.v` (KEY0 reset sync, tri-state `GPIO_0`, LEDs), `.sdc`, `.qsf` pins, `instr_mem` power-up init | — | Testbench on `de0_nano_top`; then message received on a phone via HC-05 at 9600 |
-| RTL-5b | Host write port on `instr_mem` (gated by halted) | — | Write/read-back all 64 words; write while running has no effect |
-| RTL-1 | Safety latch: async disarm on reset/abort/`!ena`, synchronized release, forces all `pin_oe=0` | — | Formal (SymbiYosys) or exhaustive directed sim: V01 |
-| RTL-E | Edge detector per pin + `WAITR`/`WAITF` decode | — | Directed sim; then UART RX firmware (v0.3) |
-| RTL-S | Side-set decision + implementation | design review | SPI at ≥ 5 MHz with SCLK toggled in the same instruction as `OUT1` |
-| RTL-8 | Management/CSR + 12-byte SPI frame decode (checksum first, CRC-16 later) | RTL-5b | Frame encode/decode round trip, corrupt-byte rejection (V10) |
-| RTL-2nd | Second engine instance + pin ownership mux | RTL-8 | Both engines run independent programs without pin interference (V03) |
-| RTL-5c | Parity on `instr_mem` | RTL-8 | Fault injection |
-| RTL-9 | Trace, first-fault, BIST, watchdog | all above | v0.6 obligations |
+| RTL-SRAM | `instr_mem` behind a wrapper with a **next-PC fetch** (macro address = D input of `pc_reg`, stalls re-read the same address, host owns the port while `run`=0). First with a behavioral macro model, then the real 1P 64x16 (x2 per engine) or a shared 2P 256x32 with page select | A9 decision | Whole existing regression unchanged (cycle-exact contract preserved), then STA on the macro-to-address path |
+| RTL-PIN | Pin-management block from the prototype: ownership, claim/deny, violation flags, per-pad open-drain, optional remap; management window `0x0200` | RTL-8 final frame | Every illegal claim and cross-drive rejected; formal "non-owner never reaches a pad" (V02, V03) |
+| RTL-8 | Final management frame: CRC-16, sequence/duplicate handling, ID and capacity registers, pin window | A3 decision | Corrupt-byte and duplicate-sequence tests (V10) |
+| RTL-F | Shrink the FIFOs (width/depth from firmware needs; latch or narrower storage) | measured firmware needs | Existing FIFO + duplex tests, area re-measured |
+| RTL-1 | Safety latch: abort pin, `ena`, async disarm with synchronized release | — | Formal or exhaustive directed test (V01) |
+| RTL-S | Side-set decision | design review | SPI >= 5 MHz with SCLK toggled in the `OUT1` instruction |
+| RTL-L | Clean the 9 Verilator `-Wall` warnings (4 width, 2 empty pins, 2 unused, 1 sync/async) | — | Lint clean (the template runs a linter) |
+| RTL-5c | Parity on instruction storage (SRAM macros change how this is done) | RTL-SRAM | Fault injection |
+| RTL-9 | Trace, first-fault, BIST, watchdog | area budget | Obligations V09, V11, V14 |
 
-The original RTL-6/RTL-7 (UART shifter, TX_DATA handshake) are **deleted**, not
-deferred — their roles are covered by `shift_reg` and `fifo`.
+Deleted rather than deferred: the original RTL-6/RTL-7 (UART shifter, TX_DATA handshake, covered by `shift_reg` and
+`fifo`), RTL-5b (host write port, done), RTL-2nd (second engine, done; only its pin-ownership half remains as RTL-PIN),
+RTL-E (edge detect, not needed for UART RX).
 
-## Brief roadmap for later versions (deltas only)
+## Notes for later versions (deltas only)
 
-- **v0.3 (UART RX / full duplex)**: RTL-E edge detect, second engine, `IN1`
-  into ISR, `PUSH` to `rx_fifo` — all already present except edge detect.
-- **v0.4 (SPI)**: side-set decision; ownership mux. The shifters already do
-  MSB-first and full duplex (`OUT1` + `IN1` per bit).
-- **v0.5 (I2C)**: open-drain needs no RTL mode — firmware uses `DIRO`=drive-low,
-  `DIRI`=release. Still wanted: a `CFG` bit making `OUT1` write `~bit` to
-  `pin_oe` so a data byte fits in a loop (see [../instructions.md](../instructions.md) §4),
-  and a conditional branch on a pin for ACK/NACK.
-- **v0.6**: parity, CRC-16, trace, BIST, watchdog.
+- **SPI firmware**: shifters already do MSB-first and full duplex. Run the draft against the RTL first (F3); only then
+  decide whether side-set is needed.
+- **I2C**: open-drain becomes a pin-manager mode (pad data forced 0, pad enable = `oe & ~out`), so `OUT1`/`SETH`/`SETLO`
+  are I2C-safe and the proposed `CFG` open-drain bit is dropped. Still wanted: a conditional branch on a pin for ACK/NACK.
+- **Debug/safety**: CRC, trace, BIST, watchdog only after the functional core and the memory decision settle.

@@ -38,7 +38,7 @@ module tb_engine_top;
 
     task clear_mem;
         integer k;
-        for (k = 0; k < 64; k = k + 1) dut.imem.mem[k] = I(`OP_HALT, 0);
+        for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, I(`OP_HALT, 0));
     endtask
 
     task host_write(input [31:0] w);
@@ -50,18 +50,18 @@ module tb_engine_top;
     task load_uart_prog(input [26:0] D);
         begin
             clear_mem;
-            dut.imem.mem[0]  = I(`OP_CFG,   0);   // out_pin=0, LSB first
-            dut.imem.mem[1]  = I(`OP_DIRO,  0);
-            dut.imem.mem[2]  = I(`OP_SETH,  0);   // idle high
-            dut.imem.mem[3]  = I(`OP_PULL,  0);   // block for next byte
-            dut.imem.mem[4]  = I(`OP_SETL,  8);
-            dut.imem.mem[5]  = I(`OP_SETLO, 0);   // start bit
-            dut.imem.mem[6]  = I(`OP_WAIT,  D);
-            dut.imem.mem[7]  = I(`OP_OUT1,  D);   // data bit
-            dut.imem.mem[8]  = I(`OP_DJNZ,  7);
-            dut.imem.mem[9]  = I(`OP_SETH,  0);   // stop bit
-            dut.imem.mem[10] = I(`OP_WAIT,  D);
-            dut.imem.mem[11] = I(`OP_JMP,   3);
+            dut.imem.poke(0, I(`OP_CFG,   0));   // out_pin=0, LSB first
+            dut.imem.poke(1, I(`OP_DIRO,  0));
+            dut.imem.poke(2, I(`OP_SETH,  0));   // idle high
+            dut.imem.poke(3, I(`OP_PULL,  0));   // block for next byte
+            dut.imem.poke(4, I(`OP_SETL,  8));
+            dut.imem.poke(5, I(`OP_SETLO, 0));   // start bit
+            dut.imem.poke(6, I(`OP_WAIT,  D));
+            dut.imem.poke(7, I(`OP_OUT1,  D));   // data bit
+            dut.imem.poke(8, I(`OP_DJNZ,  7));
+            dut.imem.poke(9, I(`OP_SETH,  0));   // stop bit
+            dut.imem.poke(10, I(`OP_WAIT,  D));
+            dut.imem.poke(11, I(`OP_JMP,   3));
         end
     endtask
 
@@ -126,11 +126,11 @@ module tb_engine_top;
         // ---------------- B1: PC / imem / decode ----------------
         $display("--- B1 pc flow");
         clear_mem;
-        dut.imem.mem[0] = I(`OP_NOP, 0);
-        dut.imem.mem[1] = I(`OP_NOP, 0);
-        dut.imem.mem[2] = I(`OP_JMP, 5);
-        dut.imem.mem[5] = I(`OP_NOP, 0);
-        dut.imem.mem[6] = I(`OP_JMP, 0);
+        dut.imem.poke(0, I(`OP_NOP, 0));
+        dut.imem.poke(1, I(`OP_NOP, 0));
+        dut.imem.poke(2, I(`OP_JMP, 5));
+        dut.imem.poke(5, I(`OP_NOP, 0));
+        dut.imem.poke(6, I(`OP_JMP, 0));
         do_reset;
         `CHECK(pc == 0, "B1 pc=0 after reset")
         for (n = 1; n <= 20; n = n + 1) begin
@@ -149,13 +149,13 @@ module tb_engine_top;
         // ---------------- B2: delay stall ----------------
         $display("--- B2 delay stall");
         clear_mem;
-        dut.imem.mem[0] = I(`OP_DIRO,  1);
-        dut.imem.mem[1] = I(`OP_SETH,  1);
-        dut.imem.mem[2] = I(`OP_WAIT, 10);
-        dut.imem.mem[3] = I(`OP_SETLO, 1);
-        dut.imem.mem[4] = I(`OP_WAIT,  0);
-        dut.imem.mem[5] = I(`OP_SETH,  1);
-        dut.imem.mem[6] = I(`OP_HALT,  0);
+        dut.imem.poke(0, I(`OP_DIRO,  1));
+        dut.imem.poke(1, I(`OP_SETH,  1));
+        dut.imem.poke(2, I(`OP_WAIT, 10));
+        dut.imem.poke(3, I(`OP_SETLO, 1));
+        dut.imem.poke(4, I(`OP_WAIT,  0));
+        dut.imem.poke(5, I(`OP_SETH,  1));
+        dut.imem.poke(6, I(`OP_HALT,  0));
         do_reset;
         for (n = 1; n <= 20; n = n + 1) begin
             tick;
@@ -175,12 +175,12 @@ module tb_engine_top;
         // ---------------- B3: loop ----------------
         $display("--- B3 DJNZ loop");
         clear_mem;
-        dut.imem.mem[0] = I(`OP_DIRO,  2);
-        dut.imem.mem[1] = I(`OP_SETL,  5);
-        dut.imem.mem[2] = I(`OP_SETH,  2);
-        dut.imem.mem[3] = I(`OP_SETLO, 2);
-        dut.imem.mem[4] = I(`OP_DJNZ,  2);
-        dut.imem.mem[5] = I(`OP_HALT,  0);
+        dut.imem.poke(0, I(`OP_DIRO,  2));
+        dut.imem.poke(1, I(`OP_SETL,  5));
+        dut.imem.poke(2, I(`OP_SETH,  2));
+        dut.imem.poke(3, I(`OP_SETLO, 2));
+        dut.imem.poke(4, I(`OP_DJNZ,  2));
+        dut.imem.poke(5, I(`OP_HALT,  0));
         do_reset;
         edges = 0; prev0 = 0;
         for (n = 0; n < 100 && !halted; n = n + 1) begin
@@ -195,8 +195,8 @@ module tb_engine_top;
         // ---------------- B4: PULL blocking ----------------
         $display("--- B4 PULL blocking");
         clear_mem;
-        dut.imem.mem[0] = I(`OP_PULL, 0);
-        dut.imem.mem[1] = I(`OP_NOP,  0);
+        dut.imem.poke(0, I(`OP_PULL, 0));
+        dut.imem.poke(1, I(`OP_NOP,  0));
         do_reset;
         for (n = 0; n < 50; n = n + 1) begin
             tick;
@@ -213,11 +213,11 @@ module tb_engine_top;
         // ---------------- B5: trap ----------------
         $display("--- B5 reserved opcode trap");
         clear_mem;
-        dut.imem.mem[0] = I(`OP_NOP, 0);
-        dut.imem.mem[1] = I(`OP_NOP, 0);
-        dut.imem.mem[2] = I(`OP_NOP, 0);
-        dut.imem.mem[3] = I(5'd31, 0);
-        dut.imem.mem[4] = I(`OP_SETH, 0);
+        dut.imem.poke(0, I(`OP_NOP, 0));
+        dut.imem.poke(1, I(`OP_NOP, 0));
+        dut.imem.poke(2, I(`OP_NOP, 0));
+        dut.imem.poke(3, I(5'd31, 0));
+        dut.imem.poke(4, I(`OP_SETH, 0));
         do_reset;
         tick; tick; tick;
         `CHECK(pc == 3 && halted == 0, "B5 reaches illegal word")

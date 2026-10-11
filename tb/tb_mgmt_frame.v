@@ -63,7 +63,7 @@ module tb_mgmt_frame;
         begin
             bad = 0;
             for (j = 0; j < 64; j = j + 1)
-                if (dut.u_eng0.imem.mem[j] !== model[j]) bad = bad + 1;
+                if (dut.u_eng0.imem.peek(j) !== model[j]) bad = bad + 1;
             `CHECK(bad == 0, tag)
         end
     endtask

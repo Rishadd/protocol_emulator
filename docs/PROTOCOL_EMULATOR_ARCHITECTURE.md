@@ -1,13 +1,15 @@
 # Programmable Protocol Emulator ASIC
 
-Architecture proposal v0.1 | 2026-09-26, revised 2026-10-03 | Status: long-term target; **single-engine core implemented and verified in simulation**
+Architecture proposal v0.1 | 2026-09-26, revised 2026-10-11 | Status: long-term target; **two engines and an SPI management link are implemented and verified in simulation, UART TX/RX/duplex are proven on an FPGA, and a measured area study says instruction storage must move to SRAM**
 
-## 0. Implementation status (2026-10-03)
+## 0. Implementation status (2026-10-11)
 
-This document is the full-chip target. What exists in `src/` today is the
-single protocol engine of §4 with the datapath subset below; everything else
-(second engine, management port, event fabric, trace, BIST, safety latch) is
-still plan. Two decisions made during RTL work supersede text further down:
+This document is the full-chip target. What exists in `src/` today is two protocol engines of §4 with the datapath
+subset below, an SPI slave and a management controller with an interim 7-byte frame, and the Tiny Tapeout top that wires
+them. The event fabric, trace, BIST, safety latch, pin ownership and CRC frame are still plan. Measured area numbers and
+the SRAM/pin-ownership analysis are in [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md); where this document's
+text predates them (notably §3's resource table, §6's frame and §11's storage ledger) the study and the status notes win.
+Two decisions made during RTL work supersede text further down:
 
 1. **Instruction format is 5-bit opcode + one flat 27-bit operand.** The
    delay/side-set sub-fields proposed in §4.2 were dropped; delay is the
@@ -21,18 +23,20 @@ still plan. Two decisions made during RTL work supersede text further down:
 
 | Block in §3 diagram | Status |
 |---|---|
-| Deterministic engine 0 (PC, decode, delay counter, loop counter) | **Built, verified** — 17 opcodes, exact d+1 timing |
-| Private instruction storage 0 (64×32) | Built; parity and host write port pending |
-| Per-engine TX/RX FIFOs | Built as 32-bit × 4 (plan says 16-bit × 8 — revisit at sizing) |
+| Deterministic engines 0 and 1 (PC, decode, delay counter, loop counter) | **Built, verified** — 17 opcodes, exact d+1 timing; per-engine `run` gate |
+| Private instruction storage (64×32 per engine) | Built **in flip-flops** with a host write port (only while the engine is held); **no parity**. Flops are 80 % of the chip (§11), so this is to be replaced by SRAM |
+| Per-engine TX/RX FIFOs | Built as 32-bit × 4 (plan says 16-bit × 8). Four FIFOs are 41k um^2; to be shrunk |
 | Serial datapath (shifters) | Built as 32-bit OSR + ISR, LSB/MSB-first selectable |
-| Pin control + synchronizers | Built (8 pins, 2-stage sync); ownership mux, filters, edge detect pending |
-| Engine 1, event fabric, timestamp, deadline | Not built |
-| Management port, CSR, frame decode | Not built |
-| Safety latch (abort, `ena`), watchdog, trace, BIST | Not built (reset already releases all pins) |
-| Firmware | UART TX verified cycle-exact 9600–115200 vs. Python reference; SPI/I2C/JTAG drafted |
+| Pin control + synchronizers | Built (8 pins, 2-stage sync). **Ownership mux not built**: pads of both engines are merged and engine 0 wins (prototype in `synth/experiments/pin_mgr.v`, §5); edge detect not needed so far |
+| Event fabric, timestamp, deadline | Not built |
+| Management port, CSR, frame decode | **Built, interim frame v1** (7 bytes, big endian, no CRC/sequence), simulation only. Windows as built are in [MGMT_PLAN.md](MGMT_PLAN.md) |
+| Safety latch (abort, `ena`), watchdog, trace, BIST | Not built (reset synchronizer and `run` gating already release all pins) |
+| Firmware | UART TX (12 words) and RX (9 words) verified cycle-exact in simulation **and on the DE0-Nano at 115200, including full-duplex echo**; SPI/I2C/JTAG drafted, not run on RTL |
+| FPGA | DE0-Nano + HC-05: TX to a phone, RX to LEDs, duplex echo — done. The SPI management link has not been put on the FPGA |
+| Synthesis | Yosys on the real CMOS5L cell library: 414,137 um^2 (57.5 % of nominal) with flop memory, 143,425 with SRAM macros. No LibreLane flow run yet |
 
-Next milestone: DE0-Nano FPGA bring-up sending a message to a phone through an
-HC-05 Bluetooth module (see [EXECUTION_PLAN.md](EXECUTION_PLAN.md)).
+Next milestones: settle the SRAM question with the organizers, build the SRAM next-PC fetch and the pin manager, finish the
+management frame (CRC, sequence, ID), then the first real GDS flow run (see [EXECUTION_PLAN.md](EXECUTION_PLAN.md)).
 
 ## 1. Recommendation
 
@@ -48,8 +52,10 @@ recovery never depends on the program that stopped working.
 
 Baseline: two engines, eight bidirectional protocol pins, 64 x 32-bit instructions
 per engine, small local data stores and FIFOs, on-chip trace, register access,
-memory self-test, and safe pin control. Use flip-flop storage as the initial
-implementation; qualify CMOS5L SRAM before making it a dependency. Target a
+memory self-test, and safe pin control. Flip-flop storage was the initial
+implementation and it is built, but synthesis on the real library shows it is 80 % of the chip,
+so instruction storage should move to SRAM (study: [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md)); qualify
+CMOS5L SRAM acceptance before making it a dependency. Target a
 48 MHz operating point, with 24 MHz fallback and low-frequency bring-up. These
 are design targets, not measured performance or an area-fit claim.
 
@@ -66,7 +72,7 @@ concurrency is explicitly bounded by engine count, pins, and host bandwidth.
 | Fixed UART/SPI/I2C blocks | Reject as the product architecture: future protocols would need new silicon. |
 | PIO-like independent engines | Adopt determinism, shift registers, local loops, and explicit waits. |
 | Large PRU-like subsystem | Borrow direct I/O and useful arithmetic, but omit the large SoC bus and software environment. |
-| Shared arbitrated instruction memory | Reject in the baseline: one engine must not delay another's pin edges. |
+| Shared arbitrated instruction memory | Reject in the baseline: one engine must not delay another's pin edges. Refined 2026-10-11: a **single-port** macro shared by two engines is rejected for that reason; a **dual-port** macro with one port per engine and a page/ownership directory keeps private fetch bandwidth and is a live option (study §4). |
 | Deep autonomous waveform sequencer | Defer: useful for replay but duplicates storage and cannot replace data-dependent execution. |
 
 Relative to a minimal PIO design, prioritize native timeout/deadline handling,
@@ -93,6 +99,13 @@ Checked against the public template on the date above:
 - The linked SRAM example instantiates a foundry 1024 x 8 single-port macro;
   its published layout links use `ihp-sg13g2`. CMOS5L compatibility, metal stack,
   available timing views, and shuttle acceptance remain unverified.
+  *Update 2026-10-11:* in the IHP Open PDK, `ihp-sg13cmos5l/libs.ref/sg13cmos5l_sram` is a symlink to the SG13G2 macro
+  directory (and the CMOS5L SRAM LVS deck is a symlink to the G2 one), so no CMOS5L-specific views exist in the public
+  PDK. Macro sizes and timing are known from the G2 views (study §3); acceptance on the CMOS5L shuttle is still the first
+  question for the organizers.
+- The CMOS5L standard-cell library has 89 cells, site 0.48 x 3.78 um, **no plain flip-flop** (cheapest flop is an
+  async-reset `dfrbpq_1`, 48.99 um^2; NAND2 7.26, mux2 18.14, latch 30.84, clock gate 27.22 um^2). All area numbers in this
+  repo come from this library (`synth/`).
 - The general Tiny Tapeout clock/GPIO pages explicitly describe SKY130 pads.
   Their frequency, drive-current, and voltage numbers are not CMOS5L evidence.
   The memory guide likewise labels its SRAM tables SG13G2 and warns that
@@ -142,8 +155,8 @@ interrupt preemption inside an engine.
 
 | Resource | Proposed implementation | Built today |
 | --- | --- | --- |
-| Protocol engines | 2, independently running | 1 |
-| Instruction storage | 64 x 32 bits per engine, plus one parity bit per word | 64 x 32, no parity |
+| Protocol engines | 2, independently running | 2 |
+| Instruction storage | 64 x 32 bits per engine, plus one parity bit per word | 64 x 32 per engine in flops, host write port, no parity. **Flops do not fit the budget (§11); SRAM planned** |
 | Data scratchpad | 16 x 16 bits per engine | none (no opcode uses it yet) |
 | General registers | 4 x 16 bits per engine | none; one 16-bit loop counter |
 | Serial datapath | Separate TX/RX shifters and valid-bit counts | 32-bit OSR + 32-bit ISR, no bit counts (firmware loops via `SETL`/`DJNZ`) |
@@ -175,6 +188,12 @@ Branches, including taken branches, cost one cycle. This timing contract must
 survive synthesis; it is not permissible to introduce unadvertised wait states
 to rescue timing. A pipelined or synchronous-SRAM implementation needs a new,
 explicitly verified fetch contract before adoption.
+
+*Proposed fetch contract for SRAM (2026-10-11, not yet simulated):* present `next_pc` (the D input of the PC register: hold on
+a stall, pc+1, or the jump target) to the macro address pin, so the instruction for the new PC is on the macro output in the
+cycle the PC changes. This keeps one-cycle branches and exact d+1 delays with no added wait state; a stalled instruction
+re-reads the same address. The cost is a longer critical path (macro clock-to-output 3.0-3.1 ns typ, 5.05-5.3 ns at the
+slow corner, then decode, stall/jump select, address setup). The host owns the macro port only while the engine is held.
 
 For an ordinary instruction committing at edge `commit_cycle` with delay `d`,
 the earliest next instruction commits at `commit_cycle + 1 + d`. The input
@@ -297,8 +316,16 @@ mode change only while affected engines are halted and outputs disarmed.
 Inputs remain observable independently of ownership. Hardware rejects writes
 outside an engine's ownership; it does not arbitrate competing writers.
 
-In open-drain mode, logical zero requests a low drive and logical one releases
-the pin. The physical output data is always zero and only output enable changes.
+*Status 2026-10-11:* **not built.** The current top merges the pads (`uio_oe` = enable of engine 0 OR engine 1, engine 0
+wins), so engine 1 can drive a pad engine 0 is using, and a protocol loaded later can take a pin from a running one. A
+prototype directory (`synth/experiments/pin_mgr.v`, area study only, not simulated) implements: owner per pad (none /
+engine 0 / engine 1 / diagnostic), drive allowed only for the owner and only while it runs, claim refused if the pad's owner is
+running (sticky `deny`), sticky per-engine violation bits, per-pad open-drain, and optional pad remap. Area 5.2k um^2
+(0.7 % of nominal), 14.7k with remap. It lives at the `0x0200` management window. See study §5.
+
+In open-drain mode (a per-pad mode of the directory; today open-drain is only a firmware idiom with `DIRO`/`DIRI`), logical
+zero requests a low drive and logical one releases the pin. This makes `OUT1`/`SETH`/`SETLO` I2C-safe and replaces the
+proposed `CFG` open-drain bit. The physical output data is always zero and only output enable changes.
 External pull-ups are required. Firmware cannot accidentally drive high in that
 mode. In push-pull mode, DRIVE updates data and direction on one edge.
 
@@ -350,6 +377,14 @@ Use suitable level translators/transceivers for RS-232, RS-485, CAN, USB, and
 Ethernet. Include direction turnaround and board propagation in timing budgets.
 
 ## 6. Management, Loading, and Data Movement
+
+> **As built (2026-10-11).** The management controller exists with an **interim 7-byte frame** (`op`, 16-bit address, 32-bit
+> data, big endian, no sequence number, no CRC, response STATUS in byte 0) and the engine windows `0x1000`/`0x2000`
+> (`+0x000` CTRL, `+0x100+4i` instruction words, `+0x200` TX FIFO, `+0x204` RX FIFO). Writes commit on CS_N rising of a
+> complete frame; instruction writes are accepted only while that engine's RUN is 0; TX pushes and RX pops are exactly-once
+> via the frame's own STATUS. The FIFO addresses and the STATUS word differ from the register table below, which stays
+> the target. The sections that follow (12-byte CRC frame, pipelined responses, duplicate-sequence cache, ID/capability
+> registers) are **not built**; see [MGMT_PLAN.md](MGMT_PLAN.md) for the as-built contract and the deferred list.
 
 The hardware management controller is intentionally fixed-function and never
 implemented by a protocol engine. Its operation requires clock and reset logic,
@@ -453,6 +488,11 @@ usable only where permitted by the selected protocol/device.
 Rates below are proposed qualification targets at 48 MHz, not compliance claims.
 Final supported rates are the minimum allowed by instruction schedules, input
 synchronization, pad/wrapper timing, external electronics, and buffering.
+
+*Measured so far (2026-10-11, 50 MHz FPGA clock, not the 48 MHz target):* UART TX and RX 8N1 at 9.6-115.2 kbaud are
+cycle-exact in simulation and work on a DE0-Nano with an HC-05 module, including full-duplex echo at 115200 with TX and RX
+on separate engines (RX has no stop-bit check; tolerates about -4.5 % / +6 % peer baud error). SPI, I2C and JTAG exist only
+as draft firmware in [../instructions.md](../instructions.md); none has been run on the RTL.
 
 | Protocol | Baseline or extension | Firmware responsibilities and limits |
 | --- | --- | --- |
@@ -754,6 +794,15 @@ rough DFF-per-tile examples are not a CMOS5L capacity model, but they reinforce
 why the challenge's logic-cell estimate must not be treated as a memory budget.
 Do not commit to this storage configuration solely from nominal tile area.
 
+**Measured 2026-10-11** (Yosys, real CMOS5L library, hierarchy kept, no CTS/buffers; reproduce with `synth/run_synth.sh`):
+the chip as built is **414,137 um^2, 15,516 cells, 5,091 flops** = 57.5 % of the nominal 720,000 um^2. The two flop
+instruction memories are **331,909 um^2 (80 %)**; the four FIFOs 40,843; everything else (engines, shifters, management,
+SPI) 41,385. At the template's 60 % placement density the usable cell budget is about 430k um^2 at best, so the flop-based
+design leaves no room for CTS, a pin manager, trace or BIST. The storage ledger above is therefore *not* a flop budget:
+flops cost 49 um^2 per bit (67 with an enable) because the library has no plain or enable flop. With four 1P 64x16 SRAM macros
+the same chip is **143,425 um^2 (19.9 %)**; a shared 2P 256x32 macro is estimated at about 182k (25 %). Full tables, risks
+and the recommendation are in [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md).
+
 Working feasibility hypothesis: this modest two-engine configuration can fit
 6x4 while preserving diagnosis. The first cheap disconfirming checks are actual
 firmware word counts and mapped storage/engine area. The architecture is not
@@ -789,6 +838,14 @@ Prefer an initially optional macro for larger packet/trace storage with explicit
 access latency. Replacing instruction storage needs a separate port/bandwidth
 and branch-latency design review. Do not infer a giant flip-flop replacement for
 an unavailable SRAM and assume the area budget survives.
+
+*Revised 2026-10-11:* the area measurement above reverses the default. Flip-flop instruction storage does not fit, so SRAM
+for instruction storage is now the baseline **if the macros are accepted on the CMOS5L 6x4 shuttle**; the port/bandwidth and
+branch-latency review is done on paper (next-PC fetch in §4.1; one macro port per engine, because a single-port macro cannot
+serve two engines fetching every cycle) but not simulated or timed. Fallbacks if SRAM is refused: a latch array (about 244k um^2
+total, measured, with unproven latch support in the flow), flops with per-word clock gates (about 343k, estimate), or fewer
+instruction words, each of which breaks the area ceiling or the 64-word promise and needs an architecture review. Verify
+macro power hookups, the PDN script, DRC/LVS blackboxing and the gate-level model before relying on it (study §3 risks).
 
 If area fails: first reduce optional trace depth (retain first-fault capture and
 an external marker), then reconsider scratch/FIFO sizes with firmware evidence.
@@ -862,6 +919,11 @@ requires its own scan/ATPG report if that path is implemented.
 
 ## 13. Delivery Milestones and Approval Gates
 
+*Status 2026-10-11:* milestones 1-2 are partly done (two-engine scope accepted and built; ISA frozen; UART firmware measured,
+SPI/I2C not; register ABI only partly frozen), milestone 3 is partly done (management, run gating; no CRC, safety latch or
+ownership), milestone 4 is done (UART TX and RX, verified on RTL and on an FPGA), and milestone 5 is partly done (second engine
+in; trace/test not; first synthesis estimate done, no placement or routing). Milestones 6-9 have not started.
+
 1. Architecture review: accept the two-engine scope, private stores, pinout,
    management bandwidth, electrical boundaries, and mandatory diagnostic features.
 2. Executable specification: freeze ISA effects/encoding and host register ABI;
@@ -909,6 +971,11 @@ not values asserted by these references.
 - [Published SRAM test](https://www.tinytapeout.com/chips/ttihp0p2/tt_um_urish_sram_test)
 - [SRAM test implementation](https://github.com/urish/ttihp-sram-test/blob/main/src/project.v)
 - [Raspberry Pi PIO documentation](https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#hardware_pio)
+- Added 2026-10-11: IHP Open PDK (`dev` branch) `ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell` (liberty, LibreLane config, latch/mux maps)
+  and `ihp-sg13g2/libs.ref/sg13g2_sram` (macro datasheets, LEF, liberty, Verilog); the SRAM example's `src/config.json` and
+  `pdn_cfg.tcl` (`urish/ttihp-sram-test`); CMOS5L template `info.yaml`, `src/config.json`, `.github/workflows/gds.yaml`,
+  `test/Makefile`; [Tiny Tapeout memory guide](https://www.tinytapeout.com/specs/memory/); [Tiny Tapeout IHP 0.4 (sg13cmos5l) shuttle](https://tinytapeout.com/chips/ttihp0p4/).
+  Summaries and numbers: [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md).
 
 Protocol compliance work must additionally pin the relevant UART profile,
 peer-specific SPI timing, NXP I2C specification, and the selected USB/CAN/IEEE

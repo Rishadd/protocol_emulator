@@ -1,143 +1,103 @@
-# Management Module + SPI Host Link — Implementation and Test Plan
+# Management Module + SPI Host Link — Design and Status
 
-Companion to [EXECUTION_PLAN.md](EXECUTION_PLAN.md) (task R8) and [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md) §6 | 2026-10-10 | Status: **plan, nothing built yet**
+Companion to [EXECUTION_PLAN.md](EXECUTION_PLAN.md) (task R8) and [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md) §6 |
+2026-10-10, revised 2026-10-11 | Status: **frame v1 built and verified in simulation (steps 1-8); CRC, sequence numbers, ID registers and the pin window are still to do**
 
-## As built: frame v1 (2026-10-11, simulation only)
+## Goal
 
-The user's 8-step sequence (see [../memory.md](../memory.md)) replaced the order below. CRC and
-sequence numbers are deliberately left out until the basics are proven.
+A host (a testbench in simulation, a Pico later) sends everything to the chip over SPI: engine programs, control
+commands and payload. The management module decodes the frames, loads both engines, starts and stops them, and moves
+bytes between SPI and the engine FIFOs. Success test (met in simulation): a long message goes in over SPI, out of the TX
+engine on the UART line, back into the RX engine, and out over SPI, with sent, recorded and received data identical.
 
-**Pins (Tiny Tapeout template, architecture doc §5):** `ui_in[0]` SCLK, `ui_in[1]` MOSI,
-`ui_in[2]` CS_N, `uo_out[0]` MISO, `uio[7:0]` protocol pins. Top: `src/tt_um_protocol_emulator.v`.
+## Built: frame v1 (simulation only)
 
-**Frame:** exactly 7 bytes per CS_N low, SPI mode 0, MSB first, big endian, full duplex.
+**Pins** (Tiny Tapeout template, architecture doc §5): `ui_in[0]` SCLK, `ui_in[1]` MOSI, `ui_in[2]` CS_N, `uo_out[0]` MISO,
+`uio[7:0]` protocol pins. Top: `src/tt_um_protocol_emulator.v`. SPI slave: `src/spi_slave.v` (mode 0, needs >= 8 system
+clocks per SCLK half-period and >= 4 for CS_N setup/hold). Management: `src/mgmt.v`.
+
+**Frame:** exactly 7 bytes per CS_N low, SPI mode 0, MSB first, **big endian**, full duplex. (This deviates from the
+architecture doc's little-endian field order so the frame is one plain shift register; revisit with the final frame.)
 
 | Byte | 0 | 1-2 | 3-6 |
 |---|---|---|---|
 | MOSI | op: 0x01 WRITE, 0x02 READ | address | write data |
 | MISO | STATUS | 0x00 | read data (0 for WRITE) |
 
-STATUS (sampled at frame start): `[7]` 1 (alive), `[6]` err, `[5:4]` RUN e1/e0,
-`[3:2]` TX full e1/e0, `[1:0]` RX has data e1/e0.
+STATUS (sampled while CS_N is high, so it is always the state at the start of the frame): `[7]` 1 (alive), `[6]` err,
+`[5:4]` RUN e1/e0, `[3:2]` TX full e1/e0, `[1:0]` RX has data e1/e0.
 
-**Registers** (engine e, base = 0x1000 for engine 0 and 0x2000 for engine 1):
+**Registers** (engine e: base = 0x1000 for engine 0, 0x2000 for engine 1; `addr[15:12]` selects the engine):
 
 | Address | Access | Meaning |
 |---|---|---|
-| base+0x000 | W | CTRL bit 0 RUN. RUN=0 holds PC/control/pins in reset, keeps FIFOs and memory |
+| base+0x000 | W | CTRL bit 0 RUN. RUN=0 holds PC/control/counters/shifters/pins in reset (pins released) but keeps FIFOs and memory. Reset value 0. Other bits must be 0 |
 | base+0x000 | R | `{pc[13:8], fault[2], halted[1], RUN[0]}` |
-| base+0x100+4i | W | instruction word i (only while RUN=0) |
-| base+0x200 | W | TX FIFO push; accepted only if this frame's STATUS showed TX not full |
-| base+0x204 | R | RX FIFO pop; valid (and popped) only if this frame's STATUS showed RX data |
+| base+0x100+4i | W | instruction word i, **only while RUN=0** (otherwise rejected, sets err) |
+| base+0x200 | W | TX FIFO push, also while RUN=0 (preload). Accepted only if this frame's STATUS showed TX not full; otherwise dropped silently and the host resends |
+| base+0x204 | R | RX FIFO pop. Pops only if this frame's STATUS showed data; otherwise returns 0 and pops nothing. The byte is in bits [31:24] (LSB-first receive) |
 
-**Commit rules:** nothing takes effect before CS_N rises on a complete 7-byte frame, so an
-aborted frame does nothing. A bad frame (length, op, address, a write to a running engine's
-memory) changes nothing and sets the sticky err bit (cleared by reset). The STATUS rules make
-every TX push and RX pop exactly-once, without extra polling frames.
+**Commit rules:** nothing takes effect before CS_N rises on a complete 7-byte frame, so an aborted frame does nothing.
+Read data is frozen after byte 2 and the pop happens only on a complete frame, so no byte is torn or lost. A bad frame
+(wrong length, unknown op, unmapped or misaligned address, nonzero reserved CTRL bits, instruction write to a running
+engine) changes nothing and sets the sticky `err` bit (cleared only by reset); an empty CS_N pulse is not an error. The
+STATUS rules make every TX push and RX pop exactly-once without extra polling frames.
 
-## Goal
+### Build order as executed (the user's 8 steps)
 
-A host (a testbench in simulation, a Pico later) sends everything to the chip over SPI:
-the engine programs, the control commands, and a long message. The management module
-decodes the SPI frames and loads the two UART engines (TX and RX firmware). It then moves
-payload bytes between SPI and the engine FIFOs. Success test: a long message goes out over
-SPI, through the TX engine onto the UART line, back into the RX engine, and out over SPI.
-The sent and received data must be identical.
+| Step | What | Test | Result |
+|---|---|---|---|
+| 1 | `instr_mem` synchronous write port | `tb_instr_mem` | PASS; mutations caught |
+| 2 | `spi_slave`, minimal `mgmt`, TT top | `tb_spi_word0` (since replaced) | PASS |
+| 3 | Frame v1, `run` gate, RUN register, write rules | `tb_mgmt_frame` | PASS; mutations caught |
+| 4 | Full 64-word loads, golden engine in lockstep (pattern, 64-word, UART TX and RX images; 15,679 cycles, 0 mismatches) | `tb_mgmt_load` | PASS |
+| 5 | Engine 1, per-engine RUN/write enable, pad merge (engine 0 wins) | `tb_mgmt_dual` | PASS (~112k cycles, two golden engines, 0 mismatches) |
+| 6 | READ op, STATUS, RX pop with real UART RX firmware | `tb_mgmt_read` | PASS; 6 mutations caught |
+| 7 | TX push with flow control, real UART TX firmware (101 bytes decoded, 218 resends in a 64-byte stream) | `tb_mgmt_tx` | PASS |
+| 8 | Full duplex through SPI: TX on engine 0 / P0, RX on engine 1 / P1, 1 KB at 115200, live echo and replay, jitter, baud error, negative case | `tb_mgmt_duplex` + `host/mgmt_duplex_stress.py` | All cases 1024/1024, every TX frame cycle-exact, 0 faults; negative case detected |
 
-## What blocks us today
+Regression: the 16 testbenches in `run_tests.ps1` PASS (re-run 2026-10-11). `tb_mgmt_duplex` is driven by Python and is not
+part of that script.
 
-- **The instruction memory is read-only.** [instr_mem.v](../src/instr_mem.v) is a ROM loaded
-  with `INIT_FILE`. Programs can't come from SPI until it gets a write port.
-- **The engine starts running at reset.** If the memory is empty or X, it executes garbage, so
-  we need a `run` gate that holds the PC and control state in reset while the memory loads.
-  The FIFOs and the memory must survive that hold, so a TX word can be preloaded before arming.
-- **The FIFOs are only 4 words deep** ([fifo.v](../src/fifo.v)). A long message can't be pushed
-  in one go, and the RX side must be drained fast enough. Flow control is the central part of
-  this design. `fifo.v` exposes only `full`/`empty`, so level reporting needs a small
-  count output.
-- **Bandwidth is tight at 115200 baud.** One byte takes about 87 us per direction. At a 3 MHz
-  SPI clock, a 12-byte frame takes 32 us. Streaming needs one write frame and one read frame
-  per byte, which is about 64 us, so there is almost no spare time. Put FIFO status in the
-  response to every frame so we never spend frames polling, and start the long-message tests at
-  a lower baud. Keep 115200 as the stretch goal.
+## Original plan: what was deferred or replaced
 
-## Build order
+The first version of this document planned a 12-byte frame with CRC-16, a pipelined response with sequence numbers, and
+level reporting. These were **deliberately left out of v1** to prove the data path first. They are still required before tape-out:
 
-Each step has a testbench that passes before the next starts.
-
-1. **Freeze the v1 spec and write the Python golden model** (`host/mgmt_frame.py`).
-   - The 12-byte frame: op, seq, addr, payload, status, CRC-16/CCITT-FALSE.
-   - A minimal address map: ID, global run/halt/reset per engine, engine instruction-memory
-     window, FIFO window, and status. Engine 1 sits at the 0x2000 window.
-   - Status bits: `tx_full`, `rx_empty`, levels, `halted`, `fault`, and a sticky RX-overrun flag.
-   - **Test:** the CRC of `"123456789"` must be 0x29B1, and encode/decode must round-trip.
-2. **Engine changes** (the only edits to verified RTL): the instruction-memory write port and
-   the `run` gate.
-   - **Test:** all 136 existing checks still pass with `run` tied high. A new testbench writes
-     words, arms the engine, and checks the PC starts at 0.
-3. **`spi_slave.v`**: SPI mode 0, MSB first, with SCLK, CS and MOSI synchronized into the
-   system clock. CS going high mid-frame aborts the frame.
-   - **Test:** an SPI master model in the testbench (`tb/spi_bfm.vh`), swept over SCLK divide
-     ratios down to 8 system clocks per half-period.
-4. **Frame layer** (`mgmt_frame.v`): collect 12 bytes, check the CRC, and commit only after the
-   frame is accepted. Responses are pipelined, so each frame returns the previous command's
-   result, and a duplicate seq returns the cached result without side effects.
-   - **Test:** bad CRC, a mid-frame CS abort, and a duplicate seq. The duplicate-seq case
-     matters most. A retried frame must never push or pop a FIFO twice, or the stream gets
-     corrupted.
-5. **`mgmt_regs.v`**: the decoder that routes to the resources:
-   - instruction-memory write and read-back for both engines
-   - run, halt and reset control
-   - TX FIFO write (never blocks, returns BUSY when full)
-   - RX FIFO pop (BUSY when empty)
-   - status reads
-   - The RX word is exposed raw as 32 bits, with the byte in bits [31:24], and the host script
-     shifts it down. This avoids extra hardware.
-   - **Test:** load `uart_tx_prog.hex` over SPI, then compare the waveform to the INIT_FILE
-     version using the existing cycle-exact `check_exact`. This proves SPI loading changes
-     nothing.
-6. **`mgmt_top.v`**: SPI slave, frame layer, regs and both engines. The UART pins match the
-   duplex top. The old [de0_nano_duplex_top.v](../src/fpga/de0_nano_duplex_top.v) stays
-   untouched as the known-good fallback.
-
-## How the testbench works
-
-- Python writes a **command file** with high-level operations: load program, write byte N, read
-  RX, arm, run for N cycles. The Verilog SPI master (`tb_mgmt.v`) executes it.
-- **The polling and pacing logic lives in the Verilog master model.** Flow control has to react
-  to the FIFO status coming back, and a precomputed edges file can't do that. This is the one
-  real difference from today's open-loop edges-file approach
-  ([host/uart_duplex_workload.py](../host/uart_duplex_workload.py)).
-- The testbench logs:
-  - UART TX line edges (the same `T <ns> <level>` format the existing code decodes)
-  - every RX word read over SPI
-  - status snapshots
-
-## Test ladder
-
-| # | Test | Pass condition |
+| Item | v1 | Target |
 |---|---|---|
-| T1 | Read ID, scratch write/read, bad CRC, CS abort | Correct responses, no side effects on bad frames |
-| T2 | Load both programs, read back and checksum | Checksum matches the hex files |
-| T3 | **TX only**: stream the long message through SPI with flow control. `rec_tx.py` decodes the line into `tx_rec.bin`. | `tx_rec.bin` equals the sent message |
-| T4 | **RX only**: the existing fake phone (`make_edges`) drives RX, and the host drains over SPI into `rx_got.bin` | `rx_got.bin` equals the sent bytes |
-| T5 | **Loopback**: the long message goes over SPI, out the TX engine, back into the RX engine, and out over SPI. `compare.py` checks sent against recorded against received. | All three identical; on mismatch it prints the first bad index |
-| T6 | Stress: host stalls (provoke RX overrun and check the flag), SPI clock ratios, CS aborts and bad CRC injected mid-stream with retries, baud error | Exactly-once delivery, no duplicates or drops |
-| T7 | Add everything to [run_tests.ps1](../run_tests.ps1) | One command runs it all |
+| Frame | 7 bytes, big endian | 12 bytes: op, seq, addr, payload, status, CRC-16/CCITT-FALSE (architecture doc §6) |
+| Integrity | length + op/address checks only | CRC over bytes 0-9; commit only after CRC accepted |
+| Retry safety | exactly-once via per-frame STATUS | duplicate-sequence detection, cached result, pipelined response |
+| FIFO levels | full/has-data flags | levels, high-water marks, RX overrun flag (needs `fifo.v` count output) |
+| ID / capacity / version registers | none | `0x0000` window; read-only capability registers |
+| Pin management window | none | `0x0200` window: owner, mode, claim/deny, violations (see the study §5) |
+| Instruction readback | none | free once instruction memory is SRAM (the same port) |
 
-**T5, two ways.** The Verilog simulator can't stream to and from a live Python script in batch
-mode, so the loopback runs in two forms:
+### Decisions the original plan left open, now answered
 
-- **Concurrent loopback.** The testbench wires TX to RX and Python only post-processes. This
-  tests real full-duplex timing, and it's the primary result.
-- **Two-pass replay.** Run 1 records the TX line. Python writes `tx_rec.bin` and converts the
-  recorded timestamps into an edges file (optionally with jitter or baud error). Run 2 replays
-  that edges file into RX. The same record and compare scripts later work against a real serial
-  port on hardware.
+- **Message size:** 1 KB for the regression (done, 1024/1024). Longer soak runs remain optional.
+- **Baud for the long test:** 115200 was reached directly, with an SPI half-period of 13.3 system clocks and one write frame
+  plus one read frame per byte.
+- **Bandwidth at 115200:** a 7-byte frame is shorter than the 12-byte target, so v1 has more margin than the final frame
+  will. Re-check the budget when the 12-byte CRC frame lands (a 12-byte frame at 3 MHz is 32 us; one write and one read per byte
+  is about 64 us against 87 us per UART byte).
 
-## Open decisions
+## Interaction with the SRAM decision
 
-- **Message size.** At 115200 baud, 10 KB is about 44M simulated clock cycles. Proposal: 1 KB for
-  the regression and 10 KB or more as an occasional soak run.
-- **Baud for the long test.** Proposal: run T3 to T5 at 57600 or lower first, and push to 115200
-  once the pacing is proven.
+[ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md) recommends moving instruction memory to SRAM. For this
+module that means: the write port is the macro's port, still usable only while RUN=0 (same rule, so frame behavior is
+unchanged); host readback becomes possible; with a shared dual-port macro the claim rule "write a page only if its owner
+is not running" is added to the instruction-write decode. No frame change is needed.
+
+## Test ladder — mapping the original T1-T7 to what exists
+
+| Original | Where it lives now |
+|---|---|
+| T1 scratch, bad length, CS abort, no side effects | `tb_mgmt_frame`. **Open:** ID read, scratch echo, bad-CRC (no CRC yet) |
+| T2 load both programs and verify | `tb_mgmt_load` (golden engine in lockstep). Readback checksum: open (no readback) |
+| T3 TX only with flow control | `tb_mgmt_tx` |
+| T4 RX only | `tb_mgmt_read` |
+| T5 loopback, concurrent and two-pass replay | `tb_mgmt_duplex` live echo and replay |
+| T6 stress: stalls, SCLK ratios, aborts, baud error | `tb_mgmt_read`/`_tx` SCLK sweeps and aborts; `tb_mgmt_duplex` stall negative case, jitter, baud error. Bad-CRC injection: open |
+| T7 one command runs it all | `run_tests.ps1` runs 16; `tb_mgmt_duplex` still needs its Python wrapper |

@@ -47,7 +47,7 @@ module tb_uart_rx;
             $display("ERROR: missing plusargs");
             $finish;
         end
-        $readmemh(prog_f, dut.imem.mem);
+        dut.imem.load_hex(prog_f);
         fo = $fopen(out_f, "w");
         fe = $fopen(edges_f, "r");
         repeat (2) @(posedge clk);

@@ -100,8 +100,8 @@ module tb_mgmt_dual;
         begin
             bad = 0;
             for (j = 0; j < 64; j = j + 1) begin
-                if (dut.u_eng0.imem.mem[j] !== model[j])      bad = bad + 1;
-                if (dut.u_eng1.imem.mem[j] !== model[64 + j]) bad = bad + 1;
+                if (dut.u_eng0.imem.peek(j) !== model[j])      bad = bad + 1;
+                if (dut.u_eng1.imem.peek(j) !== model[64 + j]) bad = bad + 1;
             end
             `CHECK(bad == 0, tag)
             if (bad != 0) $display("    %0d words wrong", bad);
@@ -115,7 +115,7 @@ module tb_mgmt_dual;
             ctrl(e, 0);
             for (j = 0; j < 64; j = j + 1) wr_word(e, j);
             for (j = 0; j < 64; j = j + 1)
-                if (e) gold[1].eng.imem.mem[j] = img[64 + j]; else gold[0].eng.imem.mem[j] = img[j];
+                if (e) gold[1].eng.imem.poke(j, img[64 + j]); else gold[0].eng.imem.poke(j, img[j]);
             check_mems("both memories exact after load");
         end
     endtask
@@ -127,8 +127,8 @@ module tb_mgmt_dual;
             ctrl(0, 0); ctrl(1, 0);
             for (j = 0; j < 64; j = j + 1) begin wr_word(0, j); wr_word(1, j); end
             for (j = 0; j < 64; j = j + 1) begin
-                gold[0].eng.imem.mem[j] = img[j];
-                gold[1].eng.imem.mem[j] = img[64 + j];
+                gold[0].eng.imem.poke(j, img[j]);
+                gold[1].eng.imem.poke(j, img[64 + j]);
             end
             check_mems("both memories exact after interleaved load");
         end
@@ -215,7 +215,7 @@ module tb_mgmt_dual;
         do_reset;
         hex_image(0, "src/fpga/uart_tx_prog.hex"); hex_image(1, "src/fpga/uart_rx_prog.hex");
         load(0); load(1);
-        `CHECK(dut.u_eng0.imem.mem[3] === 32'h3000_0000, "TX image in engine 0")
+        `CHECK(dut.u_eng0.imem.peek(3) === 32'h3000_0000, "TX image in engine 0")
         uio_in = 8'b0000_0010;                       // RX line (P1) idle high
         ctrl(1, 1); ctrl(0, 1); repeat (1000) @(posedge clk); #1;
         `CHECK(dut.u_eng0.pc == 3 && uio_oe === 8'h01 && uio_out[0] === 1'b1, "TX idles high on P0, blocked in PULL")

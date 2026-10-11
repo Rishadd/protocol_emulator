@@ -43,8 +43,8 @@ def compile_tb():
     vvp = os.path.join(BUILD, "tb_uart_rx.vvp")
     srcs = [os.path.join(uw.ROOT, "src", f) for f in sorted(os.listdir(os.path.join(uw.ROOT, "src")))
             if f.endswith(".v")]
-    subprocess.run(["iverilog", "-g2012", "-I", os.path.join(uw.ROOT, "src"), "-o", vvp,
-                    os.path.join(uw.ROOT, "tb", "tb_uart_rx.v")] + srcs, check=True)
+    subprocess.run(["iverilog", "-g2012", *uw.SIM_DEFS, "-I", os.path.join(uw.ROOT, "src"), "-o", vvp,
+                    os.path.join(uw.ROOT, "tb", "tb_uart_rx.v")] + srcs + uw.SIM_LIBS, check=True)
     return vvp
 
 

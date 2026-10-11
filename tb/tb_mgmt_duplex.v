@@ -13,12 +13,12 @@
 //   otherwise                   live: UART echo peer receives each byte on P0 and sends it back
 //                               on P1 as soon as its stop bit is sampled (+PEERBIT_PS bit time,
 //                               +JITTER_NS edge jitter)
-// Plusargs: +PROG0 +PROG1 +PAYLOAD(hex bytes) +N +OUT +SPIHALF_NS +TMAX(cycles)
+// Plusargs: +PROG0 +PROG1 +PAYLOAD(hex bytes) +N +OUT +SPIHALF_NS +TMAX(cycles) [+BIT(clocks, 434)]
 //           [+RXEDGES] [+PEERBIT_PS] [+JITTER_NS] [+STALL_AT +STALL_CYC] [+SEED]
 // Log: T <ns> <lvl> (P0 line)  E <ns> <lvl> (P1 line)  W <ns> <byte> (TX accepted)
 //      R <ns> <byte> (valid RX read)  STATUS k=v ...
 module tb_mgmt_duplex;
-    localparam integer BIT = 434;                   // nominal UART bit, clocks
+    integer            BIT = 434;                   // nominal UART bit, clocks (+BIT=, 5208 = 9600)
     localparam [7:0]   OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0]  W_HALT = {`OP_HALT, 27'd0};
 
@@ -147,7 +147,8 @@ module tb_mgmt_duplex;
         end
         replay    = $value$plusargs("RXEDGES=%s", rxe_f);
         live_peer = !replay;
-        if ($value$plusargs("PEERBIT_PS=%d", peer_bit_ps)) ;
+        if ($value$plusargs("BIT=%d", BIT)) ;
+        if (!$value$plusargs("PEERBIT_PS=%d", peer_bit_ps)) peer_bit_ps = BIT * 10 * 1000;
         if ($value$plusargs("JITTER_NS=%d", jitter_ns)) ;
         if ($value$plusargs("STALL_AT=%d", stall_at)) ;
         if ($value$plusargs("STALL_CYC=%d", stall_cyc)) ;

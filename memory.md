@@ -53,5 +53,13 @@ Full write-up: [docs/ASIC_AREA_AND_MEMORY_STUDY.md](docs/ASIC_AREA_AND_MEMORY_ST
 - Pin ownership block prototype: 5.2k um^2 (0.7%); with remap 14.7k. Also makes open-drain an ownership mode, so no ISA bit needed for I2C.
 - After SRAM the 4 FIFOs are the next big item (41k). Not yet done: SRAM fetch simulation, STA, pin_mgr simulation.
 
+## SRAM instruction memory (DONE 2026-10-11, simulation only)
+Write-up with all numbers: [docs/SRAM_INSTR_MEM_RESULTS.md](docs/SRAM_INSTR_MEM_RESULTS.md).
+- `instr_mem` = 2 x IHP 1P 64x16 macros per engine (same address; u_lo = bits 15:0, u_hi = bits 31:16). Read is synchronous, so `pc_reg` outputs `next_pc` and `engine_top` addresses imem with it: instr is still the word for the current pc. FIFO strobes masked with `core_rst_n` (else a stale PULL/PUSH fires once when RUN drops).
+- Chip: **414,137 -> 143,421 um^2 (-65.4%, 57.5% -> 19.9% of 720k)**, std cells 15,516 -> 3,834 (+4 macros), flops 5,091 -> 995. FIFOs (41k) are now the largest block.
+- Sim: macro models in `sim/ihp_sram/` (`-DFUNCTIONAL`); tbs use `imem.poke/peek/load_hex`. `run_tests.ps1` 16/16 PASS incl. new `tb_fetch_equiv` (old engine from 42d262a in lockstep, 0 mismatches). TX/RX and SPI full duplex PASS at 115200 (counts identical to the flop baseline) and 9600 (`mgmt_duplex_stress.py --baud 9600`).
+- FPGA left untouched by request: `src/fpga`, `quartus/`, `tb_de0_nano_*`, `tb_uart_duplex` + `uart_duplex_workload.py` no longer build with the macro `instr_mem` and are not run.
+- Open: CMOS5L acceptance of the macro, STA of the macro -> decode -> next_pc path, LibreLane macro/PDN config. Next task: SPI protocol.
+
 ## Next: full duplex (TX + RX together)
 Plan: two engines (one TX program, one RX program, both existing and verified), plus a tiny echo path RX -> TX. Verify in simulation first (phone sends while the echo transmits), then a new Quartus revision, then test with the phone. Details agreed before any code is written.

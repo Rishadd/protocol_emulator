@@ -73,8 +73,8 @@ module tb_mgmt_load;
             for (j = 0; j < 64; j = j + 1) wr(A_IMEM + 4 * j, img[j]);
             bad = 0;
             for (j = 0; j < 64; j = j + 1) begin
-                if (dut.u_eng0.imem.mem[j] !== img[j]) bad = bad + 1;
-                gold.imem.mem[j] = img[j];
+                if (dut.u_eng0.imem.peek(j) !== img[j]) bad = bad + 1;
+                gold.imem.poke(j, img[j]);
             end
             `CHECK(bad == 0, "all 64 words loaded exactly")
             `CHECK(dut.u_mgmt.err == 0, "no management error while loading")
@@ -117,7 +117,7 @@ module tb_mgmt_load;
 
         $display("--- L2 reload while running is refused; after RUN=0 a new image runs");
         wr(A_IMEM, W_HALT);
-        `CHECK(dut.u_mgmt.err == 1 && dut.u_eng0.imem.mem[0] === img[0], "write while running refused")
+        `CHECK(dut.u_mgmt.err == 1 && dut.u_eng0.imem.peek(0) === img[0], "write while running refused")
         rst_n = 0; repeat (2) @(posedge clk); #1 rst_n = 1; repeat (2) @(posedge clk); #1;  // clear err
 
         $display("--- L3 64-word program that executes every word");

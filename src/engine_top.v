@@ -1,6 +1,8 @@
 // Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
-// In a testbench: $readmemh("program.hex", <inst>.imem.mem);
+// Fetch: instr_mem has a synchronous read (SRAM macros) and is addressed with pc_reg.next_pc,
+// so instr always holds the word for the current pc. In a testbench use <inst>.imem.poke(a,w) /
+// .load_hex("program.hex") (not a hierarchical array write).
 // run=0 holds the execution core (PC, control, counters, shifters, pins) in reset:
 // PC=0, pins released. FIFOs and instruction memory keep their contents.
 // run must come from a flop (it gates an asynchronous reset).
@@ -34,7 +36,7 @@ module engine_top #(
     wire        core_rst_n = rst_n & run;
     wire [31:0] instr;
     wire        pc_advance, pc_jump;
-    wire [5:0]  jump_addr;
+    wire [5:0]  jump_addr, next_pc;
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value;
     wire        lc_load, lc_dec;
@@ -51,9 +53,14 @@ module engine_top #(
     wire [2:0]  cfg_out_pin, cfg_in_pin;
     wire        cfg_osr_msb, cfg_isr_msb;
 
+    // Held engine (core_rst_n=0): pc is already 0 but, with the synchronous instruction read, instr
+    // still shows the previous pc's word for one more clock (the macro re-reads word 0 on the next
+    // edge), and control_unit decodes whatever instr holds. tx_rd_en / rx_wr_en are the only
+    // control_unit outputs that reach state outside the reset core (the FIFOs), so they are
+    // masked with core_rst_n; everything else sits behind core_rst_n's asynchronous reset.
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .clk   (clk),
-        .addr  (pc),
+        .addr  (next_pc),
         .instr (instr),
         .we    (imem_we),
         .waddr (imem_waddr),
@@ -66,7 +73,8 @@ module engine_top #(
         .advance   (pc_advance),
         .jump      (pc_jump),
         .jump_addr (jump_addr),
-        .pc        (pc)
+        .pc        (pc),
+        .next_pc   (next_pc)
     );
 
     delay_counter dc (
@@ -93,7 +101,7 @@ module engine_top #(
         .wr_en   (tx_wr_en),
         .wr_data (tx_wr_data),
         .full    (tx_full),
-        .rd_en   (tx_rd_en),
+        .rd_en   (tx_rd_en & core_rst_n),   // masked while held (note above imem)
         .rd_data (tx_rd_data),
         .empty   (tx_empty)
     );
@@ -101,7 +109,7 @@ module engine_top #(
     fifo rx_fifo (
         .clk     (clk),
         .rst_n   (rst_n),
-        .wr_en   (rx_wr_en),
+        .wr_en   (rx_wr_en & core_rst_n),
         .wr_data (isr_data),
         .full    (rx_full),
         .rd_en   (rx_rd_en),

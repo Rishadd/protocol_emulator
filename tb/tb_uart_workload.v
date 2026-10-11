@@ -46,7 +46,7 @@ module tb_uart_workload;
         end
         if (!$value$plusargs("NOWAIT=%d", nowait)) nowait = 0;
 
-        $readmemh(prog_f, dut.imem.mem);
+        dut.imem.load_hex(prog_f);
         $readmemh(data_f, data);
         $readmemh(gaps_f, gaps);
         fd = $fopen(out_f, "w");
