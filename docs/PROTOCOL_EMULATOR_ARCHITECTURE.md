@@ -213,7 +213,7 @@ Fixed 32-bit words, one flat operand:
 
 | Bits | Meaning |
 | --- | --- |
-| 31:27 | Opcode: 32 encodings, 17 implemented, reserved ones trap |
+| 31:27 | Opcode: 32 encodings, 19 implemented, reserved ones trap |
 | 26:0 | Operand — meaning fixed per opcode: delay, address, count, pin index, or `CFG` bits |
 
 The earlier proposal split the low bits into a 6-bit post-commit delay, 3
@@ -234,7 +234,8 @@ Implemented families (details and cycle costs in [../instructions.md](../instruc
 | Data movement | `PULL`, `PUSH` | Blocking FIFO ↔ shifter transfer; stall holds PC with no side effects |
 | Serial | `OUT1 d`, `IN1 d` | One bit between the mapped pin and OSR/ISR, then hold d cycles; bit order from `CFG` |
 | Pins | `SETH p`, `SETLO p`, `DIRO p`, `DIRI p` | Per-pin data / direction; open-drain = `DIRO` to drive low, `DIRI` to release |
-| Wait on pin | `WAITH p`, `WAITL p` | Level waits (I2C stretch, handshakes); `WAITR`/`WAITF` edge waits reserved |
+| Wait on pin | `WAITH p`, `WAITL p` | Level waits (I2C stretch, handshakes) |
+| Branch on pin | `JPH p,a`, `JPL p,a` | Jump if the synchronized pin is high / low (SPI slave CS abort); added 2026-10-11 |
 | Config | `CFG v` | out_pin, in_pin, OSR/ISR MSB-first |
 
 Planned families from the original proposal, not yet needed by any verified

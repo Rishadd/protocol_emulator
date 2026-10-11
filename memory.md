@@ -63,3 +63,20 @@ Write-up with all numbers: [docs/SRAM_INSTR_MEM_RESULTS.md](docs/SRAM_INSTR_MEM_
 
 ## Next: full duplex (TX + RX together)
 Plan: two engines (one TX program, one RX program, both existing and verified), plus a tiny echo path RX -> TX. Verify in simulation first (phone sends while the echo transmits), then a new Quartus revision, then test with the phone. Details agreed before any code is written.
+
+## SPI master + slave (DONE 2026-10-11, simulation only, no FPGA)
+Design: [docs/SPI_PLAN.md](docs/SPI_PLAN.md). Results: [docs/SPI_RESULTS.md](docs/SPI_RESULTS.md). Run: `python host/spi_test.py`.
+- Decisions: add a pin-conditional jump; no loopback yet; 1-32 bits per CS frame.
+- **ISA:** `JPH p,a` (17) / `JPL p,a` (18), operand `[8:6]` pin, `[5:0]` addr, 1 cycle. `tb_control_unit` traps moved to 19/20;
+  `tb_fetch_equiv` draws illegal opcodes from 19-31 (the reference engine predates JPH/JPL).
+- Firmware from `host/spi_prog.py`: master 17/18 words, slave 18/16 words (CPHA 0/1). Slave polls CS in every edge wait,
+  so CS inactive mid-frame aborts cleanly (no PUSH). CPHA=0 slave ends at the last sample (CS may rise right after the last edge).
+- Master timing exact in all modes: lead H+2, idle H+3, CS setup H+2 clocks. Master samples MISO 1 clock before its own
+  edge -> peer clock-to-out < H+1 clocks (measured: H=4 passes 40 ns, fails 50 ns).
+- Slave limits (clocks): half >= 4 (CPHA0) / 5 (CPHA1); CS setup >= 6 / 1; CS high >= 4. Samples 1-3 clk after the edge,
+  MISO 3-5 clk after the shift edge, released 3 clk after CS rises. Host must preload TX and drain RX (failures are detected).
+- Chip level: sustained slave needs ~2 management frames per SPI frame (25 us OK, 20 us fails at 10-clk mgmt half period).
+- Testbench lessons: (1) X->0 at reset is not an SCLK edge (decoder counts only 0<->1); (2) chip tb pads need `assign #1`
+  to filter the zero-width `uio_out` mux pulse (same lesson as UART); (3) a slave answering a whole half-period late still
+  passes data checks with a slow peer, so the slave's sample/response time is now a checked limit; (4) CS setup must
+  mean CS fall to first edge in the master model, else the sweep never stresses it.

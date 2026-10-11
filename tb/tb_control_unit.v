@@ -130,6 +130,17 @@ module tb_control_unit;
         pin_in = 8'h00; #1;
         `CHECK(ctl == ADV, "A7 WAITL passes when low") tick;
 
+        // JPH/JPL: operand [8:6] pin, [5:0] addr; one cycle, taken or not
+        pin_in = 8'h20; set(`OP_JPH, (5 << 6) | 9);
+        `CHECK(ctl == JMP && jump_addr == 9, "A7 JPH taken when pin high") tick;
+        pin_in = 8'hDF; #1;
+        `CHECK(ctl == ADV, "A7 JPH falls through when pin low (others high)") tick;
+        pin_in = 8'hFB; set(`OP_JPL, (2 << 6) | 33);
+        `CHECK(ctl == JMP && jump_addr == 33, "A7 JPL taken when pin low (others high)") tick;
+        pin_in = 8'h04; #1;
+        `CHECK(ctl == ADV, "A7 JPL falls through when pin high") tick;
+        pin_in = 8'h00;
+
         set(`OP_CFG, 8'b1110_1011); // out=3 in=5 osr_msb=1 isr_msb=1
         `CHECK(ctl == ADV, "A7 CFG") tick;
         `CHECK(cfg_out_pin == 3 && cfg_in_pin == 5 && cfg_osr_msb == 1 && cfg_isr_msb == 1, "A7 CFG regs")
@@ -142,11 +153,11 @@ module tb_control_unit;
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 halted engine ignores NOP") tick;
 
-        do_reset; set(5'd17, 0);
-        `CHECK(ctl == NONE, "A7 opcode 17 no strobes") tick;
-        `CHECK(halted == 1 && fault == 1, "A7 opcode 17 traps")
-        do_reset; set(5'd18, 0); tick;
-        `CHECK(halted == 1 && fault == 1, "A7 opcode 18 traps")
+        do_reset; set(5'd19, 0);
+        `CHECK(ctl == NONE, "A7 opcode 19 no strobes") tick;
+        `CHECK(halted == 1 && fault == 1, "A7 opcode 19 traps")
+        do_reset; set(5'd20, 0); tick;
+        `CHECK(halted == 1 && fault == 1, "A7 opcode 20 traps")
         do_reset; set(5'd31, 0); tick;
         `CHECK(halted == 1 && fault == 1, "A7 opcode 31 traps")
         set(`OP_NOP, 0);

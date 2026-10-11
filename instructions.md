@@ -3,8 +3,8 @@
 Companion to the RTL in [src/](src/) and the tests in [tb/](tb/). This is the
 contract the host loader must follow when it writes programs into instruction
 memory. Anything marked **VERIFIED** has passed simulation (`run_tests.ps1` and the management/duplex testbenches);
-UART TX and RX have also run on a DE0-Nano. Anything marked **DRAFT** (SPI, I2C, JTAG) is derived from the same cycle
-rules but has not been run on the RTL yet. Status as of 2026-10-11.
+UART TX and RX have also run on a DE0-Nano; SPI master and slave (all 4 modes) are verified in simulation only. Anything
+marked **DRAFT** (I2C, JTAG) is derived from the same cycle rules but has not been run on the RTL yet. Status as of 2026-10-11.
 
 ---
 
@@ -39,7 +39,8 @@ One operand, one meaning per opcode. No sub-fields except `CFG`.
 | 14 | `01110` | `WAITH p` | pin[2:0] | block until pin_in[p]==1 | 1 (+wait) |
 | 15 | `01111` | `WAITL p` | pin[2:0] | block until pin_in[p]==0 | 1 (+wait) |
 | 16 | `10000` | `CFG v` | see below | shifter / pin routing config | 1 |
-| 17–18 | | *(reserved)* | | `WAITR`/`WAITF` edge waits; no longer needed for UART RX (level waits suffice) | trap |
+| 17 | `10001` | `JPH p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==1, else advance | 1 |
+| 18 | `10010` | `JPL p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==0, else advance | 1 |
 | 19–31 | | *(reserved)* | | | trap |
 
 `CFG` operand: `[2:0]` out_pin, `[5:3]` in_pin, `[6]` OSR MSB-first, `[7]` ISR MSB-first.
@@ -150,47 +151,69 @@ a read of `base+0x204` after STATUS shows data ([docs/MGMT_PLAN.md](docs/MGMT_PL
 
 ---
 
-## 3. SPI master, mode 0 (CPOL=0, CPHA=0), 8-bit, MSB-first — **DRAFT**
+## 3. SPI master and slave, modes 0-3 — **VERIFIED** (simulation only, `host/spi_test.py`)
 
-Full duplex: one `OUT1` and one `IN1` per bit. Pin map: `2`=SCLK, `3`=MOSI, `4`=MISO, `5`=CS.
+Design, host rules and limits: [docs/SPI_PLAN.md](docs/SPI_PLAN.md); results: [docs/SPI_RESULTS.md](docs/SPI_RESULTS.md).
+All 8 programs (master/slave x 4 modes, any bit order, 1..32 bits per CS frame) come from `host/spi_prog.py`;
+`python host/spi_prog.py` prints them. Pin map: `2`=SCLK, `3`=MOSI, `4`=MISO, `5`=CS (active low).
+Host data: one FIFO word per CS frame; TX word `v << (32-n)` (MSB-first) or `v` (LSB-first); RX value `w & mask`
+(MSB-first) or `w >> (32-n)` (LSB-first).
+
+**Master, mode 0, 8-bit, MSB-first, H=4** (17 words; CPOL=1 swaps `SETH`/`SETLO` on pin 2, CPHA=1 is
+`SETLO 5; WAIT H; lead; OUT1 H; trail; IN1 H; DJNZ`):
 
 ```
 addr  mnemonic       hex          note
- 0    CFG   0xE3     800000E3     out_pin=3, in_pin=4, OSR+ISR MSB-first
- 1    DIRO  2        60000002     SCLK
- 2    DIRO  3        60000003     MOSI
- 3    DIRI  4        68000004     MISO is input
- 4    DIRO  5        60000005     CS
- 5    SETLO 2        58000002     SCLK idle low
- 6    SETH  5        50000005     CS idle high
- 7    PULL           30000000     <- loop entry; host writes byte<<24
+ 0    CFG   0xE3     800000E3     out_pin=3 (MOSI), in_pin=4 (MISO), OSR+ISR MSB-first
+ 1    SETLO 2        58000002     SCLK idle level (set before driving: no glitch)
+ 2    SETH  5        50000005     CS idle high
+ 3    DIRO  2        60000002
+ 4    DIRO  3        60000003
+ 5    DIRO  5        60000005
+ 6    PULL           30000000     <- frame start; parks here (CS high) when the host has no data
+ 7    SETL  8        20000008     bits per frame (1..32)
  8    SETLO 5        58000005     CS active
- 9    SETL  8        20000008
-10    OUT1  H        40000000|H   MOSI <- bit, low half of SCLK
-11    SETH  2        50000002     SCLK rise
-12    IN1   H        48000000|H   sample MISO, high half of SCLK
-13    SETLO 2        58000002     SCLK fall
-14    DJNZ  10       2800000A
-15    SETH  5        50000005     CS inactive
-16    PUSH           38000000     ISR -> rx_fifo (byte in [7:0])
-17    JMP   7        10000007
+ 9    OUT1  H        40000004     MOSI <- bit
+10    SETH  2        50000002     SCLK lead (sample edge)
+11    IN1   H        48000004     sample MISO
+12    SETLO 2        58000002     SCLK trail (shift edge)
+13    DJNZ  9        28000009
+14    SETH  5        50000005     CS inactive
+15    PUSH           38000000
+16    JMP   6        10000006
 ```
 
-**Clock math:** bit period = 2H+5 cycles (OUT1 H+1, SETH 1, IN1 H+1, SETLO 1, DJNZ 1).
-SCLK high phase = H+2, low phase = H+3 (1-cycle asymmetry, harmless for SPI).
-At 50 MHz: H=20 → 45 cycles/bit → 1.11 MHz; H=5 → 15 cycles → 3.33 MHz;
-H=0 → 5 cycles → 10 MHz (upper limit of this loop structure).
+Exact timing in every mode (checked cycle by cycle): lead phase H+2, idle phase H+3, CS to first edge H+2 clocks,
+bit period 2H+5. The master samples the synchronized MISO, i.e. the pad value 1 clock before its own sampling edge, so
+the peer's clock-to-out must be < H+1 clocks (measured). H=0 (SCLK = clk/5) works with an ideal slave.
 
-**Known caveat to verify:** `IN1` at word 12 samples the *synchronized* MISO, which is
-2 clocks old — i.e. the value MISO had 2 cycles before SCLK rose. Slaves drive MISO
-on the falling edge, so this is fine when H ≥ 2. For H < 2 move `IN1` after `SETLO 2`
-(sample after the falling edge) and re-derive the period.
+**Slave, mode 0, 8-bit, MSB-first** (18 words; CPHA=1 is 16 words; CPOL=1 swaps `JPH`/`JPL` on pin 2):
 
-**Host:** write `byte << 24` to `tx_fifo`; read `rx_rd_data[7:0]` from `rx_fifo` once
-per byte (`rx_empty` low). CS toggles per byte; for multi-byte transactions with CS
-held low, move words 8 and 15 outside a second `SETL`/`DJNZ` loop.
+```
+addr  mnemonic       hex          note
+ 0    CFG   0xDC     800000DC     out_pin=4 (MISO), in_pin=3 (MOSI), MSB-first
+ 1    WAITH 5        70000005     <- top: wait CS inactive (also hides the synchronizer's reset 0)
+ 2    DIRI  4        68000004     release MISO
+ 3    PULL           30000000     reply word: the host must have written it before CS falls
+ 4    SETL  8        20000008
+ 5    WAITL 5        78000005     CS active
+ 6    OUT1  0        40000000     first bit before the first edge (CPHA=0 only)
+ 7    DIRO  4        60000004     drive MISO
+ 8    JPH   5,1      88000141     <- b: CS inactive mid-frame -> abort to top (no PUSH)
+ 9    JPL   2,8      90000088     wait for the leading edge
+10    IN1   0        48000000     sample MOSI
+11    DJNZ  14       2800000E     more bits -> c
+12    PUSH           38000000     frame done at the last sample
+13    JMP   1        10000001
+14    JPH   5,1      88000141     <- c: abort check
+15    JPH   2,14     8800008E     wait for the trailing edge
+16    OUT1  0        40000000     next MISO bit
+17    JMP   8        10000008
+```
 
----
+Measured slave contract (system clocks; at 50 MHz multiply by 20 ns): SCLK half period >= 4 (CPHA=0) / 5 (CPHA=1),
+CS fall to first edge >= 6 (CPHA=0) / 1 (CPHA=1), CS inactive >= 4. Response: samples MOSI 1-3 clocks after the edge,
+updates MISO 3-5 clocks after the shift edge, releases MISO 3 clocks after CS rises.
 
 ## 4. I2C master write — **DRAFT, needs one ISA addition**
 
@@ -222,8 +245,8 @@ that makes `OUT1` write `pin_oe[out_pin] ← ~bit` instead of `pin_out`.
 With the open-drain `OUT1`, a
 data bit is `OUT1 t ; DIRI 7 ; WAITH 7 ; WAIT t ; DIRO 7` and the byte fits in a
 `SETL 8`/`DJNZ` loop like UART/SPI. The ACK is captured with `IN1` into the ISR and
-pushed to the host, who decides retry/abort (no conditional branch on a pin exists
-yet; `BR_PIN` is a candidate for v0.5).
+pushed to the host, who decides retry/abort. (`JPH`/`JPL`, added for the SPI slave, can now
+branch on the ACK level in firmware; not used by any I2C program yet.)
 
 ---
 

@@ -86,7 +86,7 @@ flowchart TB
 | A2 | Freeze register/CSR map | Register map | **Partly done.** Engine windows as built: `0x1000`/`0x2000` base, `+0x000` CTRL, `+0x100+4i` IMEM, `+0x200` TX, `+0x204` RX ([MGMT_PLAN.md](MGMT_PLAN.md)). Global (`0x0000`, `0x0100`), pin (`0x0200`), trace and test windows still reserved only |
 | A3 | Freeze SPI host frame | Frame spec | **Interim v1 built** (7 bytes, big endian, no CRC, no sequence). Final 12-byte CRC frame still to freeze and implement |
 | A4 | Pin map | Pin table | **DONE** as a firmware convention. Duplex build: TX on pin 0, RX on pin 1 |
-| A5 | Code-size check against instruction memory | Word counts | UART TX 12, UART RX 9 (both measured); SPI 18, JTAG ~10 + walks (drafts). **I2C and anything larger not measured** |
+| A5 | Code-size check against instruction memory | Word counts | UART TX 12, UART RX 9, SPI master 17/18, SPI slave 18/16 (CPHA 0/1) (all measured); JTAG ~10 + walks (draft). **I2C and anything larger not measured** |
 | A6 | Scope: JTAG/SWD/CAN/USB/Ethernet = research spike | Scope doc | DONE |
 | A7 | Interconnect spec | Signal table | **DONE** for engine and management ([diagram_core_internal.mmd](diagram_core_internal.mmd), `src/tt_um_protocol_emulator.v`) |
 | A8 | Verification obligations assigned | Checklist | Per-obligation status in [WORKSTREAM1_ARCHITECTURE.md](WORKSTREAM1_ARCHITECTURE.md) A8 |
@@ -113,7 +113,7 @@ Detailed module status lives in [WORKSTREAM2_RTL_IMPLEMENTATION.md](WORKSTREAM2_
 | R9 | Trace + first-fault | Not built |
 | R10 | Memory BIST (March C-) | Not built (and changes with SRAM: macros need their own BIST path) |
 | R11 | Top-level integration | **DONE for 2 engines + management** (`tt_um_protocol_emulator.v`) |
-| R12 | Full-chip simulation of firmware against RTL | **UART TX, RX and full duplex DONE** (also through SPI). SPI/I2C pending their firmware |
+| R12 | Full-chip simulation of firmware against RTL | **UART TX, RX and full duplex DONE** (also through SPI). **SPI master + slave, 4 modes, DONE** through the management link (`tb_spi_chip`). I2C pending |
 | R-FPGA | DE0-Nano wrappers | **DONE**: TX (`de0_nano_top`), RX (`de0_nano_rx_top`), duplex echo (`de0_nano_duplex_top`) at 115200 on hardware |
 
 ---
@@ -142,12 +142,12 @@ Also required before G1: put the RTL flat in the template's `src/`, keep `src/fp
 |---|---|---|
 | F1 | ISA cycle model + assembler | **Partial.** `host/uart_workload.py` has the word encoder, a UART reference model and an independent receiver. A general per-opcode model is still needed for SPI/I2C differential tests |
 | F2 | UART TX/RX firmware | **DONE and proven on hardware** (TX 12 words, RX 9 words) |
-| F3 | SPI controller firmware | Draft ([../instructions.md](../instructions.md) §3), not simulated |
+| F3 | SPI controller firmware | **DONE in simulation**: master and slave, modes 0-3, 1-32 bits, both bit orders (`host/spi_prog.py`, [SPI_PLAN.md](SPI_PLAN.md)). New opcodes `JPH`/`JPL` |
 | F4 | I2C controller firmware | Draft primitives (§4). Open-drain `OUT1` is now planned as a pin-manager mode rather than a `CFG` bit; a conditional branch on a pin for ACK/NACK is still missing |
 | F5 | Pico frame builder (op/addr/data, CRC-16) | The only host-side frame code today is the Verilog SPI master model (`tb/spi_master.vh`) and the pacing logic inside `tb_mgmt_*`; `host/mgmt_duplex_stress.py` just orchestrates runs and compares files. Pico/Python frame builder and CRC not started |
 | F6 | Pico command dispatcher | Not started |
 | F7 | Laptop control script | Not started |
-| F8 | Firmware against RTL cosimulation | **UART DONE** (`tb_mgmt_*`, `tb_uart_*`). SPI/I2C pending |
+| F8 | Firmware against RTL cosimulation | **UART DONE** (`tb_mgmt_*`, `tb_uart_*`). **SPI DONE** (`host/spi_test.py`, [SPI_RESULTS.md](SPI_RESULTS.md)). I2C pending |
 | F9 | Trace readout tooling | Not started (needs R9) |
 | F10 | Protocol-switch procedure (halt, load, verify, arm, run) | The primitives exist (RUN bit, write frames). Read-back verify becomes possible with SRAM |
 

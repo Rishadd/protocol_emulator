@@ -20,7 +20,9 @@
 `define OP_WAITH  5'd14  // pin    : block until pin_in[pin] == 1
 `define OP_WAITL  5'd15  // pin    : block until pin_in[pin] == 0
 `define OP_CFG    5'd16  // [2:0] out_pin, [5:3] in_pin, [6] OSR msb-first, [7] ISR msb-first
-// 5'd17 WAITR, 5'd18 WAITF reserved for edge detect (v0.3). All others trap.
-`define OP_LAST_LEGAL 5'd16
+`define OP_JPH    5'd17  // [5:0] addr, [8:6] pin : jump if pin_in[pin] == 1, else advance
+`define OP_JPL    5'd18  // [5:0] addr, [8:6] pin : jump if pin_in[pin] == 0, else advance
+// All others trap.
+`define OP_LAST_LEGAL 5'd18
 
 `endif

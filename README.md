@@ -19,7 +19,7 @@ See [docs/EXECUTION_PLAN.md](docs/EXECUTION_PLAN.md) and [memory.md](memory.md).
 | `synth/` | Yosys flow onto the real IHP CMOS5L cell library (`run_synth.sh`) plus area-only experiments (SRAM stand-in, latch memory, pin manager). Results: [docs/ASIC_AREA_AND_MEMORY_STUDY.md](docs/ASIC_AREA_AND_MEMORY_STUDY.md). |
 | `docs/` | Architecture, execution plan, workstream plans, management-link design, area study, Mermaid diagrams. |
 | `results/` | Kept evidence from workload runs (logs + payload). |
-| `instructions.md` | **ISA reference and per-protocol programs** (UART TX/RX verified; SPI, I2C, JTAG drafts) — the contract for the host loader. |
+| `instructions.md` | **ISA reference and per-protocol programs** (UART TX/RX verified; SPI master/slave verified in simulation; I2C, JTAG drafts) — the contract for the host loader. |
 | `memory.md` | Running project notes: what was verified, problems and fixes, decisions. |
 | `run_tests.ps1` | Compiles and runs 17 testbenches; prints one `RESULT` line each. |
 | `build/` | Generated (ignored). |
@@ -30,6 +30,7 @@ See [docs/EXECUTION_PLAN.md](docs/EXECUTION_PLAN.md) and [memory.md](memory.md).
 .\run_tests.ps1                                   # regression: 16 PASS; tb_de0_nano_top is known to hang (FPGA-only)
 python host\uart_workload.py --bauds 9600 115200  # workload sweep, add --limits for stress tests
 python host\mgmt_duplex_stress.py                 # 1 KB full duplex through the SPI link (compiles tb_mgmt_duplex itself; iverilog on PATH)
+python host\spi_test.py                           # SPI master + slave, all 4 modes, engine and full chip (docs/SPI_PLAN.md); or name phases: selftest peers master slave chip mutants
 ```
 
 Requires Icarus Verilog (`iverilog`/`vvp`, tested with 12.0) and Python 3 (the global 3.12, not the Store stub).

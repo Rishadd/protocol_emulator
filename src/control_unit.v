@@ -61,7 +61,8 @@ module control_unit (
     assign dc_load_value = operand;
     assign lc_load_value = operand[15:0];
 
-    wire legal      = (opcode <= `OP_LAST_LEGAL);   // there are only 16 opcodes defined in this verison so it must be less than 16
+    wire legal      = (opcode <= `OP_LAST_LEGAL);   // opcodes above OP_LAST_LEGAL trap
+    wire jp_taken   = (pin_in[operand[8:6]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [8:6], addr in [5:0]
     wire timed      = (opcode == `OP_WAIT) || (opcode == `OP_OUT1) || (opcode == `OP_IN1);  // instructions that require holding for a condition
     wire needs_hold = timed && (operand != 27'd0);  // indicates if the instruction requires holding based on the operand
 
@@ -179,6 +180,10 @@ module control_unit (
                             pc_advance = 1'b1;
                         end
                         `OP_WAITH, `OP_WAITL, `OP_CFG: pc_advance = 1'b1;
+                        `OP_JPH, `OP_JPL: begin
+                            pc_jump    = jp_taken;
+                            pc_advance = !jp_taken;
+                        end
                         default: ;
                     endcase
                 end
