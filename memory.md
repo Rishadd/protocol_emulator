@@ -45,5 +45,13 @@ Plan: [docs/MGMT_PLAN.md](docs/MGMT_PLAN.md). Steps 1-8 from the user's list.
 - Full regression (16 tbs) PASS on final RTL.
 - Testbench lesson: UART receiver models must sample on clock edges. The pad mux (`uio_out` depends on `oe0`) makes a zero-width sim glitch when a pin is enabled; an edge-triggered model mistook it for a start bit.
 
+## ASIC area study (2026-10-11, analysis only, no src/ change)
+Full write-up: [docs/ASIC_AREA_AND_MEMORY_STUDY.md](docs/ASIC_AREA_AND_MEMORY_STUDY.md). Tools live outside the repo: Yosys etc. in `C:\tools\oss-cad-suite` (OSS CAD Suite 2026-10-10), CMOS5L liberty in `C:\tools\ihp-cmos5l`, SRAM macro views in `C:\tools\ihp-sram`. Run `synth/run_synth.sh <tag> [VAR=val]` from the repo root (bash).
+- Whole chip on real CMOS5L cells: **414,137 um^2, 15.5k cells = 57.5% of the 720k nominal**; the two flop instruction memories are 80% of it. Library has no plain DFF (cheapest flop 49 um^2).
+- SRAM instead (4 x 1P 64x16): **143k (20%)**. 2P 256x32 shared with page select: ~182k (25%, estimate). Single-port macro cannot serve two engines.
+- Blocker to confirm with organizers: `sg13cmos5l_sram` in the PDK is a symlink to the SG13G2 macros; CMOS5L acceptance unproven.
+- Pin ownership block prototype: 5.2k um^2 (0.7%); with remap 14.7k. Also makes open-drain an ownership mode, so no ISA bit needed for I2C.
+- After SRAM the 4 FIFOs are the next big item (41k). Not yet done: SRAM fetch simulation, STA, pin_mgr simulation.
+
 ## Next: full duplex (TX + RX together)
 Plan: two engines (one TX program, one RX program, both existing and verified), plus a tiny echo path RX -> TX. Verify in simulation first (phone sends while the echo transmits), then a new Quartus revision, then test with the phone. Details agreed before any code is written.

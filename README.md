@@ -11,6 +11,7 @@ I2C, JTAG, ...) is firmware, not RTL.
 | `host/` | `uart_workload.py` — Python host model / reference decoder that drives the Verilog engine with 1 KB payloads across baud rates. |
 | `docs/` | Architecture, execution plan, workstream plans, Mermaid diagrams (pre-RTL planning). |
 | `results/` | Kept evidence from workload runs (logs + payload). |
+| `synth/` | Yosys flow onto the real IHP CMOS5L cell library (`run_synth.sh`) plus area-only experiments (SRAM stand-in, latch memory, pin manager). Results: [docs/ASIC_AREA_AND_MEMORY_STUDY.md](docs/ASIC_AREA_AND_MEMORY_STUDY.md). |
 | `instructions.md` | **ISA reference and per-protocol programs** — the contract for the host loader. |
 | `run_tests.ps1` | Compiles and runs every testbench; prints one `RESULT` line each. |
 | `build/` | Generated (ignored). |
