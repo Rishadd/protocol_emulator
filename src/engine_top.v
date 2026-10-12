@@ -4,11 +4,16 @@
 // so instr always holds the word for the current pc. The pc is 9 bits (isa.vh): L1 holds 0x000-0x03F,
 // any other pc faults (cause 1) before it executes. In a testbench use <inst>.imem.poke(a,w) /
 // .load_hex("program.hex") (not a hierarchical array write).
+// Two-tier memory (docs/TWO_TIER_MEMORY_PLAN.md, L2_EN = 1): a pc in 0x100-0x1FF fetches word pc[7:0]
+// of the shared L2 through l2_req/l2_gnt (urgent: same clock, mode A); the word arrives on l2_rdata one
+// clock later and is kept in ir2 while the pc stays. A clock without the word is a bubble (nothing
+// happens). An L2 pc outside l2_range faults (cause 2). L1 fetches are never delayed.
 // run=0 holds the execution core (PC, control, counters, shifters, pins) in reset:
-// PC=0, pins released. FIFOs and instruction memory keep their contents.
+// PC=reset_pc, pins released. FIFOs and instruction memory keep their contents.
 // run must come from a flop (it gates an asynchronous reset).
 module engine_top #(
-    parameter INIT_FILE = ""
+    parameter INIT_FILE = "",
+    parameter L2_EN     = 1
 )(
     input  wire        clk,
     input  wire        rst_n,
@@ -29,17 +34,39 @@ module engine_top #(
     input  wire [7:0]  pin_in,
     output wire [7:0]  pin_out,
     output wire [7:0]  pin_oe,
+    // two-tier memory: configuration (written only while held) and the shared L2 port
+    input  wire [8:0]  reset_pc,
+    input  wire [15:0] l2_range,         // {hi, lo}
+    input  wire [1:0]  fetch_cfg,        // [0] prefetch buffer enable
+    output wire        l2_req,
+    output wire        l2_req_hi,        // class 2 (urgent)
+    output wire [7:0]  l2_addr,
+    input  wire        l2_gnt,
+    input  wire [31:0] l2_rdata,
+    output wire        bubble,
     // status
     output wire        halted,
     output wire        fault,
     output wire [1:0]  fault_cause,
     output wire [8:0]  pc
+`ifdef FORMAL
+    ,                                    // formal harness only: the instruction word and L1 writes
+    output wire [31:0] f_instr,
+    output wire        f_valid,
+    output wire        f_l1_we,
+    output wire [5:0]  f_l1_wa,
+    output wire [31:0] f_l1_wd
+`endif
 );
     wire        core_rst_n = rst_n & run;
     wire [31:0] instr;
     wire        pc_advance, pc_jump;
     wire [8:0]  jump_addr, next_pc;
-    wire [1:0]  pc_fault = (pc[8:6] != 3'd0) ? 2'd1 : 2'd0;   // only L1 exists
+    wire [7:0]  lo = l2_range[7:0], hi = l2_range[15:8];
+    wire [1:0]  pc_fault = !pc[8] ? (pc[7:6] != 2'd0 ? 2'd1 : 2'd0) :   // reserved 0x040-0x0FF
+                           !L2_EN ? 2'd1 : (pc[7:0] < lo || pc[7:0] > hi) ? 2'd2 : 2'd0;
+    wire [31:0] l1_out;                 // L1 macro output
+    wire        cu_bubble;
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value;
     wire        lc_load, lc_dec;
@@ -64,15 +91,45 @@ module engine_top #(
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .clk   (clk),
         .addr  (next_pc[5:0]),
-        .instr (instr),
+        .instr (l1_out),
         .we    (imem_we),
         .waddr (imem_waddr),
         .wdata (imem_wdata)
     );
 
+    // ---- fetch: pc in L1 -> the L1 macro (exact, as before); pc in L2 -> the shared L2 port
+    reg  [31:0] ir2;                    // L2 word of the current pc
+    reg         got, ir2_ok;            // got: l2_rdata holds it this clock (granted last clock)
+    wire [31:0] w2 = got ? l2_rdata : ir2;
+    wire        instr_valid = !pc[8] || got || ir2_ok;
+    assign instr = pc[8] ? w2 : l1_out;
+    wire keep = pc[8] && instr_valid && (next_pc == pc);                 // same word next clock
+    wire need = L2_EN && core_rst_n && !halted && next_pc[8] && !keep;   // urgent fetch of next_pc
+    assign l2_req    = need;
+    assign l2_req_hi = need;
+    assign l2_addr   = next_pc[7:0];
+    always @(posedge clk or negedge core_rst_n) begin
+        if (!core_rst_n) begin
+            ir2 <= 32'd0; got <= 1'b0; ir2_ok <= 1'b0;
+        end else begin
+            ir2 <= w2; got <= need && l2_gnt; ir2_ok <= keep;
+        end
+    end
+
+`ifdef FORMAL
+    assign {f_instr, f_valid} = {instr, instr_valid};
+    assign {f_l1_we, f_l1_wa, f_l1_wd} = {1'b0, 6'd0, 32'd0};    // COPY writes: Phase 5
+    // F5: an L1 pc never waits for its word; F9: a held engine asks for nothing and keeps no L2 word
+    always @(*) if (rst_n) begin
+        if (!pc[8]) assert (instr_valid);
+        if (!core_rst_n) assert (!l2_req && !got && !ir2_ok);
+    end
+`endif
+
     pc_reg #(.WIDTH(9)) pc_i (
         .clk       (clk),
         .rst_n     (core_rst_n),
+        .rst_val   (L2_EN ? reset_pc : 9'd0),
         .advance   (pc_advance),
         .jump      (pc_jump),
         .jump_addr (jump_addr),
@@ -167,6 +224,7 @@ module engine_top #(
         .clk           (clk),
         .rst_n         (core_rst_n),
         .instr         (instr),
+        .instr_valid   (instr_valid),
         .pc_fault      (pc_fault),
         .pc_advance    (pc_advance),
         .pc_jump       (pc_jump),
@@ -201,6 +259,8 @@ module engine_top #(
         .cfg_isr_msb   (cfg_isr_msb),
         .halted        (halted),
         .fault         (fault),
-        .fault_cause   (fault_cause)
+        .fault_cause   (fault_cause),
+        .bubble        (cu_bubble)
     );
+    assign bubble = core_rst_n && cu_bubble;   // a held engine is not bubbling
 endmodule

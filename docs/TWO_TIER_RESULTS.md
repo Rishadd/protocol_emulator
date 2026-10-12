@@ -74,6 +74,64 @@ not consider; 256x32 kept as planned.
 | F6, complete-frame commit rule, F12 (`formal/fv_mgmt`, PDR, tasks l2 / noL2) | **proved (unbounded)** |
 | Mutants (`host/mutate.py 2`) | **10/10 detected** (the crafted cut-frame case was added after the first run missed "write on an incomplete frame") |
 
+### Phase 2 regression (worktree, after fixes)
+The first tier-1 run of the Phase 2 commit found:
+- `tb_mgmt_dual` still expected `0x1004`/`0x2004` to be unmapped (they are RESET_PC now); moved to `0x1018`/`0x2018`.
+- The committed combo baseline was empty: it was copied while that suite was still writing.
+- A Phase 1 mutant anchor already pointed at Phase 3 code (sequencing mistake).
+- Two transient failures caused by `iverilog` temp-file collisions (L7).
+
+All of these were fixed in a follow-up commit on the Phase 2 branch, followed by a re-run.
+
+## Phase 3: execution from L2 (2026-10-13)
+
+**RTL:** 5 files, +117 / -17 lines, about 25 of them `ifdef FORMAL`.
+- `pc_reg`: reset vector through a boot flag (`rst_val = 0` behaves like before).
+- `control_unit`: `instr_valid` input (a missing word is a bubble: nothing commits, no trap; a hold never waits) and `bubble` output.
+- `engine_top`:
+  - fetch from L2 through `IR2` with urgent same-clock requests (mode A);
+  - fault cause 2 outside `L2_RANGE`;
+  - `bubble` counted only while running;
+  - FORMAL-only ports and assertions.
+- `instr_mem`: abstract memory under FORMAL.
+- Top: engines connected to `l2_mem`.
+
+| Test | Result |
+|---|---|
+| V3.1 `tb_control_unit`: `instr_valid=0` with all 32 opcodes (no strobe, no trap, no halt, bubble); toggling inside a hold changes nothing; `pc_fault` wins over a missing word | PASS (after one fix, below) |
+| `tb_pc_reg` A4: reset vector in and after reset; vector 0 = old behaviour | PASS |
+| V3.2-V3.4 `tb_l2_exec` (2 engines + L2 vs 2 instruction-set models, lockstep modulo bubbles, arbiter model every clock, bubble accountant) | **50 seeds, 15,000,326 clocks: 0 mismatches**, 0 arbiter mismatches, 0 unexplained bubbles, 0 bubbles in L1. Bubbles: 859,185 lost to the other engine, 343,582 lost to the host, 19,681 first L2 fetch after RUN |
+| V3.5 wait bounds (measured) | round-robin: at most 1 non-host loss in a row; favoured engine: 0 |
+| V3.6 fixed priority + favoured engine in a one-clock L2 loop | other engine makes no progress for 100,000 clocks (documented starvation), no fault, moves within 3 clocks after switching to round-robin |
+| V3.7 engine in L1 vs L2 thrash with priority + host read every clock + policy churn, 50,000 clocks | 0 bubbles (T11) |
+| V3.8 `tb_engine_ops`: sequential run past hi, JMP to lo-1, DJNZ/JPH/JPL/JPO to hi+1 | fault cause 2, nothing at the outside word commits |
+| V3.9 reset vectors 1 / 0x3F (first instruction in clock 1, no bubble), L2 lo / hi (exactly 1 bubble); RUN dropped 0-4 clocks into a losing request | PASS |
+| V3.10 uncontended jump into L2 | 0 bubbles (mode A) |
+| F1, F2, F5, F9 (`formal/fv_engine.sby ctrl`: datapath and memories as free cut points, PDR) | **proved (unbounded)**. The proof is not vacuous: the same run fails on "bubble gate removed" (F2) and "request while held" (F9) |
+| F3 word integrity (`fv_engine.sby f3`, full model, BMC) | no counterexample through step 11 (depth 12). Deeper steps are too slow on the full model (about 25 minutes per step) |
+| Mutants (`host/mutate.py 3`) | **10/10 detected** (see note) |
+| `run_tests.ps1` | 24/24 PASS |
+
+**Findings and fixes while building:**
+- A held engine with an L2 reset vector reported `bubble` (the word is not fetched while held). This would have made the Phase 6 counter count held clocks. `bubble` is now gated by RUN.
+- The plan says a hold must ignore `instr_valid`. The first version stalled the end of a hold when the word was missing. That case cannot happen (F1), but the gate is now limited to `S_EXEC`: one term.
+- Testbench bugs:
+  - a global loop variable shared by the stimulus and the checker made a model write the wrong engine's memory;
+  - `protected` is a SystemVerilog keyword;
+  - the testbench raised RUN in the same clock as a new RESET_PC, which a real host cannot do (separate frames). The formal harness assumes the same.
+
+**Mutation note:** three planned mutants are *equivalent*, so no test can detect them:
+- a bubble re-applying a stale SETH;
+- a bubble loading the delay counter for a stale WAIT;
+- legality checked during a bubble.
+
+During a bubble the word on the bus is always the last executed instruction, so re-applying it changes nothing visible. They were replaced by non-idempotent ones of the same class: stale OUT1 shifts the OSR, stale DJNZ counts, gate removed.
+
+**Deviations from the plan:**
+- **E1** cannot hold as written. With L2 present and an empty range, a jump to an L2 address faults with cause 2, not 1, so the engine is not equivalent to Phase 1. The intent (the L1 path is unchanged) is covered by E2 (re-run on the Phase 3 RTL) and by `tb_fetch_equiv` / `tb_fetch_equiv_v2`, whose DUT is now the L2_EN=1 engine with an empty range.
+- The reference model I2 is an independent instruction-set model written from the documents, not the frozen Phase 1 `control_unit` with a gated clock. It is more independent, and it was itself checked by the L1-only lockstep.
+- Host arbiter model I4 is a Verilog function shared by `tb_arb` and `tb_l2_exec`, not a Python log reader.
+
 ## L. Limitations and open issues (updated every phase)
 
 | # | Item | Kind | Status |
@@ -83,4 +141,7 @@ not consider; 256x32 kept as planned.
 | L3 | Verilator is 2-state: X checks (an unwritten word reads X, plan A7) only work in Icarus | tool limit | accepted; X checks stay in Icarus |
 | L4 | `eqy` on Windows needs GNU make on PATH (`C:\Users\risha\miniconda3\envs\eda\Library\bin`) | tool setup | documented |
 | L5 | FPGA tops (`src/fpga/`) still instantiate the old `engine_top` port list (6-bit pc, no L2 ports); not built or run (D13). The UART hex images are unchanged and still valid | out of scope | open |
+| L8 | Fixed arbitration priority starves the other engine's L2 code with no bound (V3.6), as designed (D6); its L1 code is unaffected | by design | documented |
+| L9 | F3 (word integrity) is proved only to depth 12 on the full engine model; deeper proof needs a smaller memory abstraction | proof depth | open |
+| L7 | `iverilog` on Windows names its temp files with a small number that repeats between processes, so parallel compiles that share `%TEMP%` can collide. Seen once: a testbench failed to compile, and one SPI slave run reported every response one clock late (re-run: identical to the baseline). `regress.py` now gives every job its own `TMP`/`TEMP`; run suites in parallel by hand only with separate `TMP` folders | tool limit | worked around |
 | L6 | Formal tools on Windows: Yosys formal has no hierarchical references (properties use ports or harness-side shadows), and `sby`/`eqy` read `[files]`/sources relative to the working directory. eqy partition file names break on auto-generated names that carry a drive letter, so sources are read through relative paths | tool limits | worked around |

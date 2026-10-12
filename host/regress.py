@@ -28,8 +28,8 @@ OSS = [r"C:\tools\oss-cad-suite\bin", r"C:\tools\oss-cad-suite\lib"]
 SIM_PATH = os.pathsep.join([r"C:\iverilog\bin"] + OSS + [os.environ["PATH"]])
 FORMAL_PATH = os.pathsep.join(OSS + [os.environ["PATH"], r"C:\Users\risha\miniconda3\envs\eda\Library\bin"])  # make: eqy
 os.environ["PATH"] = SIM_PATH
-FORMAL = ["fv_l2_arb", "fv_mgmt"]                     # formal/<name>.sby, proved in every tier
-PHASE = 2                                                # mutants of phases 1..PHASE run in tier 1
+FORMAL = ["fv_l2_arb", "fv_mgmt", "fv_engine ctrl"]  # formal/<name>.sby [task], run in every tier
+PHASE = 3                                                # mutants of phases 1..PHASE run in tier 1
 RUN_TESTS = ["powershell", "-NoProfile", "-File", os.path.join(ROOT, "run_tests.ps1")]
 
 
@@ -37,16 +37,18 @@ def vvp(tb, seed):
     return [f"{tb} seed {seed}", ["vvp", "-n", os.path.join(ROOT, "build", tb + ".vvp"), f"+SEED={seed}"], None]
 
 
-def sby(name):
-    return [f"formal {name}", ["sby", "-f", "--prefix", os.path.join(ROOT, "build", "formal", name),
-                               os.path.join(ROOT, "formal", name + ".sby")], None]
+def sby(spec):
+    name, *task = spec.split()
+    return [f"formal {spec}", ["sby", "-f", "--prefix", os.path.join(ROOT, "build", "formal", name),
+                               os.path.join(ROOT, "formal", name + ".sby"), *task], None]
 
 
 def stages(tier, seeds):
     s = [[["run_tests", RUN_TESTS, None], ["run_tests NO_L2", RUN_TESTS + ["-Define", "NO_L2"], None],
           ["test_isa", [PY, H("test_isa.py")], None]] + [sby(f) for f in FORMAL]]
     if tier >= 1:
-        s.append([vvp(tb, k) for tb in ("tb_fetch_equiv", "tb_fetch_equiv_v2") for k in range(2, 2 + seeds)] + [
+        s.append([vvp(tb, k) for tb in ("tb_fetch_equiv", "tb_fetch_equiv_v2") for k in range(2, 2 + seeds)] +
+                 [vvp("tb_l2_exec", k) for k in range(2, 2 + max(seeds, 50))] + [
             ["spi_test", [PY, H("spi_test.py")], "results/two_tier_baseline/spi_test.txt"],
             ["i2c_test", [PY, H("i2c_test.py")], "results/two_tier_baseline/i2c_test.txt"],
             ["mgmt_duplex_stress", [PY, H("mgmt_duplex_stress.py")], "results/two_tier_baseline/mgmt_duplex_stress.txt"],

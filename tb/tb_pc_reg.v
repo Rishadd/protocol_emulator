@@ -2,12 +2,12 @@
 `include "tb_common.vh"
 module tb_pc_reg;
     reg        clk = 0, rst_n = 0, advance = 0, jump = 0;
-    reg  [5:0] jump_addr = 0;
+    reg  [5:0] jump_addr = 0, rst_val = 0;
     wire [5:0] pc, next_pc;
     integer errors = 0, i;
     reg [5:0] nxt;
 
-    pc_reg dut (.clk(clk), .rst_n(rst_n), .advance(advance), .jump(jump),
+    pc_reg dut (.clk(clk), .rst_n(rst_n), .rst_val(rst_val), .advance(advance), .jump(jump),
                 .jump_addr(jump_addr), .pc(pc), .next_pc(next_pc));
 
     always #5 clk = ~clk;
@@ -56,6 +56,17 @@ module tb_pc_reg;
         `CHECK(next_pc == 0, "A3 next_pc forced 0 in reset")
         advance = 0; jump = 0; rst_n = 1; tick;
         `CHECK(pc == 0, "A3 pc still 0 after release with no control")
+        $display("--- A4 reset vector (two-tier plan): pc and next_pc show rst_val in reset and after it");
+        rst_val = 6'd45; rst_n = 0; #1;
+        `CHECK(pc == 45 && next_pc == 45, "A4 in reset: pc = next_pc = rst_val")
+        rst_n = 1; #1;
+        `CHECK(pc == 45 && next_pc == 45, "A4 first clock after reset: pc = rst_val (no control)")
+        advance = 1; #1;
+        `CHECK(next_pc == 46, "A4 advance from the vector")
+        tick; advance = 0;
+        `CHECK(pc == 46, "A4 pc moved on from the vector")
+        rst_val = 6'd0; rst_n = 0; #1; rst_n = 1; tick;
+        `CHECK(pc == 0, "A4 rst_val 0 = plain reset")
         `REPORT("tb_pc_reg")
         $finish;
     end

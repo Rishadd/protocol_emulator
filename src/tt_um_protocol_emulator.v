@@ -49,7 +49,7 @@ module tt_um_protocol_emulator (
     wire        l2_we, l2_re;
     wire [7:0]  l2_addr;
     wire [15:0] l2_req_addr;
-    assign {l2_req, l2_req_hi, l2_req_addr} = 20'd0;           // engines fetch from L2 in Phase 3
+    wire [1:0]  bubble;
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
 
@@ -91,20 +91,26 @@ module tt_um_protocol_emulator (
         .pad_oe(uio_oe), .pad_out(uio_out),
         .owner(pad_owner), .od(pad_od), .viol(pad_viol));
 
-    engine_top u_eng0 (
+    engine_top #(.L2_EN(L2_EN)) u_eng0 (
         .clk(clk), .rst_n(srst_n), .run(eng_run[0]),
         .imem_we(imem_we[0]), .imem_waddr(imem_waddr), .imem_wdata(imem_wdata),
         .tx_wr_en(tx_wr_en[0]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[0]),
         .rx_rd_en(rx_rd_en[0]), .rx_rd_data(rx_data0), .rx_empty(rx_empty[0]),
         .pin_in(uio_in), .pin_out(out0), .pin_oe(oe0),
+        .reset_pc(reset_pc[8:0]), .l2_range(l2_range[15:0]), .fetch_cfg(fetch_cfg[1:0]),
+        .l2_req(l2_req[0]), .l2_req_hi(l2_req_hi[0]), .l2_addr(l2_req_addr[7:0]), .l2_gnt(l2_gnt[0]),
+        .l2_rdata(l2_rdata), .bubble(bubble[0]),
         .halted(halted[0]), .fault(fault[0]), .fault_cause(fault_cause[1:0]), .pc(pc0));
 
-    engine_top u_eng1 (
+    engine_top #(.L2_EN(L2_EN)) u_eng1 (
         .clk(clk), .rst_n(srst_n), .run(eng_run[1]),
         .imem_we(imem_we[1]), .imem_waddr(imem_waddr), .imem_wdata(imem_wdata),
         .tx_wr_en(tx_wr_en[1]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[1]),
         .rx_rd_en(rx_rd_en[1]), .rx_rd_data(rx_data1), .rx_empty(rx_empty[1]),
         .pin_in(uio_in), .pin_out(out1), .pin_oe(oe1),
+        .reset_pc(reset_pc[17:9]), .l2_range(l2_range[31:16]), .fetch_cfg(fetch_cfg[3:2]),
+        .l2_req(l2_req[1]), .l2_req_hi(l2_req_hi[1]), .l2_addr(l2_req_addr[15:8]), .l2_gnt(l2_gnt[1]),
+        .l2_rdata(l2_rdata), .bubble(bubble[1]),
         .halted(halted[1]), .fault(fault[1]), .fault_cause(fault_cause[3:2]), .pc(pc1));
 
     assign uo_out = {7'd0, miso};   // uo_out[7:1] status outputs come later

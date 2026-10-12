@@ -9,6 +9,8 @@ module tb_control_unit;
     reg         tx_empty = 1, rx_full = 0, osr_bit = 1;
     reg  [7:0]  pin_in = 0;
     reg  [1:0]  pc_fault = 0;
+    reg         instr_valid = 1;
+    wire        bubble;
     wire [1:0]  fault_cause;
 
     wire        pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en;
@@ -24,7 +26,7 @@ module tb_control_unit;
     reg [8:0] a;
 
     control_unit dut (
-        .clk(clk), .rst_n(rst_n), .instr(instr), .pc_fault(pc_fault),
+        .clk(clk), .rst_n(rst_n), .instr(instr), .instr_valid(instr_valid), .pc_fault(pc_fault),
         .pc_advance(pc_advance), .pc_jump(pc_jump), .jump_addr(jump_addr),
         .dc_load(dc_load), .dc_load_value(dc_load_value), .dc_last(dc_last),
         .lc_load(lc_load), .lc_dec(lc_dec), .lc_load_value(lc_load_value), .lc_count(lc_count),
@@ -35,7 +37,7 @@ module tb_control_unit;
         .dir_wr(dir_wr), .dir_wr_idx(dir_wr_idx), .dir_wr_val(dir_wr_val), .pin_in(pin_in),
         .cfg_out_pin(cfg_out_pin), .cfg_in_pin(cfg_in_pin),
         .cfg_osr_msb(cfg_osr_msb), .cfg_isr_msb(cfg_isr_msb),
-        .halted(halted), .fault(fault), .fault_cause(fault_cause));
+        .halted(halted), .fault(fault), .fault_cause(fault_cause), .bubble(bubble));
 
     delay_counter dc (.clk(clk), .rst_n(rst_n), .load(dc_load), .load_value(dc_load_value),
                       .busy(dc_busy), .last(dc_last));
@@ -190,6 +192,31 @@ module tb_control_unit;
             pc_fault = 0; set(`OP_NOP, 0);
             `CHECK(ctl == NONE, "V1 trapped engine stays halted") tick;
         end
+
+        // V3.1: instr_valid = 0 is a bubble for every opcode (incl. illegal ones and HALT): no strobe, no
+        // trap, no halt; inside a hold it changes nothing (the hold still ends exactly on time)
+        for (k = 0; k < 32; k = k + 1) begin
+            do_reset; tx_empty = 0; rx_full = 0; pin_in = 8'hFF; osr_bit = 1; lv = 0;
+            instr_valid = 0; set(k, 27'd3);
+            for (p = 0; p < 3; p = p + 1) begin
+                if (ctl != NONE || !bubble) lv = 1;
+                tick;
+            end
+            `CHECK(lv == 0 && !halted && !fault, "V3.1 invalid word: bubble, no strobe, no trap, no halt (every opcode)")
+            instr_valid = 1; #1;
+            `CHECK(bubble == 0, "V3.1 valid again: no bubble")
+        end
+        do_reset; instr_valid = 1; set(`OP_WAIT, 4);
+        `CHECK(ctl == DCL, "V3.1 WAIT 4 starts") tick;
+        for (k = 1; k <= 4; k = k + 1) begin
+            instr_valid = k[0]; #1;                              // toggling inside the hold
+            `CHECK(ctl == (k == 4 ? ADV : NONE) && !bubble, "V3.1 hold ignores instr_valid, ends on time")
+            tick;
+        end
+        instr_valid = 1; pc_fault = 2; set(`OP_NOP, 0); instr_valid = 0; #1;
+        `CHECK(!bubble, "V3.1 pc_fault wins over a missing word") tick;
+        `CHECK(halted && fault && fault_cause == 2, "V3.1 pc_fault traps even without the word")
+        pc_fault = 0; instr_valid = 1;
 
         `REPORT("tb_control_unit")
         $finish;

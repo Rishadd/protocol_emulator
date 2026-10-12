@@ -1,0 +1,36 @@
+[tasks]
+ctrl
+f3
+
+[options]
+ctrl: mode prove
+f3: mode bmc
+f3: depth 12
+
+[engines]
+ctrl: abc pdr
+f3: smtbmc yices
+
+[script]
+ctrl: read -formal -DFORMAL -DNO_F3 abs_sram.v instr_mem.v pc_reg.v delay_counter.v loop_counter.v fifo.v shift_reg.v pin_block.v control_unit.v engine_top.v l2_mem.v fv_engine.v
+f3: read -formal -DFORMAL abs_sram.v instr_mem.v pc_reg.v delay_counter.v loop_counter.v fifo.v shift_reg.v pin_block.v control_unit.v engine_top.v l2_mem.v fv_engine.v
+prep -top fv_engine
+# ctrl: the datapath and both memories become free (cutpoints): F1, F2, F5, F9 must hold for any values
+ctrl: cutpoint fifo shift_reg delay_counter loop_counter pin_block abs_sram
+flatten
+prep -top fv_engine
+
+[files]
+formal/abs_sram.v
+src/isa.vh
+src/instr_mem.v
+src/pc_reg.v
+src/delay_counter.v
+src/loop_counter.v
+src/fifo.v
+src/shift_reg.v
+src/pin_block.v
+src/control_unit.v
+src/engine_top.v
+src/l2_mem.v
+formal/fv_engine.v

@@ -12,11 +12,12 @@ $sim  = Get-ChildItem sim\ihp_sram\*.v | ForEach-Object { $_.FullName }
 $tbs = @('tb_instr_mem', 'tb_pc_reg','tb_delay_counter', 'tb_loop_counter', 'tb_fifo', 'tb_shift_reg',
          'tb_pin_block', 'tb_control_unit', 'tb_engine_top', 'tb_rx_led_sink',
          'tb_mgmt_frame', 'tb_mgmt_load', 'tb_mgmt_dual', 'tb_mgmt_read', 'tb_mgmt_tx', 'tb_fetch_equiv',
-         'tb_engine_ops', 'tb_pin_mgr', 'tb_mgmt_pins', 'tb_l2_macro', 'tb_fetch_equiv_v2', 'tb_arb', 'tb_l2_host')
-$needs_l2 = @('tb_arb', 'tb_l2_host')
+         'tb_engine_ops', 'tb_pin_mgr', 'tb_mgmt_pins', 'tb_l2_macro', 'tb_fetch_equiv_v2', 'tb_arb', 'tb_l2_host', 'tb_l2_exec')
+$needs_l2 = @('tb_arb', 'tb_l2_host', 'tb_l2_exec', 'tb_engine_ops')
 # extra files some testbenches need (reference models)
 $extras = @{ 'tb_fetch_equiv' = @('tb\ref\ref_engine.v', 'tb\ref\ref_engine_v1.v');
-             'tb_fetch_equiv_v2' = @('tb\ref\ref_engine_v1.v'); 'tb_l2_macro' = @('formal\abs_sram.v') }
+             'tb_fetch_equiv_v2' = @('tb\ref\ref_engine_v1.v'); 'tb_l2_macro' = @('formal\abs_sram.v');
+             'tb_l2_exec' = @('tb\ref\ref_flat_engine.v') }
 $defs = @('-DFUNCTIONAL'); $out = 'build'
 if ($Define) { $defs += "-D$Define"; $out = "build\$Define" }
 New-Item -ItemType Directory -Force $out | Out-Null

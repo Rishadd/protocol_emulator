@@ -29,12 +29,16 @@ module instr_mem #(
 );
     wire [5:0] a = we ? waddr : addr;       // host owns the port while writing
 
+`ifdef FORMAL
+    abs_sram #(.AW(6), .DW(32)) u_mem (.clk(clk), .men(1'b1), .wen(we), .ren(~we), .addr(a), .din(wdata), .dout(instr));
+`else
     RM_IHPSG13_1P_64x16_c2 u_lo (
         .A_CLK(clk), .A_MEN(1'b1), .A_WEN(we), .A_REN(~we),
         .A_ADDR(a), .A_DIN(wdata[15:0]),  .A_DLY(1'b1), .A_DOUT(instr[15:0]));
     RM_IHPSG13_1P_64x16_c2 u_hi (
         .A_CLK(clk), .A_MEN(1'b1), .A_WEN(we), .A_REN(~we),
         .A_ADDR(a), .A_DIN(wdata[31:16]), .A_DLY(1'b1), .A_DOUT(instr[31:16]));
+`endif
 
 `ifndef SYNTHESIS
     initial if (ADDR_WIDTH != 6 || DATA_WIDTH != 32 || DEPTH != 64) begin

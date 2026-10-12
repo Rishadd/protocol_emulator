@@ -20,6 +20,7 @@ module tb_engine_top;
     reg        halt_hist [0:31];
 
     engine_top dut (
+        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0),   // L1 only, as in the chip at reset
         .clk(clk), .rst_n(rst_n),
         .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),

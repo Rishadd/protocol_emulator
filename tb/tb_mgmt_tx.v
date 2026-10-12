@@ -26,6 +26,7 @@ module tb_mgmt_tx;
     genvar ge;
     generate for (ge = 0; ge < 2; ge = ge + 1) begin : gold
         engine_top eng (
+        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0),   // L1 only, as in the chip at reset
             .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[ge]),
             .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
             .tx_wr_en(dut.u_mgmt.tx_wr_en[ge]), .tx_wr_data(dut.u_mgmt.tx_wr_data), .tx_full(),

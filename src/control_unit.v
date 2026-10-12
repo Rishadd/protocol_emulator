@@ -3,12 +3,15 @@
 // until the delay counter's last cycle, so total occupancy is exactly d+1 cycles.
 // Blocking instructions (PULL/PUSH/WAITH/WAITL) hold PC with no side effects.
 // pc_fault != 0 (the pc cannot be fetched) traps like an illegal opcode: nothing commits.
+// instr_valid = 0 (an L2 word not here yet) is a bubble: nothing commits, nothing traps; it only
+// happens before an instruction starts, never inside a held one (bubble output = this clock is one).
 // fault_cause: 0 illegal opcode, 1 reserved address / no L2, 2 outside own L2 range, 3 COPY violation.
 `include "isa.vh"
 module control_unit (
     input  wire        clk,
     input  wire        rst_n,
     input  wire [31:0] instr,
+    input  wire        instr_valid,     // 0: the word for pc is not here yet (bubble)
     input  wire [1:0]  pc_fault,        // nonzero: current pc may not be executed (cause code)
     // program counter
     output reg         pc_advance,      // normal increment
@@ -51,7 +54,8 @@ module control_unit (
     // status
     output reg         halted,
     output reg         fault,
-    output reg  [1:0]  fault_cause
+    output reg  [1:0]  fault_cause,
+    output wire        bubble
 );
     localparam S_EXEC = 1'b0;           // state for executing instructions
     localparam S_HOLD = 1'b1;           // state for holding until a condition clears
@@ -72,6 +76,18 @@ module control_unit (
     wire needs_hold = timed && (operand != 27'd0);  // indicates if the instruction requires holding based on the operand
 
     // blocking instructions: hold PC with no side effects until the condition clears
+    assign bubble = (state == S_EXEC) && !halted && (pc_fault == 2'd0) && !instr_valid;
+
+`ifdef FORMAL
+    // two-tier plan F1/F2 (formal/fv_engine.sby): the word is never missing inside a hold, and a
+    // bubble commits nothing
+    always @(*) if (rst_n) begin
+        if (state == S_HOLD) assert (instr_valid);
+        if (bubble) assert ({pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en, osr_load,
+                             osr_shift, isr_shift, isr_clear, pin_wr, dir_wr} == 13'd0);
+    end
+`endif
+
     wire stall = (opcode == `OP_PULL)  ? tx_empty :          // PULL needs a word in the TX FIFO
                  (opcode == `OP_PUSH || opcode == `OP_PUSHI) ? rx_full :   // PUSH/PUSHI need RX FIFO space
                  (opcode == `OP_WAITH) ? ~pin_in[pin_sel] :  // WAITH waits for pin to go high
@@ -91,10 +107,12 @@ module control_unit (
         end else if (!halted) begin
             case (state)
                 S_EXEC: begin
-                    if (pc_fault != 2'd0 || !legal) begin
+                    if (pc_fault != 2'd0 || (instr_valid && !legal)) begin
                         halted      <= 1'b1;
                         fault       <= 1'b1;
                         fault_cause <= pc_fault;    // 0 = illegal opcode
+                    end else if (!instr_valid) begin
+                        ;                               // bubble: wait for the word
                     end else if (opcode == `OP_HALT) begin
                         halted <= 1'b1;
                     end else if (!stall) begin
@@ -132,7 +150,7 @@ module control_unit (
         dir_wr     = 1'b0;
         dir_wr_idx = 3'd0;
         dir_wr_val = 1'b0;
-        if (!halted && legal && pc_fault == 2'd0) begin
+        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin   // a hold never waits
             case (state)
                 S_EXEC: if (!stall) begin
                     case (opcode)

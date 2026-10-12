@@ -18,7 +18,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 BUILD = os.path.join(ROOT, "build", "mut")
 os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 EXTRAS = {"tb_fetch_equiv": ["tb/ref/ref_engine.v", "tb/ref/ref_engine_v1.v"],
-          "tb_fetch_equiv_v2": ["tb/ref/ref_engine_v1.v"], "tb_l2_macro": ["formal/abs_sram.v"]}
+          "tb_fetch_equiv_v2": ["tb/ref/ref_engine_v1.v"], "tb_l2_macro": ["formal/abs_sram.v"],
+          "tb_l2_exec": ["tb/ref/ref_flat_engine.v"]}
 
 # phase -> [(name, file, old text, new text, [testbenches])]
 MUTANTS = {
@@ -28,11 +29,12 @@ MUTANTS = {
         ("jump_addr truncated to 6 bits", "src/control_unit.v",
          "assign jump_addr     = operand[8:0];", "assign jump_addr     = {3'd0, operand[5:0]};", ["tb_control_unit", "tb_engine_ops"]),
         ("reserved-range check off", "src/engine_top.v",
-         "(pc[8:6] != 3'd0) ? 2'd1 : 2'd0", "2'd0", ["tb_engine_ops"]),
+         "(pc[7:6] != 2'd0 ? 2'd1 : 2'd0)", "2'd0", ["tb_engine_ops"]),
         ("fault cause swapped", "src/control_unit.v",
          "fault_cause <= pc_fault;", "fault_cause <= ~pc_fault;", ["tb_control_unit", "tb_engine_ops"]),
         ("faulting instruction commits", "src/control_unit.v",
-         "if (!halted && legal && pc_fault == 2'd0) begin", "if (!halted && legal) begin", ["tb_control_unit", "tb_engine_ops"]),
+         "if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
+         "if (!halted && (instr_valid || state == S_HOLD) && legal) begin", ["tb_control_unit", "tb_engine_ops"]),
         ("CTRL pc field shifted", "src/mgmt.v",
          "{13'd0, pc_e, 5'd0,", "{14'd0, pc_e, 4'd0,", ["tb_mgmt_read"]),
     ],
@@ -59,20 +61,21 @@ MUTANTS = {
          "wire [1:0] top = (req & req_hi) != 2'b00 ? (req & req_hi) : req;", "wire [1:0] top = req;", ["tb_arb"]),
     ],
     3: [
-        ("bubble does not block pin writes (SETH)", "src/control_unit.v",
-         "        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
-         "        if (!halted && !instr_valid && opcode == `OP_SETH) begin pin_wr = 1'b1; pin_wr_idx = pin_sel; pin_wr_val = 1'b1; end\n        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
+        # (equivalent mutants dropped: in a bubble the word is the last executed one, so re-applying a stale
+        #  SETH / WAIT load / legality check changes nothing observable; see docs/TWO_TIER_RESULTS.md)
+        ("bubble gate removed (stale word re-executes)", "src/control_unit.v",
+         "        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin", "        if (!halted && pc_fault == 2'd0 && legal) begin", ["tb_l2_exec"]),
+        ("bubble lets a FIFO pop through (stale PULL)", "src/control_unit.v",
+         "        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
+         "        if (!halted && !instr_valid && opcode == `OP_PULL && !tx_empty) tx_rd_en = 1'b1; if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
          ["tb_l2_exec"]),
-        ("bubble lets a FIFO pop through (PULL)", "src/control_unit.v",
-         "        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
-         "        if (!halted && !instr_valid && opcode == `OP_PULL && !tx_empty) tx_rd_en = 1'b1;\n        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
+        ("bubble lets the OSR shift (stale OUT1)", "src/control_unit.v",
+         "        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
+         "        if (!halted && !instr_valid && opcode == `OP_OUT1) osr_shift = 1'b1; if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
          ["tb_l2_exec"]),
-        ("bubble lets the delay counter load (WAIT)", "src/control_unit.v",
-         "        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
-         "        if (!halted && !instr_valid && opcode == `OP_WAIT) dc_load = 1'b1;\n        if (!halted && instr_valid && pc_fault == 2'd0 && legal) begin",
-         ["tb_l2_exec"]),
-        ("legality checked on an invalid word", "src/control_unit.v",
-         "if (pc_fault != 2'd0 || (instr_valid && !legal)) begin", "if (pc_fault != 2'd0 || !legal) begin",
+        ("bubble lets the loop counter count (stale DJNZ)", "src/control_unit.v",
+         "        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
+         "        if (!halted && !instr_valid && opcode == `OP_DJNZ) lc_dec = 1'b1; if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin",
          ["tb_l2_exec"]),
         ("ir2 latched from the wrong clock (always the macro output)", "src/engine_top.v",
          "ir2 <= w2; got <= need && l2_gnt;", "ir2 <= l2_rdata; got <= need && l2_gnt;", ["tb_l2_exec"]),
