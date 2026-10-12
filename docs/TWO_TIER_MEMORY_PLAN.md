@@ -1,6 +1,7 @@
 # Two-Tier Instruction Memory (per-engine L1 + shared L2): Analysis, Implementation and Verification Plan
 
-2026-10-12 | Status: **PLAN ONLY.** No RTL, testbench, generator or script has been changed for this plan.
+2026-10-12 | Status: **being built** (2026-10-13: user decision to build it as written; progress and measured
+numbers in [TWO_TIER_RESULTS.md](TWO_TIER_RESULTS.md)). Phase 0 done: decisions as proposed, D7 = mode A.
 Values marked *(est.)* are estimates; the phase that builds the item replaces them with measured numbers and
 updates this file. Background: [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md),
 [SRAM_INSTR_MEM_RESULTS.md](SRAM_INSTR_MEM_RESULTS.md), [I2C_PLAN.md](I2C_PLAN.md) §6.4.1 (why the I2C slave does not

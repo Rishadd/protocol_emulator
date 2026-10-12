@@ -28,8 +28,7 @@ BUILD = os.path.join(ROOT, "build", "spi")
 CLK = 10
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
-SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+SIM_LIBS = sorted(glob.glob(os.path.join(ROOT, "sim", "ihp_sram", "*.v")))   # every vendored SRAM model
 
 
 # ------------------------------------------------------------------ data
@@ -160,7 +159,7 @@ def compile_tb(name):
         os.makedirs(BUILD, exist_ok=True)
         out = os.path.join(BUILD, name + ".vvp")
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
-        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL",
+        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", "-s", name,
                         "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", out,
                         os.path.join(ROOT, "tb", name + ".v"), *srcs, *SIM_LIBS], check=True)
         _vvp[name] = out

@@ -57,7 +57,7 @@ def compile_tb():
     vvp = os.path.join(BUILD, "tb_mgmt_duplex.vvp")
     src = sorted(os.path.join(uw.ROOT, "src", f) for f in os.listdir(os.path.join(uw.ROOT, "src"))
                  if f.endswith(".v"))
-    subprocess.run(["iverilog", "-g2012", *uw.SIM_DEFS, "-I", os.path.join(uw.ROOT, "src"),
+    subprocess.run(["iverilog", "-g2012", *uw.SIM_DEFS, "-s", "tb_mgmt_duplex", "-I", os.path.join(uw.ROOT, "src"),
                     "-I", os.path.join(uw.ROOT, "tb"), "-o", vvp,
                     os.path.join(uw.ROOT, "tb", "tb_mgmt_duplex.v")] + src + uw.SIM_LIBS, check=True)
     return vvp

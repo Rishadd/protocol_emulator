@@ -12,6 +12,7 @@ For every baud rate this script
 """
 import argparse
 import bisect
+import glob
 import os
 import random
 import subprocess
@@ -26,10 +27,9 @@ if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 
 # instr_mem is two IHP SG13 SRAM macros (1P 64x16), simulated with the PDK functional models in
-# sim/ihp_sram. Every harness compiles the RTL with these two lists.
+# sim/ihp_sram. Every harness compiles the RTL with these lists.
 SIM_DEFS = ["-DFUNCTIONAL"]
-SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+SIM_LIBS = sorted(glob.glob(os.path.join(ROOT, "sim", "ihp_sram", "*.v")))   # every vendored SRAM model
 
 STANDARD_BAUDS = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400,
                   57600, 76800, 115200, 230400, 460800, 921600,
@@ -128,7 +128,7 @@ def compile_tb():
     vvp = os.path.join(BUILD, "tb_uart_workload.vvp")
     srcs = [os.path.join(ROOT, "src", f) for f in sorted(os.listdir(os.path.join(ROOT, "src")))
             if f.endswith(".v")]
-    cmd = ["iverilog", "-g2012", *SIM_DEFS, "-I", os.path.join(ROOT, "src"),
+    cmd = ["iverilog", "-g2012", *SIM_DEFS, "-s", "tb_uart_workload", "-I", os.path.join(ROOT, "src"),
            "-o", vvp, os.path.join(ROOT, "tb", "tb_uart_workload.v")] + srcs + SIM_LIBS
     subprocess.run(cmd, check=True)
     return vvp

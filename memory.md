@@ -143,3 +143,14 @@ Plan: [docs/I2C_PLAN.md](docs/I2C_PLAN.md). Update this section at the end of ev
   waveforms must start relative to LOADED and within the host's 200-bit no-progress timeout.
 - Docs added/updated 2026-10-12: I2C_RESULTS.md, WORKLOAD_RESULTS.md, CHALLENGE_CHECK.md (rules check + to-do),
   I2C_PLAN status, instructions.md §4/§6, MGMT_PLAN registers, architecture/area-study/execution-plan statuses, README.
+
+## Two-tier instruction memory (BUILDING, started 2026-10-13)
+Plan: [docs/TWO_TIER_MEMORY_PLAN.md](docs/TWO_TIER_MEMORY_PLAN.md); evidence + limitations list: [docs/TWO_TIER_RESULTS.md](docs/TWO_TIER_RESULTS.md).
+User decision: build the plan as written (D0 = two-tier, D1-D15 as proposed, D7 = mode A, Phase 8 CALL/RET not built).
+Each phase on branch `two-tier/phaseN`, tagged `tt-phaseN` at exit.
+- **Phase 0 DONE**: 256x32 bm_bist model + core vendored (IHP-Open-PDK 5e6d592e); tb_l2_macro V0.1/V0.2 PASS
+  (abs_sram == vendor, 1M ops); stand-in glue ~20k um^2 + 49.5k macro; urgent path ~13-15 gate levels -> mode A.
+- Tool facts: every compile now uses `-s <tb>` (an uninstantiated SRAM wrapper becomes a top with A_DLY=z and
+  $stops). eqy needs GNU make: conda env `eda` (`C:\Users\risha\miniconda3\envs\eda\Library\bin`). Verilator
+  needs `VERILATOR_ROOT=/c/tools/oss-cad-suite/share/verilator` on Windows (lint only, no C++ compiler);
+  builds/coverage run in WSL: `~/micromamba/envs/vl` (verilator 5.052, g++ 16.2). Verilator is 2-state (no X).

@@ -27,8 +27,7 @@ ROOT = os.path.abspath(os.path.join(HERE, ".."))
 BUILD = os.path.join(ROOT, "build", "i2c")
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
-SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+SIM_LIBS = sorted(glob.glob(os.path.join(ROOT, "sim", "ihp_sram", "*.v")))   # every vendored SRAM model
 EV_NACK = ip.EV_NACK
 
 
@@ -207,7 +206,7 @@ def compile_tb(name, rise):
         os.makedirs(BUILD, exist_ok=True)
         out = os.path.join(BUILD, f"{name}_r{rise}.vvp")
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
-        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", f"-P{name}.T_RISE={rise}",
+        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", f"-P{name}.T_RISE={rise}", "-s", name,
                         "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", out,
                         os.path.join(ROOT, "tb", name + ".v"), os.path.join(ROOT, "tb", "i2c_slave_model.v"),
                         *srcs, *SIM_LIBS], check=True)
