@@ -23,9 +23,20 @@
 //                             (err) while the pad's owner runs, for owner 3 or nonzero data[31:3].
 //                             R: {od, owner[1:0]}
 //   0x0220           VIOL     R: {viol1[7:0], viol0[7:0]}  W: data[15:0] = bits to clear (W1C)
+// Two-tier memory (L2_EN = 1; docs/TWO_TIER_MEMORY_PLAN.md §2.9), otherwise these addresses are unmapped:
+//   base+0x004       RESET_PC  R/W [8:0] first pc after RUN rises (W only while that engine is held)
+//   base+0x008       L2_RANGE  R/W [7:0] lo, [15:8] hi: L2 words the engine may execute/copy; lo > hi = none
+//                              (W only while held; reset 0x00FF = empty)
+//   base+0x00C       FETCH_CFG R/W [0] prefetch buffer enable, [1] reserved (W only while held; reset 3)
+//   0x0300           ARB_CFG   R/W [1:0] L2 arbitration: 0 round-robin, 1 engine 0 first, 2 engine 1 first
+//                              (any time; 3 refused)
+//   0x0400+4*i       L2        R/W shared L2 word i (i = 0..255). W refused (err) inside the L2_RANGE of a
+//                              running engine. R has no side effect; the word is read in the frame.
 // Anything else (wrong length, unknown op, unmapped or misaligned address, nonzero
 // reserved CTRL bits, instruction write to a running engine) changes nothing and sets err.
-module mgmt (
+module mgmt #(
+    parameter L2_EN = 1
+)(
     input  wire        clk,
     input  wire        rst_n,
     // spi_slave
@@ -62,6 +73,16 @@ module mgmt (
     input  wire [15:0] pad_owner,
     input  wire [7:0]  pad_od,
     input  wire [15:0] pad_viol,
+    // two-tier memory configuration and the host port of the shared L2
+    output reg  [17:0] reset_pc,     // {engine 1, engine 0}
+    output reg  [31:0] l2_range,     // {engine 1 {hi, lo}, engine 0 {hi, lo}}
+    output reg  [3:0]  fetch_cfg,    // {engine 1, engine 0}
+    output reg  [1:0]  arb_policy,
+    output reg         l2_we,        // one-clock strobes to l2_mem (host class: always granted)
+    output wire        l2_re,
+    output wire [7:0]  l2_addr,
+    output wire [31:0] l2_wdata,
+    input  wire [31:0] l2_rdata,
     // status
     output reg         err          // sticky, cleared by reset
 );
@@ -70,6 +91,7 @@ module mgmt (
     reg [7:0]  status_snap;         // STATUS as sent in byte 0 of this frame
     reg        cap;                 // one cycle after the address is complete
     reg [31:0] rd_word;             // read data, frozen for bytes 3-6
+    reg        l2_cap;              // L2 read issued last clock: its word is on l2_rdata now
 
     wire [7:0]  op   = frame[55:48];
     wire [15:0] addr = frame[47:32];
@@ -87,6 +109,15 @@ module mgmt (
     wire hit_tx   = eng_ok && (addr[11:0] == 12'h200);
     wire hit_pad  = (addr[15:5] == 11'h010) && (addr[1:0] == 2'b00);   // 0x0200..0x021C
     wire hit_viol = (addr == 16'h0220);
+    wire at_rv    = L2_EN && eng_ok && (addr[11:0] == 12'h004);
+    wire at_rng   = L2_EN && eng_ok && (addr[11:0] == 12'h008);
+    wire at_fcfg  = L2_EN && eng_ok && (addr[11:0] == 12'h00C);
+    wire hit_arb  = L2_EN && (addr == 16'h0300);
+    wire hit_l2   = L2_EN && (addr[15:10] == 6'b000001) && (addr[1:0] == 2'b00);   // 0x0400..0x07FC
+    // a host write may not change a word a running engine may execute or copy
+    wire [7:0] wi = addr[9:2];
+    wire l2_prot  = (eng_run[0] && wi >= l2_range[7:0]  && wi <= l2_range[15:8]) ||
+                    (eng_run[1] && wi >= l2_range[23:16] && wi <= l2_range[31:24]);
 
     wire [7:0] status = {1'b1, err, eng_run[1], eng_run[0], tx_full[1], tx_full[0],
                          ~rx_empty[1], ~rx_empty[0]};
@@ -100,13 +131,19 @@ module mgmt (
     wire [8:0]  pc_e     = c_eng ? pc1 : pc0;
     wire [31:0] rx_e     = c_eng ? rx_data1 : rx_data0;
     wire [2:0]  c_pad    = c_addr[4:2];
+    wire        c_l2     = L2_EN && (c_op == 8'h02) && (c_addr[15:10] == 6'b000001) && (c_addr[1:0] == 2'b00);
     wire [31:0] rd_mux   = (c_op != 8'h02) ? 32'd0 :
                            (c_addr[15:5] == 11'h010 && c_addr[1:0] == 2'b00) ?
                                {29'd0, pad_od[c_pad], pad_owner[2*c_pad +: 2]} :
                            (c_addr == 16'h0220) ? {16'd0, pad_viol} :
+                           (L2_EN && c_addr == 16'h0300) ? {30'd0, arb_policy} :
                            !c_eng_ok ? 32'd0 :
                            (c_addr[11:0] == 12'h000) ? {13'd0, pc_e, 5'd0, fault_cause[2*c_eng +: 2], fault[c_eng], halted[c_eng], eng_run[c_eng]} :
                            (c_addr[11:0] == 12'h204) ? (status_snap[c_eng] ? rx_e : 32'd0) :
+                           !L2_EN ? 32'd0 :
+                           (c_addr[11:0] == 12'h004) ? {23'd0, reset_pc[9*c_eng +: 9]} :
+                           (c_addr[11:0] == 12'h008) ? {16'd0, l2_range[16*c_eng +: 16]} :
+                           (c_addr[11:0] == 12'h00C) ? {30'd0, fetch_cfg[2*c_eng +: 2]} :
                                                        32'd0;
 
     // byte to send next = index nbytes
@@ -123,6 +160,11 @@ module mgmt (
     assign tx_wr_data = data;
     assign pad_sel    = addr[4:2];
     assign pad_data   = data[2:0];
+    // L2 host port: a write commits after a complete frame (address/data from the frame); a read is
+    // issued the clock after the address is in and its word is latched one clock later
+    assign l2_re      = cap && c_l2;
+    assign l2_addr    = l2_we ? addr[9:2] : c_addr[9:2];
+    assign l2_wdata   = data;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -138,7 +180,15 @@ module mgmt (
             pad_we      <= 1'b0;
             viol_clr    <= 16'd0;
             err         <= 1'b0;
+            l2_cap      <= 1'b0;
+            l2_we       <= 1'b0;
+            reset_pc    <= 18'd0;
+            l2_range    <= 32'h00FF_00FF;
+            fetch_cfg   <= 4'hF;
+            arb_policy  <= 2'd0;
         end else begin
+            l2_we    <= 1'b0;
+            l2_cap   <= l2_re;
             imem_we  <= 2'b00;
             rx_rd_en <= 2'b00;
             tx_wr_en <= 2'b00;
@@ -147,6 +197,7 @@ module mgmt (
             cap      <= byte_valid && (nbytes == 4'd2);
             if (!active) status_snap <= status;     // same edges spi_slave loads byte 0 on
             if (cap) rd_word <= rd_mux;
+            if (l2_cap) rd_word <= l2_rdata;
             if (frame_end) begin
                 nbytes <= 4'd0;
                 if (len_ok && is_write && hit_ctrl)
@@ -161,7 +212,17 @@ module mgmt (
                     pad_we <= 1'b1;
                 else if (len_ok && is_write && hit_viol && data[31:16] == 16'd0)
                     viol_clr <= data[15:0];
-                else if (len_ok && is_read && (at_ctrl || hit_pad || hit_viol))
+                else if (len_ok && is_write && at_rv && !eng_run[eng] && data[31:9] == 23'd0)
+                    reset_pc[9*eng +: 9] <= data[8:0];
+                else if (len_ok && is_write && at_rng && !eng_run[eng] && data[31:16] == 16'd0)
+                    l2_range[16*eng +: 16] <= data[15:0];
+                else if (len_ok && is_write && at_fcfg && !eng_run[eng] && data[31:2] == 30'd0)
+                    fetch_cfg[2*eng +: 2] <= data[1:0];
+                else if (len_ok && is_write && hit_arb && data[31:2] == 30'd0 && data[1:0] != 2'd3)
+                    arb_policy <= data[1:0];
+                else if (len_ok && is_write && hit_l2 && !l2_prot)
+                    l2_we <= 1'b1;
+                else if (len_ok && is_read && (at_ctrl || hit_pad || hit_viol || at_rv || at_rng || at_fcfg || hit_arb || hit_l2))
                     ;                                   // plain register read, no side effect
                 else if (nbytes != 4'd0)                // an empty CS_N pulse is not an error
                     err <= 1'b1;

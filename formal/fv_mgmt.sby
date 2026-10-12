@@ -1,0 +1,19 @@
+[tasks]
+l2
+noL2
+
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal -DFORMAL mgmt.v fv_mgmt.v
+l2: chparam -set L2_EN 1 fv_mgmt
+noL2: chparam -set L2_EN 0 fv_mgmt
+prep -flatten -top fv_mgmt
+
+[files]
+src/mgmt.v
+formal/fv_mgmt.v

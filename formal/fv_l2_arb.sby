@@ -1,0 +1,14 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal -DFORMAL abs_sram.v l2_mem.v fv_l2_arb.v
+prep -flatten -top fv_l2_arb
+
+[files]
+formal/abs_sram.v
+src/l2_mem.v
+formal/fv_l2_arb.v

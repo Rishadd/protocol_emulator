@@ -21,25 +21,36 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 PY = sys.executable
 H = lambda f: os.path.join(ROOT, "host", f)
-os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
+os.environ["PATH"] = os.pathsep.join([r"C:\tools\oss-cad-suite\bin", r"C:\tools\oss-cad-suite\lib", os.environ["PATH"],
+                                      r"C:\iverilog\bin", r"C:\Users\risha\miniconda3\envs\eda\Library\bin"])  # sby, eqy (make)
+FORMAL = ["fv_l2_arb", "fv_mgmt"]                     # formal/<name>.sby, proved in every tier
+PHASE = 2                                                # mutants of phases 1..PHASE run in tier 1
+RUN_TESTS = ["powershell", "-NoProfile", "-File", os.path.join(ROOT, "run_tests.ps1")]
 
 
 def vvp(tb, seed):
     return [f"{tb} seed {seed}", ["vvp", "-n", os.path.join(ROOT, "build", tb + ".vvp"), f"+SEED={seed}"], None]
 
 
+def sby(name):
+    return [f"formal {name}", ["sby", "-f", "--prefix", os.path.join(ROOT, "build", "formal", name),
+                               os.path.join(ROOT, "formal", name + ".sby")], None]
+
+
 def stages(tier, seeds):
-    s = [[["run_tests", ["powershell", "-NoProfile", "-File", os.path.join(ROOT, "run_tests.ps1")], None],
-          ["test_isa", [PY, H("test_isa.py")], None]]]
+    s = [[["run_tests", RUN_TESTS, None], ["run_tests NO_L2", RUN_TESTS + ["-Define", "NO_L2"], None],
+          ["test_isa", [PY, H("test_isa.py")], None]] + [sby(f) for f in FORMAL]]
     if tier >= 1:
         s.append([vvp(tb, k) for tb in ("tb_fetch_equiv", "tb_fetch_equiv_v2") for k in range(2, 2 + seeds)] + [
             ["spi_test", [PY, H("spi_test.py")], "results/two_tier_baseline/spi_test.txt"],
             ["i2c_test", [PY, H("i2c_test.py")], "results/two_tier_baseline/i2c_test.txt"],
-            ["mgmt_duplex_stress", [PY, H("mgmt_duplex_stress.py")], "results/two_tier_baseline/mgmt_duplex_stress.txt"]])
+            ["mgmt_duplex_stress", [PY, H("mgmt_duplex_stress.py")], "results/two_tier_baseline/mgmt_duplex_stress.txt"],
+            ["eqy E2 (NO_L2 chip == tt-phase1 chip)", [PY, H("run_eqy.py"), "E2"], None]])
         s += [[["workload uart", [PY, H("workload.py"), "uart"], "results/two_tier_baseline/workload_uart.txt"]],
               [["workload uartlimits", [PY, H("workload.py"), "uartlimits"], "results/two_tier_baseline/workload_uartlimits.txt"]],
               [["workload spi i2c combo", [PY, H("workload.py"), "spi", "i2c", "combo"],
-                "results/two_tier_baseline/workload_spi_i2c_combo.txt"]]]
+                "results/two_tier_baseline/workload_spi_i2c_combo.txt"]],
+              [["mutants", [PY, H("mutate.py")] + [str(p) for p in range(1, PHASE + 1)], None]]]   # alone: rewrites src/
     return s
 
 
@@ -56,7 +67,7 @@ def run(job, out_dir):
     text = r.stdout + r.stderr
     with open(os.path.join(out_dir, re.sub(r"\W+", "_", name) + ".log"), "w") as f:
         f.write(text)
-    res = re.findall(r"RESULT .*|^ALL PASS$", text, re.M)
+    res = re.findall(r"RESULT .*|^ALL PASS$|DONE \((?:PASS|FAIL)[^)]*\)", text, re.M)
     ok = bool(res) and all("PASS" in x for x in res) and not any("FAIL" in x for x in res)
     why = "; ".join(res)[:150] or "no RESULT line"
     if ok and base:

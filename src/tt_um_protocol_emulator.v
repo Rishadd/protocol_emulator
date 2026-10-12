@@ -4,6 +4,8 @@
 //   uio[7:0]  protocol pins P0..P7, shared by both engines through pin_mgr: a pad is driven only by
 //             the engine the host assigned it to (management window 0x0200), optionally open-drain.
 //             Both engines always read every pad.
+//   Shared L2 instruction memory (docs/TWO_TIER_MEMORY_PLAN.md): l2_mem, loaded by the host through mgmt.
+//   Build with -DNO_L2 for the fallback chip without it (L2_EN = 0).
 module tt_um_protocol_emulator (
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
@@ -14,6 +16,11 @@ module tt_um_protocol_emulator (
     input  wire       clk,
     input  wire       rst_n
 );
+`ifdef NO_L2
+    localparam L2_EN = 0;
+`else
+    localparam L2_EN = 1;
+`endif
     // asynchronous assert, synchronous release
     reg [1:0] rst_sync;
     always @(posedge clk or negedge rst_n)
@@ -35,6 +42,14 @@ module tt_um_protocol_emulator (
     wire [7:0]  out0, oe0, out1, oe1;
     wire [8:0]  pc0, pc1;
     wire [3:0]  fault_cause;
+    wire [17:0] reset_pc;
+    wire [31:0] l2_range, l2_wdata, l2_rdata;
+    wire [3:0]  fetch_cfg;
+    wire [1:0]  arb_policy, l2_req, l2_req_hi, l2_gnt;
+    wire        l2_we, l2_re;
+    wire [7:0]  l2_addr;
+    wire [15:0] l2_req_addr;
+    assign {l2_req, l2_req_hi, l2_req_addr} = 20'd0;           // engines fetch from L2 in Phase 3
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
 
@@ -44,7 +59,7 @@ module tt_um_protocol_emulator (
         .byte_valid(byte_valid), .rx_byte(rx_byte), .tx_byte(tx_byte),
         .active(spi_active), .frame_end(frame_end), .frame_clean(frame_clean));
 
-    mgmt u_mgmt (
+    mgmt #(.L2_EN(L2_EN)) u_mgmt (
         .clk(clk), .rst_n(srst_n),
         .byte_valid(byte_valid), .rx_byte(rx_byte), .tx_byte(tx_byte),
         .active(spi_active), .frame_end(frame_end), .frame_clean(frame_clean),
@@ -56,7 +71,18 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data),
         .pad_sel(pad_sel), .pad_data(pad_data), .pad_ok(pad_ok), .pad_we(pad_we), .viol_clr(viol_clr),
         .pad_owner(pad_owner), .pad_od(pad_od), .pad_viol(pad_viol),
+        .reset_pc(reset_pc), .l2_range(l2_range), .fetch_cfg(fetch_cfg), .arb_policy(arb_policy),
+        .l2_we(l2_we), .l2_re(l2_re), .l2_addr(l2_addr), .l2_wdata(l2_wdata), .l2_rdata(l2_rdata),
         .err(mgmt_err));
+
+    generate if (L2_EN) begin : g_l2
+        l2_mem u_l2 (.clk(clk), .rst_n(srst_n), .h_we(l2_we), .h_re(l2_re), .h_addr(l2_addr), .h_wdata(l2_wdata),
+                     .req(l2_req), .req_hi(l2_req_hi), .req_addr(l2_req_addr), .policy(arb_policy),
+                     .gnt(l2_gnt), .rdata(l2_rdata));
+    end else begin : g_no_l2
+        assign l2_gnt = 2'b00;
+        assign l2_rdata = 32'd0;
+    end endgenerate
 
     pin_mgr u_pins (
         .clk(clk), .rst_n(srst_n), .run(eng_run),

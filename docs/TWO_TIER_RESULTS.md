@@ -51,6 +51,29 @@ not consider; 256x32 kept as planned.
   - `tb_fetch_equiv_v2` is a 3-line define wrapper around `tb_fetch_equiv`.
   - The 42d262a reference now uses the frozen v1 control unit (it used to share `src/control_unit.v`).
 
+## Phase 2: shared L2 storage and host access (2026-10-13)
+
+**RTL:**
+- New `src/l2_mem.v` (48 lines): the 256x32 macro with tie-offs, and the 3-class arbiter (host > class 2 > class 3; round-robin, engine 0 first or engine 1 first). The grant is in the same clock; data is ready one clock later.
+- `mgmt`: L2 window `0x0400+4i`, RESET_PC / L2_RANGE / FETCH_CFG per engine (written only while that engine is held), ARB_CFG (any time; 3 refused), and protection (a host write inside a running engine's range is refused).
+- Top: `l2_mem` is instantiated unless `-DNO_L2`. The engines do not request L2 yet.
+
+| Test | Result |
+|---|---|
+| V3.4 (unit, built now) `tb_arb`: 192 combinations (host x request x class x policy x pointer); grant, address reached the macro, pointer update | PASS |
+| V2.1 `tb_l2_host`: 6 patterns x 256 words loaded and read back through SPI | PASS |
+| V2.2 aborted L2 frames cut after bytes 1-6 + a crafted cut frame whose last 7 bytes look like a complete L2 write | PASS (nothing written) |
+| V2.3 unmapped / misaligned / below-window addresses | err, no access |
+| V2.4 protection, 10 boundary points x {none, e0, e1, both running}, overlapping ranges | refused exactly inside running ranges, word unchanged |
+| V2.5 reset values; held-only rule for RESET_PC/L2_RANGE/FETCH_CFG; ARB_CFG while running; reserved bits and policy 3 refused | PASS |
+| V2.6 L2 read inside the frame vs SCLK half period | correct at 8, 7, 6, 5, 4 clocks; **fails at 3 clocks** (contract: >= 8) |
+| V2.7 UART TX from L1 while the host hammers L2 | P0 waveform identical (27 transitions) to a quiet run |
+| V2.8 `run_tests.ps1 -Define NO_L2` | 21/21 PASS |
+| F4, F10, F11 + address path (`formal/fv_l2_arb`, PDR) | **proved (unbounded)** in 29 s |
+| E2 (`host/run_eqy.py E2`): the `-DNO_L2` chip == the tt-phase1 chip (eqy, macros as black boxes) | **proved**: 2,524/2,524 partitions equivalent |
+| F6, complete-frame commit rule, F12 (`formal/fv_mgmt`, PDR, tasks l2 / noL2) | **proved (unbounded)** |
+| Mutants (`host/mutate.py 2`) | **10/10 detected** (the crafted cut-frame case was added after the first run missed "write on an incomplete frame") |
+
 ## L. Limitations and open issues (updated every phase)
 
 | # | Item | Kind | Status |
@@ -60,3 +83,4 @@ not consider; 256x32 kept as planned.
 | L3 | Verilator is 2-state: X checks (an unwritten word reads X, plan A7) only work in Icarus | tool limit | accepted; X checks stay in Icarus |
 | L4 | `eqy` on Windows needs GNU make on PATH (`C:\Users\risha\miniconda3\envs\eda\Library\bin`) | tool setup | documented |
 | L5 | FPGA tops (`src/fpga/`) still instantiate the old `engine_top` port list (6-bit pc, no L2 ports); not built or run (D13). The UART hex images are unchanged and still valid | out of scope | open |
+| L6 | Formal tools on Windows: Yosys formal has no hierarchical references (properties use ports or harness-side shadows), and `sby`/`eqy` read `[files]`/sources relative to the working directory. eqy partition file names break on auto-generated names that carry a drive letter, so sources are read through relative paths | tool limits | worked around |
