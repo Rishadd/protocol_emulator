@@ -68,7 +68,7 @@ def master(khz=400, f_clk=50e6, d=None):
     out = []
     for m, a in p:
         if m == "JPH":
-            a = SDA << 6 | L[a]
+            a = (SDA, L[a])
         elif isinstance(a, str):
             a = L[a]
         out.append((m, a))

@@ -9,7 +9,7 @@ module tb_engine_top;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [8:0]  pc;
 
     integer errors = 0, i, n, edges;
     integer cycle = 0;

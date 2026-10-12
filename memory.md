@@ -154,3 +154,9 @@ Each phase on branch `two-tier/phaseN`, tagged `tt-phaseN` at exit.
   $stops). eqy needs GNU make: conda env `eda` (`C:\Users\risha\miniconda3\envs\eda\Library\bin`). Verilator
   needs `VERILATOR_ROOT=/c/tools/oss-cad-suite/share/verilator` on Windows (lint only, no C++ compiler);
   builds/coverage run in WSL: `~/micromamba/envs/vl` (verilator 5.052, g++ 16.2). Verilator is 2-state (no X).
+- **Phase 1 DONE**: 9-bit pc, JPH/JPL pin [11:9], pc outside L1 faults (cause 1), CTRL {pc[18:10], cause[4:3], ...};
+  host/isa.py = single encoder. Equivalence 6.69M clocks / 40 seeds 0 mismatches; every protocol suite identical to
+  the tt-phase0 baseline (results/two_tier_baseline/, made in worktree ../pe_baseline); mutants 6/6.
+- Lessons: old results/*.txt are not exact baselines (pre-pad-claim); regress.py compares against two_tier_baseline.
+  tb pitfalls: `$random` OR-ed into an instruction overwrites the opcode (mask to 27 bits); bare `else` after `CHECK
+  binds to the macro's if; `8'hNN + integer` is 32 bits inside {}. Yosys formal: no hierarchical references.

@@ -1,7 +1,8 @@
 // Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
 // Fetch: instr_mem has a synchronous read (SRAM macros) and is addressed with pc_reg.next_pc,
-// so instr always holds the word for the current pc. In a testbench use <inst>.imem.poke(a,w) /
+// so instr always holds the word for the current pc. The pc is 9 bits (isa.vh): L1 holds 0x000-0x03F,
+// any other pc faults (cause 1) before it executes. In a testbench use <inst>.imem.poke(a,w) /
 // .load_hex("program.hex") (not a hierarchical array write).
 // run=0 holds the execution core (PC, control, counters, shifters, pins) in reset:
 // PC=0, pins released. FIFOs and instruction memory keep their contents.
@@ -31,12 +32,14 @@ module engine_top #(
     // status
     output wire        halted,
     output wire        fault,
-    output wire [5:0]  pc
+    output wire [1:0]  fault_cause,
+    output wire [8:0]  pc
 );
     wire        core_rst_n = rst_n & run;
     wire [31:0] instr;
     wire        pc_advance, pc_jump;
-    wire [5:0]  jump_addr, next_pc;
+    wire [8:0]  jump_addr, next_pc;
+    wire [1:0]  pc_fault = (pc[8:6] != 3'd0) ? 2'd1 : 2'd0;   // only L1 exists
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value;
     wire        lc_load, lc_dec;
@@ -60,14 +63,14 @@ module engine_top #(
     // masked with core_rst_n; everything else sits behind core_rst_n's asynchronous reset.
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .clk   (clk),
-        .addr  (next_pc),
+        .addr  (next_pc[5:0]),
         .instr (instr),
         .we    (imem_we),
         .waddr (imem_waddr),
         .wdata (imem_wdata)
     );
 
-    pc_reg pc_i (
+    pc_reg #(.WIDTH(9)) pc_i (
         .clk       (clk),
         .rst_n     (core_rst_n),
         .advance   (pc_advance),
@@ -164,6 +167,7 @@ module engine_top #(
         .clk           (clk),
         .rst_n         (core_rst_n),
         .instr         (instr),
+        .pc_fault      (pc_fault),
         .pc_advance    (pc_advance),
         .pc_jump       (pc_jump),
         .jump_addr     (jump_addr),
@@ -196,6 +200,7 @@ module engine_top #(
         .cfg_osr_msb   (cfg_osr_msb),
         .cfg_isr_msb   (cfg_isr_msb),
         .halted        (halted),
-        .fault         (fault)
+        .fault         (fault),
+        .fault_cause   (fault_cause)
     );
 endmodule

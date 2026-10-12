@@ -30,7 +30,7 @@ module tb_mgmt_frame;
     wire err    = dut.u_mgmt.err;
     wire halted = dut.u_eng0.halted;
     wire fault  = dut.u_eng0.fault;
-    wire [5:0] pc = dut.u_eng0.pc;
+    wire [8:0] pc = dut.u_eng0.pc;
 
     always #5 clk = ~clk;
     always @(posedge clk) cyc = cyc + 1;

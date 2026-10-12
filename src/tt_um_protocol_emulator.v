@@ -33,7 +33,8 @@ module tt_um_protocol_emulator (
     wire [7:0]  pad_od;
 
     wire [7:0]  out0, oe0, out1, oe1;
-    wire [5:0]  pc0, pc1;
+    wire [8:0]  pc0, pc1;
+    wire [3:0]  fault_cause;
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
 
@@ -49,7 +50,7 @@ module tt_um_protocol_emulator (
         .active(spi_active), .frame_end(frame_end), .frame_clean(frame_clean),
         .eng_run(eng_run),
         .imem_we(imem_we), .imem_waddr(imem_waddr), .imem_wdata(imem_wdata),
-        .halted(halted), .fault(fault), .pc0(pc0), .pc1(pc1),
+        .halted(halted), .fault(fault), .pc0(pc0), .pc1(pc1), .fault_cause(fault_cause),
         .tx_full(tx_full), .rx_empty(rx_empty),
         .rx_data0(rx_data0), .rx_data1(rx_data1), .rx_rd_en(rx_rd_en),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data),
@@ -70,7 +71,7 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en[0]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[0]),
         .rx_rd_en(rx_rd_en[0]), .rx_rd_data(rx_data0), .rx_empty(rx_empty[0]),
         .pin_in(uio_in), .pin_out(out0), .pin_oe(oe0),
-        .halted(halted[0]), .fault(fault[0]), .pc(pc0));
+        .halted(halted[0]), .fault(fault[0]), .fault_cause(fault_cause[1:0]), .pc(pc0));
 
     engine_top u_eng1 (
         .clk(clk), .rst_n(srst_n), .run(eng_run[1]),
@@ -78,7 +79,7 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en[1]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[1]),
         .rx_rd_en(rx_rd_en[1]), .rx_rd_data(rx_data1), .rx_empty(rx_empty[1]),
         .pin_in(uio_in), .pin_out(out1), .pin_oe(oe1),
-        .halted(halted[1]), .fault(fault[1]), .pc(pc1));
+        .halted(halted[1]), .fault(fault[1]), .fault_cause(fault_cause[3:2]), .pc(pc1));
 
     assign uo_out = {7'd0, miso};   // uo_out[7:1] status outputs come later
 

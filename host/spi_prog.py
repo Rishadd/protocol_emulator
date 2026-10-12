@@ -11,8 +11,9 @@ Run directly to print every variant:  python host/spi_prog.py [--bits 8] [--h 4]
 """
 import argparse
 
-OP = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9,
-          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20)
+import isa
+from isa import OP, disasm, write_hex   # noqa: F401 (re-exported for the runners)
+
 SCLK, MOSI, MISO, CS = 2, 3, 4, 5
 
 
@@ -23,7 +24,7 @@ def _cfg(out_pin, in_pin, lsb):
 
 def _jp(level, pin, addr):
     """Jump to addr if pin == level (JPH / JPL)."""
-    return ("JPH" if level else "JPL", pin << 6 | addr)
+    return ("JPH" if level else "JPL", (pin, addr))
 
 
 def master(mode, bits=8, lsb=False, h=4):
@@ -71,7 +72,7 @@ def slave(mode, bits=8, lsb=False):
 
 def assemble(prog):
     assert len(prog) <= 64
-    return [OP[m] << 27 | a for m, a in prog]
+    return isa.assemble(prog)
 
 
 def tx_word(v, bits, lsb):
@@ -80,17 +81,6 @@ def tx_word(v, bits, lsb):
 
 def rx_value(w, bits, lsb):
     return (w >> (32 - bits)) if lsb else w & ((1 << bits) - 1)
-
-
-def write_hex(words, path):
-    with open(path, "w") as f:
-        f.write("".join(f"{w:08X}\n" for w in words))
-
-
-def disasm(w):
-    name = {v: k for k, v in OP.items()}.get(w >> 27, "?")
-    a = w & 0x7FFFFFF
-    return f"{name} {a >> 6},{a & 63}" if name in ("JPH", "JPL") else f"{name} {a}"
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ module tb_mgmt_load;
 
     // golden reference: same RTL, image loaded directly, same reset and RUN
     wire [7:0] ref_out, ref_oe;
-    wire [5:0] ref_pc;
+    wire [8:0] ref_pc;
     engine_top gold (
         .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[0]),
         .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),

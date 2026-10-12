@@ -3,6 +3,8 @@
 `include "tb_common.vh"
 // JPO and PUSHI inside a real engine_top: OSR bit order, RX FIFO data path, stall on a full FIFO.
 // The host drains the RX FIFO on the falling edge whenever `drain` is set.
+// V1.2 (two-tier plan): every jump type and a sequential run past 0x03F to a pc outside L1 faults
+// with cause 1, and the word the L1 macro shows for that pc (word 63 = SETH 1) never commits.
 module tb_engine_ops;
     reg         clk = 0, rst_n = 0, run = 0, drain = 1;
     reg         tx_wr_en = 0, rx_rd_en = 0;
@@ -11,9 +13,11 @@ module tb_engine_ops;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [8:0]  pc;
+    wire [1:0]  cause;
 
-    integer errors = 0, nrx = 0, k;
+    integer errors = 0, nrx = 0, k, j, t;
+    reg [31:0] w63;
     reg [31:0] rx [0:15];
 
     engine_top dut (
@@ -22,7 +26,7 @@ module tb_engine_ops;
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),
-        .halted(halted), .fault(fault), .pc(pc));
+        .halted(halted), .fault(fault), .fault_cause(cause), .pc(pc));
 
     always #5 clk = ~clk;
     always @(negedge clk) begin
@@ -38,7 +42,7 @@ module tb_engine_ops;
         begin
             run = 0; rst_n = 0; nrx = 0;
             @(posedge clk); #1 rst_n = 1;
-            for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, k < n ? prog[k] : I(`OP_HALT, 0));
+            for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, k < n ? prog[k] : k == 63 ? w63 : I(`OP_HALT, 0));
             @(negedge clk) begin tx_wr_en = 1; tx_wr_data = tx; end
             @(negedge clk) tx_wr_en = 0;
             @(posedge clk); @(posedge clk); #1 run = 1;
@@ -58,6 +62,7 @@ module tb_engine_ops;
 
     reg [7:0] got;
     initial begin
+        w63 = I(`OP_HALT, 0);
         // ---- JPO, MSB-first: 0xC1 in [31:24] -> 1,1,0,0,0,0,0,1
         jpo_prog(8'h40); run_prog(9, 32'hC100_0000);
         got = 0; for (k = 0; k < 8; k = k + 1) got = {got[6:0], rx[k][0]};
@@ -87,6 +92,32 @@ module tb_engine_ops;
         drain = 1;
         for (k = 0; k < 40; k = k + 1) @(posedge clk);
         `CHECK(halted && nrx == 5 && rx[0] == 32'h100 && rx[4] == 32'h104, "PUSHI resumes, all 5 words in order")
+
+        // ---- V1.2: jumps to reserved / L2 addresses (no L2 yet) and a sequential run off L1 fault, cause 1
+        w63 = I(`OP_SETH, 1);
+        for (j = 0; j < 5; j = j + 1) for (t = 0; t < 4; t = t + 1) begin
+            got = (t == 0) ? 8'h40 : (t == 1) ? 8'hFF : 8'h00;          // low byte of the target
+            prog[0] = I(`OP_SETL, 2); prog[1] = I(`OP_PULL, 0); prog[2] = I(`OP_WAITH, 2);
+            pin_in = (j == 4) ? 8'h00 : 8'h04;
+            case (j)
+                0: prog[3] = I(`OP_JMP,  {t[1], got});
+                1: prog[3] = I(`OP_DJNZ, {t[1], got});
+                2: prog[3] = I(`OP_JPO,  {t[1], got});
+                3: prog[3] = I(`OP_JPH,  (2 << 9) | {t[1], got});
+                4: begin prog[2] = I(`OP_NOP, 0); prog[3] = I(`OP_JPL, (2 << 9) | {t[1], got}); end
+            endcase
+            if (t == 2) prog[3][7:0] = 8'h00;                             // 0x100
+            if (t == 3) prog[3][7:0] = 8'hFF;                             // 0x1FF
+            run_prog(4, 32'h1);
+            `CHECK(halted && fault && cause == 1 && pc == prog[3][8:0] && pin_out[1] == 0,
+                   "V1.2 jump outside L1 faults (cause 1), nothing at the bad pc commits")
+        end
+        pin_in = 8'h00;
+        for (k = 0; k < 16; k = k + 1) prog[k] = I(`OP_NOP, 0);
+        for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, I(`OP_NOP, 0));
+        run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; @(posedge clk); #1 run = 1;
+        for (k = 0; k < 200 && !halted; k = k + 1) @(posedge clk);
+        `CHECK(halted && fault && cause == 1 && pc == 9'h040, "V1.2 sequential run past 0x03F faults at 0x040")
 
         `REPORT("tb_engine_ops")
         $finish;

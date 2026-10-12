@@ -10,7 +10,7 @@
 //
 // Address map (architecture doc §6 windows), e = engine 0 or 1, base = 0x1000 * (e + 1):
 //   base+0x000       CTRL     W: bit 0 RUN (reset 0 = engine held, imem writable)
-//                             R: {pc[13:8], fault[2], halted[1], RUN[0]}
+//                             R: {pc[18:10], cause[4:3], fault[2], halted[1], RUN[0]}  (cause valid when fault=1)
 //   base+0x100+4*i   IMEM     W: instruction word i (only while that RUN = 0)
 //   base+0x200       TX_DATA  W: word pushed into the engine's TX FIFO (any RUN state, so TX can be
 //                             preloaded). Accepted only if this frame's STATUS showed tx_full = 0
@@ -43,8 +43,9 @@ module mgmt (
     // engine status and RX FIFOs
     input  wire [1:0]  halted,
     input  wire [1:0]  fault,
-    input  wire [5:0]  pc0,
-    input  wire [5:0]  pc1,
+    input  wire [8:0]  pc0,
+    input  wire [8:0]  pc1,
+    input  wire [3:0]  fault_cause,  // {engine 1, engine 0}
     input  wire [1:0]  tx_full,
     input  wire [1:0]  rx_empty,
     input  wire [31:0] rx_data0,
@@ -96,7 +97,7 @@ module mgmt (
     wire [15:0] c_addr   = frame[15:0];
     wire        c_eng_ok = (c_addr[15:12] == 4'h1) || (c_addr[15:12] == 4'h2);
     wire        c_eng    = c_addr[13];
-    wire [5:0]  pc_e     = c_eng ? pc1 : pc0;
+    wire [8:0]  pc_e     = c_eng ? pc1 : pc0;
     wire [31:0] rx_e     = c_eng ? rx_data1 : rx_data0;
     wire [2:0]  c_pad    = c_addr[4:2];
     wire [31:0] rd_mux   = (c_op != 8'h02) ? 32'd0 :
@@ -104,7 +105,7 @@ module mgmt (
                                {29'd0, pad_od[c_pad], pad_owner[2*c_pad +: 2]} :
                            (c_addr == 16'h0220) ? {16'd0, pad_viol} :
                            !c_eng_ok ? 32'd0 :
-                           (c_addr[11:0] == 12'h000) ? {18'd0, pc_e, 5'd0, fault[c_eng], halted[c_eng], eng_run[c_eng]} :
+                           (c_addr[11:0] == 12'h000) ? {13'd0, pc_e, 5'd0, fault_cause[2*c_eng +: 2], fault[c_eng], halted[c_eng], eng_run[c_eng]} :
                            (c_addr[11:0] == 12'h204) ? (status_snap[c_eng] ? rx_e : 32'd0) :
                                                        32'd0;
 

@@ -2,15 +2,18 @@
 // Every instruction commits in S_EXEC; timed ones with d>0 then sit in S_HOLD
 // until the delay counter's last cycle, so total occupancy is exactly d+1 cycles.
 // Blocking instructions (PULL/PUSH/WAITH/WAITL) hold PC with no side effects.
+// pc_fault != 0 (the pc cannot be fetched) traps like an illegal opcode: nothing commits.
+// fault_cause: 0 illegal opcode, 1 reserved address / no L2, 2 outside own L2 range, 3 COPY violation.
 `include "isa.vh"
 module control_unit (
     input  wire        clk,
     input  wire        rst_n,
     input  wire [31:0] instr,
+    input  wire [1:0]  pc_fault,        // nonzero: current pc may not be executed (cause code)
     // program counter
     output reg         pc_advance,      // normal increment
     output reg         pc_jump,         // jump to given address
-    output wire [5:0]  jump_addr,       // jump target address
+    output wire [8:0]  jump_addr,       // jump target address
     // delay counter
     output reg         dc_load,         // signal to load the delay counter
     output wire [26:0] dc_load_value,   // value to load into the delay counter
@@ -47,7 +50,8 @@ module control_unit (
     output reg         cfg_isr_msb,     // ISR bit order: 0 = LSB-first, 1 = MSB-first
     // status
     output reg         halted,
-    output reg         fault
+    output reg         fault,
+    output reg  [1:0]  fault_cause
 );
     localparam S_EXEC = 1'b0;           // state for executing instructions
     localparam S_HOLD = 1'b1;           // state for holding until a condition clears
@@ -58,12 +62,12 @@ module control_unit (
     wire [26:0] operand = instr[26:0];
     wire [2:0]  pin_sel = operand[2:0];
 
-    assign jump_addr     = operand[5:0];
+    assign jump_addr     = operand[8:0];
     assign dc_load_value = operand;
     assign lc_load_value = operand[15:0];
 
     wire legal      = (opcode <= `OP_LAST_LEGAL);   // opcodes above OP_LAST_LEGAL trap
-    wire jp_taken   = (pin_in[operand[8:6]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [8:6], addr in [5:0]
+    wire jp_taken   = (pin_in[operand[11:9]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [11:9], addr in [8:0]
     wire timed      = (opcode == `OP_WAIT) || (opcode == `OP_OUT1) || (opcode == `OP_IN1);  // instructions that require holding for a condition
     wire needs_hold = timed && (operand != 27'd0);  // indicates if the instruction requires holding based on the operand
 
@@ -79,6 +83,7 @@ module control_unit (
             state       <= S_EXEC;
             halted      <= 1'b0;
             fault       <= 1'b0;
+            fault_cause <= 2'd0;
             cfg_out_pin <= 3'd0;
             cfg_in_pin  <= 3'd0;
             cfg_osr_msb <= 1'b0;
@@ -86,9 +91,10 @@ module control_unit (
         end else if (!halted) begin
             case (state)
                 S_EXEC: begin
-                    if (!legal) begin
-                        halted <= 1'b1;
-                        fault  <= 1'b1;
+                    if (pc_fault != 2'd0 || !legal) begin
+                        halted      <= 1'b1;
+                        fault       <= 1'b1;
+                        fault_cause <= pc_fault;    // 0 = illegal opcode
                     end else if (opcode == `OP_HALT) begin
                         halted <= 1'b1;
                     end else if (!stall) begin
@@ -126,7 +132,7 @@ module control_unit (
         dir_wr     = 1'b0;
         dir_wr_idx = 3'd0;
         dir_wr_val = 1'b0;
-        if (!halted && legal) begin
+        if (!halted && legal && pc_fault == 2'd0) begin
             case (state)
                 S_EXEC: if (!stall) begin
                     case (opcode)

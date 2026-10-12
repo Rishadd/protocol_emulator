@@ -15,7 +15,7 @@ module tb_spi_engine;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [8:0]  pc;
     wire        p_cs, p_sclk, p_mosi, p_miso;
 
     `include "spi_peer.vh"

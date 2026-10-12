@@ -1,8 +1,9 @@
 // REFERENCE MODEL, do not edit. The engine exactly as committed in 42d262a (before the SRAM macros):
 // combinational-read flop instruction memory addressed with pc. tb_fetch_equiv runs it in lockstep
 // against the current engine_top (synchronous SRAM fetch addressed with next_pc) and requires
-// identical behaviour on every output and every clock. Other modules (control_unit, fifo, ...) are
-// shared with src/ because they did not change. Generated with:
+// identical behaviour on every output and every clock. The control unit is the frozen pre-two-tier
+// copy v1_control_unit (tb/ref/ref_engine_v1.v, compile both); fifo, shift_reg, ... are shared with
+// src/ because they did not change. Generated with:
 //   git show 42d262a:src/{instr_mem,pc_reg,engine_top}.v  + module renames (ref_ prefix)
 
 // Instruction memory: combinational read (engine fetch), synchronous host write.
@@ -211,7 +212,7 @@ module ref_engine_top #(
         .pin_in_sync (pin_in_sync)
     );
 
-    control_unit cu (
+    v1_control_unit cu (
         .clk           (clk),
         .rst_n         (core_rst_n),
         .instr         (instr),

@@ -8,20 +8,23 @@ module tb_control_unit;
     reg  [31:0] instr = 0;
     reg         tx_empty = 1, rx_full = 0, osr_bit = 1;
     reg  [7:0]  pin_in = 0;
+    reg  [1:0]  pc_fault = 0;
+    wire [1:0]  fault_cause;
 
     wire        pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en;
     wire        osr_load, osr_shift, isr_shift, isr_clear, pin_wr, dir_wr;
     wire        pin_wr_val, dir_wr_val, halted, fault, dc_busy, dc_last, push_imm;
-    wire [5:0]  jump_addr;
+    wire [8:0]  jump_addr;
     wire [26:0] dc_load_value;
     wire [15:0] lc_load_value, lc_count;
     wire [2:0]  pin_wr_idx, dir_wr_idx, cfg_out_pin, cfg_in_pin;
     wire        cfg_osr_msb, cfg_isr_msb;
 
-    integer errors = 0, k;
+    integer errors = 0, k, p, lv, tk;
+    reg [8:0] a;
 
     control_unit dut (
-        .clk(clk), .rst_n(rst_n), .instr(instr),
+        .clk(clk), .rst_n(rst_n), .instr(instr), .pc_fault(pc_fault),
         .pc_advance(pc_advance), .pc_jump(pc_jump), .jump_addr(jump_addr),
         .dc_load(dc_load), .dc_load_value(dc_load_value), .dc_last(dc_last),
         .lc_load(lc_load), .lc_dec(lc_dec), .lc_load_value(lc_load_value), .lc_count(lc_count),
@@ -32,7 +35,7 @@ module tb_control_unit;
         .dir_wr(dir_wr), .dir_wr_idx(dir_wr_idx), .dir_wr_val(dir_wr_val), .pin_in(pin_in),
         .cfg_out_pin(cfg_out_pin), .cfg_in_pin(cfg_in_pin),
         .cfg_osr_msb(cfg_osr_msb), .cfg_isr_msb(cfg_isr_msb),
-        .halted(halted), .fault(fault));
+        .halted(halted), .fault(fault), .fault_cause(fault_cause));
 
     delay_counter dc (.clk(clk), .rst_n(rst_n), .load(dc_load), .load_value(dc_load_value),
                       .busy(dc_busy), .last(dc_last));
@@ -143,16 +146,18 @@ module tb_control_unit;
         pin_in = 8'h00; #1;
         `CHECK(ctl == ADV, "A7 WAITL passes when low") tick;
 
-        // JPH/JPL: operand [8:6] pin, [5:0] addr; one cycle, taken or not
-        pin_in = 8'h20; set(`OP_JPH, (5 << 6) | 9);
-        `CHECK(ctl == JMP && jump_addr == 9, "A7 JPH taken when pin high") tick;
-        pin_in = 8'hDF; #1;
-        `CHECK(ctl == ADV, "A7 JPH falls through when pin low (others high)") tick;
-        pin_in = 8'hFB; set(`OP_JPL, (2 << 6) | 33);
-        `CHECK(ctl == JMP && jump_addr == 33, "A7 JPL taken when pin low (others high)") tick;
-        pin_in = 8'h04; #1;
-        `CHECK(ctl == ADV, "A7 JPL falls through when pin high") tick;
+        // V1.1 JPH/JPL: operand [11:9] pin, [8:0] addr; one cycle, taken or not; exhaustive over
+        // 8 pins x {JPL, JPH} x {taken, not taken} x 7 addresses, every other pin at the opposite level
+        for (k = 0; k < 8 * 2 * 2 * 7; k = k + 1) begin
+            p = k % 8; lv = (k / 8) % 2; tk = (k / 16) % 2;
+            case (k / 32) 0: a = 0; 1: a = 1; 2: a = 9'h03F; 3: a = 9'h040; 4: a = 9'h0FF; 5: a = 9'h100; default: a = 9'h1FF; endcase
+            pin_in = (tk == lv) ? (8'd1 << p) : ~(8'd1 << p);
+            set(lv ? `OP_JPH : `OP_JPL, (p << 9) | a);
+            `CHECK(ctl == (tk ? JMP : ADV) && (!tk || jump_addr == a), "V1.1 JPH/JPL pin [11:9], 9-bit address") tick;
+        end
         pin_in = 8'h00;
+        set(`OP_JMP, 9'h1A5);
+        `CHECK(ctl == JMP && jump_addr == 9'h1A5, "V1.1 JMP 9-bit address") tick;
 
         set(`OP_CFG, 8'b1110_1011); // out=3 in=5 osr_msb=1 isr_msb=1
         `CHECK(ctl == ADV, "A7 CFG") tick;
@@ -175,6 +180,16 @@ module tb_control_unit;
         `CHECK(halted == 1 && fault == 1, "A7 opcode 31 traps")
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 faulted engine ignores NOP")
+        `CHECK(fault_cause == 0, "V1 illegal opcode = cause 0")
+
+        // pc_fault: the pc may not be executed -> trap with that cause, nothing commits
+        for (k = 1; k < 4; k = k + 1) begin
+            do_reset; pin_in = 8'hFF; pc_fault = k; set(`OP_SETH, 3);
+            `CHECK(ctl == NONE, "V1 pc_fault: no strobes") tick;
+            `CHECK(halted == 1 && fault == 1 && fault_cause == k, "V1 pc_fault traps with its cause")
+            pc_fault = 0; set(`OP_NOP, 0);
+            `CHECK(ctl == NONE, "V1 trapped engine stays halted") tick;
+        end
 
         `REPORT("tb_control_unit")
         $finish;

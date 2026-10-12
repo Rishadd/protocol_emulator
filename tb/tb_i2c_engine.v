@@ -17,7 +17,7 @@ module tb_i2c_engine;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe, pad_oe, pad_out, od;
     wire [15:0] owner, viol;
-    wire [5:0]  pc;
+    wire [8:0]  pc;
     reg  [2:0]  cfg_pad = 0;
     reg         cfg_we = 0;
     reg  [2:0]  padcfg = 3'b101;           // engine 0, open-drain (+PUSHPULL=1: 3'b001)

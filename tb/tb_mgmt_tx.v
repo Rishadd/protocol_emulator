@@ -22,7 +22,7 @@ module tb_mgmt_tx;
 
     wire [7:0] g_out [0:1];
     wire [7:0] g_oe  [0:1];
-    wire [5:0] g_pc  [0:1];
+    wire [8:0] g_pc  [0:1];
     genvar ge;
     generate for (ge = 0; ge < 2; ge = ge + 1) begin : gold
         engine_top eng (

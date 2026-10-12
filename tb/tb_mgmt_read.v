@@ -99,7 +99,7 @@ module tb_mgmt_read;
         ctrl(1, 1);
         rdreg(16'h2000);
         `CHECK(st == (ST_ALIVE | ST_RUN1), "status shows RUN1")
-        `CHECK(rd == {18'd0, 6'd2, 5'd0, 3'b001}, "CTRL1 = pc 2, not halted, no fault, RUN")
+        `CHECK(rd == {13'd0, 9'd2, 5'd0, 2'd0, 3'b001}, "CTRL1 = pc 2 at [18:10], cause 0, not halted, no fault, RUN")
 
         $display("--- R3 one UART byte -> STATUS rx bit -> READ pops it");
         uart_send(8'h55); repeat (100) @(posedge clk);
@@ -159,7 +159,10 @@ module tb_mgmt_read;
         `CHECK(rd == 32'h0000_0003, "CTRL0: RUN, halted, pc 0")
         ctrl(0, 0); wr(16'h1100, {5'd31, 27'd0}); ctrl(0, 1);
         rdreg(16'h1000);
-        `CHECK(rd == 32'h0000_0007, "CTRL0: RUN, halted, fault")
+        `CHECK(rd == 32'h0000_0007, "CTRL0: RUN, halted, fault, cause 0 (illegal opcode)")
+        ctrl(0, 0); wr(16'h1100, {`OP_JMP, 27'h040}); ctrl(0, 1);
+        rdreg(16'h1000);
+        `CHECK(rd == ((32'h040 << 10) | (32'd1 << 3) | 32'd7), "V1.7 CTRL0: pc 0x040, cause 1 (reserved address)")
         ctrl(0, 0);
         rdreg(16'h1000);
         `CHECK(rd == 32'h0000_0000, "CTRL0 after RUN=0: all clear")

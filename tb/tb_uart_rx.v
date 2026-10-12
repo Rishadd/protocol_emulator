@@ -10,7 +10,7 @@ module tb_uart_rx;
     wire        tx_full, rx_empty, rx_rd_en, halted, fault;
     wire [31:0] rx_rd_data;
     wire [7:0]  pin_out, pin_oe, led;
-    wire [5:0]  pc;
+    wire [8:0]  pc;
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n),
