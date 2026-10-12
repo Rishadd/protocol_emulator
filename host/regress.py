@@ -21,8 +21,13 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 PY = sys.executable
 H = lambda f: os.path.join(ROOT, "host", f)
-os.environ["PATH"] = os.pathsep.join([r"C:\tools\oss-cad-suite\bin", r"C:\tools\oss-cad-suite\lib", os.environ["PATH"],
-                                      r"C:\iverilog\bin", r"C:\Users\risha\miniconda3\envs\eda\Library\bin"])  # sby, eqy (make)
+# Simulation jobs get Icarus 12 (C:\iverilog) first: the OSS CAD Suite brings Icarus 14, which simulates the SPI slave
+# suite one clock differently and refuses a forward reference (docs/TWO_TIER_RESULTS.md L7). Formal jobs get the
+# OSS CAD Suite first: its yosys does not start with Icarus's DLLs ahead of it on PATH.
+OSS = [r"C:\tools\oss-cad-suite\bin", r"C:\tools\oss-cad-suite\lib"]
+SIM_PATH = os.pathsep.join([r"C:\iverilog\bin"] + OSS + [os.environ["PATH"]])
+FORMAL_PATH = os.pathsep.join(OSS + [os.environ["PATH"], r"C:\Users\risha\miniconda3\envs\eda\Library\bin"])  # make: eqy
+os.environ["PATH"] = SIM_PATH
 FORMAL = ["fv_l2_arb", "fv_mgmt"]                     # formal/<name>.sby, proved in every tier
 PHASE = 2                                                # mutants of phases 1..PHASE run in tier 1
 RUN_TESTS = ["powershell", "-NoProfile", "-File", os.path.join(ROOT, "run_tests.ps1")]
@@ -63,7 +68,11 @@ def lines(text):
 
 def run(job, out_dir):
     name, cmd, base = job
-    r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    # own temp directory per job: iverilog's temp file names are not unique between parallel compiles
+    # (seen as random compile failures and wrongly built designs when jobs shared %TEMP%)
+    tmp = os.path.join(ROOT, "build", "tmp", re.sub(r"\W+", "_", name))
+    os.makedirs(tmp, exist_ok=True)
+    r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, env=dict(os.environ, TMP=tmp, TEMP=tmp, PATH=FORMAL_PATH if cmd[0] == "sby" else SIM_PATH))
     text = r.stdout + r.stderr
     with open(os.path.join(out_dir, re.sub(r"\W+", "_", name) + ".log"), "w") as f:
         f.write(text)

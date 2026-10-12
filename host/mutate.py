@@ -28,7 +28,7 @@ MUTANTS = {
         ("jump_addr truncated to 6 bits", "src/control_unit.v",
          "assign jump_addr     = operand[8:0];", "assign jump_addr     = {3'd0, operand[5:0]};", ["tb_control_unit", "tb_engine_ops"]),
         ("reserved-range check off", "src/engine_top.v",
-         "(pc[7:6] != 2'd0 ? 2'd1 : 2'd0)", "2'd0", ["tb_engine_ops"]),
+         "(pc[8:6] != 3'd0) ? 2'd1 : 2'd0", "2'd0", ["tb_engine_ops"]),
         ("fault cause swapped", "src/control_unit.v",
          "fault_cause <= pc_fault;", "fault_cause <= ~pc_fault;", ["tb_control_unit", "tb_engine_ops"]),
         ("faulting instruction commits", "src/control_unit.v",

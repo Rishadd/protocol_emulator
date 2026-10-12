@@ -26,10 +26,10 @@ module tb_mgmt_pins;
         begin spi_begin; spi_bits({72'd0, op, a, d}, 56); spi_end; {st, mid, rd} = spi_rx[55:0]; end
     endtask
     task chip_reset; begin rst_n = 0; repeat (3) @(posedge clk); #1 rst_n = 1; repeat (4) @(posedge clk); end endtask
+    reg [31:0] prog [0:15];                       // declared before the task that uses it
     task load0(input integer n);   // engine 0 program from prog[], rest HALT
         for (j = 0; j < 64; j = j + 1) frame(OP_WR, 16'h1100 + 4 * j, j < n ? prog[j] : {`OP_HALT, 27'd0});
     endtask
-    reg [31:0] prog [0:15];
     function [31:0] I(input [4:0] op, input [26:0] v); I = {op, v}; endfunction
 
     initial begin

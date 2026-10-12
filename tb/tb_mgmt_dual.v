@@ -276,8 +276,8 @@ module tb_mgmt_dual;
         lockstep_ok("D8 lockstep");
 
         $display("--- D9 rejected addresses");
-        bad(16'h2004, 32'd1,         "0x2004 (next to ENG1_CTRL) rejected");
-        bad(16'h1004, 32'd1,         "0x1004 rejected");
+        bad(16'h2018, 32'd1,         "0x2018 (unmapped, engine 1 window) rejected");
+        bad(16'h1018, 32'd1,         "0x1018 rejected");
         bad(16'h2208, 32'h1111_1111, "0x2208 rejected");
         bad(16'h3100, 32'h1111_1111, "0x3100 rejected");
         bad(16'h6100, 32'h1111_1111, "0x6100 rejected");
