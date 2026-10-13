@@ -115,7 +115,7 @@ module tb_fetch_equiv;
             else if (p < 117) rand_instr_raw = {`OP_JPO, 27'd0} | tgt;
             else if (p < 127) rand_instr_raw = {`OP_PUSHI, 27'd0} | ($random(seed) & 32'h07FF_FFFF);
 `endif
-            else begin op = 5'd21 + rnd(11); rand_instr_raw = {op, 27'd0} | rnd(64); end   // illegal -> fault (17-20 are legal now; not generated: PUSHI needs the RX mux the frozen reference lacks)
+            else begin op = 5'd22 + rnd(10); rand_instr_raw = {op, 27'd0} | rnd(64); end   // illegal -> fault (17-20 are legal now; not generated: PUSHI needs the RX mux the frozen reference lacks)
         end
     endfunction
 

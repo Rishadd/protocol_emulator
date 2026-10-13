@@ -9,7 +9,8 @@ module tb_control_unit;
     reg         tx_empty = 1, rx_full = 0, osr_bit = 1;
     reg  [7:0]  pin_in = 0;
     reg  [1:0]  pc_fault = 0;
-    reg         instr_valid = 1;
+    reg         instr_valid = 1, copy_bad = 1, copy_done = 0;
+    wire        waiting, copying;
     wire        bubble;
     wire [1:0]  fault_cause;
 
@@ -37,7 +38,8 @@ module tb_control_unit;
         .dir_wr(dir_wr), .dir_wr_idx(dir_wr_idx), .dir_wr_val(dir_wr_val), .pin_in(pin_in),
         .cfg_out_pin(cfg_out_pin), .cfg_in_pin(cfg_in_pin),
         .cfg_osr_msb(cfg_osr_msb), .cfg_isr_msb(cfg_isr_msb),
-        .halted(halted), .fault(fault), .fault_cause(fault_cause), .bubble(bubble));
+        .halted(halted), .fault(fault), .fault_cause(fault_cause), .bubble(bubble),
+        .copy_bad(copy_bad), .copy_done(copy_done), .waiting(waiting), .copying(copying));
 
     delay_counter dc (.clk(clk), .rst_n(rst_n), .load(dc_load), .load_value(dc_load_value),
                       .busy(dc_busy), .last(dc_last));
@@ -173,9 +175,15 @@ module tb_control_unit;
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 halted engine ignores NOP") tick;
 
-        do_reset; set(5'd21, 0);
-        `CHECK(ctl == NONE, "A7 opcode 21 no strobes") tick;
-        `CHECK(halted == 1 && fault == 1, "A7 opcode 21 traps")
+        do_reset; set(5'd21, 0);                     // COPY with copy_bad: refused
+        `CHECK(ctl == NONE, "V5 refused COPY: no strobes") tick;
+        `CHECK(halted == 1 && fault == 1 && fault_cause == 3, "V5 refused COPY traps with cause 3")
+        do_reset; copy_bad = 0; set(5'd21, 0);       // COPY accepted: waits for copy_done, then advances
+        `CHECK(ctl == NONE && !copying, "V5 COPY starts: no strobes") tick;
+        for (k = 0; k < 5; k = k + 1) begin `CHECK(ctl == NONE && copying && !bubble && !waiting, "V5 COPY waits") tick; end
+        copy_done = 1; #1;
+        `CHECK(ctl == ADV, "V5 COPY ends with copy_done") tick; copy_done = 0;
+        `CHECK(!copying && !halted, "V5 back to executing") copy_bad = 1;
         do_reset; set(5'd22, 0); tick;
         `CHECK(halted == 1 && fault == 1, "A7 opcode 22 traps")
         do_reset; set(5'd31, 0); tick;

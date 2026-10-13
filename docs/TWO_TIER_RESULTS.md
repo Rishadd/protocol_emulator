@@ -153,6 +153,35 @@ The plan's "invalidate on jump / COPY / host write" is not built: PB is tagged w
 
 **D10 decision: BB (branch-ahead) not built.** Its only use would be the DJNZ-to-OUT1 fetch of UART-class loops run from L2. V4.5 shows that costs at most one clock per bit (0.23% of a 434-clock bit), well inside UART tolerance. The plan's BB tests (V4.2, V4.3) are therefore not applicable.
 
+## Phase 5: COPY (2026-10-13)
+
+**RTL:**
+- `isa.vh`: `OP_COPY` = 21 (`[7:0]` src, `[13:8]` dst, `[19:14]` n-1).
+- `control_unit`: state `S_COPY`; a refused COPY traps with cause 3 before anything is written; `copying` output.
+- `engine_top`:
+  - a COPY sequencer (counter `k`, one class-3 L2 read per word with promotion, written to L1 the clock after its grant through the existing L1 write port);
+  - every check is done before the first write;
+  - `copy_wait` output for the testbench model.
+- `host/isa.py`: `COPY` = `(src, dst, n)`.
+
+| Test | Result |
+|---|---|
+| `tb_control_unit` COPY: refused (cause 3, no strobe); accepted (waits, no bubble, ends on `copy_done`) | PASS |
+| V5.1 every n = 1..64 x every dst with dst+n <= 64 (2,080) + every src at n = 1 (255) | **2,335 cases: 0 wrong**, nothing outside dst..dst+n-1 written |
+| V5.3 duration | the engine waits exactly n+1 clocks; a COPY instruction takes **n + 2** clocks uncontended (T10: c = 2) |
+| V5.2 COPY from L1, dst+n = 65, src < lo, src+n-1 > hi, src+n-1 > 255 | fault cause 3, L1 unchanged |
+| V5.5 RUN dropped at each of the first 11 clocks of an 8-word COPY | the written words are a prefix, every other L1 word unchanged, the restarted COPY completes |
+| V5.6 UART TX installed by COPY from L2 and run from L1 vs loaded by the host | identical edge spacing (start 16 clocks later: the COPY) |
+| V5.4 / V5.8 `tb_l2_exec` with random COPYs (both engines, contention, host traffic) | **50 seeds, 22,530,568 clocks: 0 mismatches**; 20,652 COPYs completed, 19,591 refused |
+| F7 (`fv_engine ctrl`): a COPY writes only inside dst..dst+n-1, only while it runs, never when refused | proved (unbounded); fails as it should with an off-by-one write address |
+| Mutants (`host/mutate.py 5`) | **7/7 detected** (after V5.5 was extended to check all 64 L1 words: "keeps writing after RUN falls" wrote word dst-1) |
+| V5.9 host L1 write while running | refused by the existing rule (`tb_mgmt_frame`); unchanged |
+
+**Notes:**
+- The instruction-set model performs a COPY in one step, so a COPY cut by RUN cannot be modelled. After such a cut, `tb_l2_exec` copies the DUT's L1 into the model; the prefix property itself is checked by V5.5.
+- No prefetch runs during a COPY (the plan says "may"): the word after a COPY is fetched urgently.
+- V5.7 (runtime protocol switch) needs the firmware library and is done in Phase 7.
+
 ## L. Limitations and open issues (updated every phase)
 
 | # | Item | Kind | Status |
@@ -164,6 +193,7 @@ The plan's "invalidate on jump / COPY / host write" is not built: PB is tagged w
 | L5 | FPGA tops (`src/fpga/`) still instantiate the old `engine_top` port list (6-bit pc, no L2 ports); not built or run (D13). The UART hex images are unchanged and still valid | out of scope | open |
 | L8 | Fixed arbitration priority starves the other engine's L2 code with no bound (V3.6), as designed (D6); its L1 code is unaffected | by design | documented |
 | L9 | F3 (word integrity) is proved only to depth 12 on the full engine model; deeper proof needs a smaller memory abstraction | proof depth | open |
+| L12 | A COPY cut by RUN leaves a prefix of the words written (by design, D9); firmware must re-run the COPY after a restart | design | documented |
 | L7 | Two "transient" failures in the Phase 2 regression (a testbench refused to compile, and SPI slave response timings shifted by one clock) were caused by `regress.py` putting the OSS CAD Suite first on `PATH`, which brings **Icarus 14** instead of the project's Icarus 12. They were not temp-file collisions, as first suspected. `regress.py` now puts `C:\iverilog\bin` first; each job also keeps its own `TMP` (the temp names are not unique, but they did not cause these failures) | tool setup | fixed |
 | L10 | The SPI slave suite measures slave response points one clock later under Icarus 14 than under Icarus 12 (same RTL), most likely a same-time-step race between the testbench peer and the design. Not investigated (outside this plan); the project is verified on Icarus 12 | simulator sensitivity | open |
 | L11 | Without BB, a one-clock instruction just before a jump into or inside L2 can cost one bubble under contention: L2 placement of tight loops is bounded, not exact (T9) | design choice (D10) | documented |

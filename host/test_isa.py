@@ -28,6 +28,8 @@ def parse(text):                          # inverse of isa.disasm
     if name in ("JPH", "JPL"):
         pin, addr = arg.split(",")
         return isa.enc(name, (int(pin), int(addr)))
+    if name == "COPY":
+        return isa.enc(name, tuple(int(x) for x in arg.split(",")))
     return isa.enc(name, int(arg))
 
 
@@ -36,7 +38,12 @@ corners = [0, 1, 0x3F, 0x40, 0xFF, 0x100, 0x1FF, 0x7FFFFFF] + [1 << b for b in r
 n = 0
 for m in isa.OP:
     for a in corners:
-        if m in ("JPH", "JPL"):
+        if m == "COPY":
+            for src, dst, ln in ((0, 0, 1), (255, 63, 1), (0, 0, 64), (17, 5, 33)):
+                w = isa.enc(m, (src, dst, ln))
+                check(parse(isa.disasm(w)) == w and w & 255 == src and (w >> 8) & 63 == dst and ((w >> 14) & 63) + 1 == ln, f"COPY {src},{dst},{ln}")
+                n += 1
+        elif m in ("JPH", "JPL"):
             for pin in range(8):
                 for addr in (0, 1, 0x3F, 0x40, 0x100, 0x1FF):
                     w = isa.enc(m, (pin, addr))

@@ -19,6 +19,12 @@
 //   V4.6  a prefetch is granted within 2 clocks against an engine asking every clock (promotion)
 //   V4.7  a word blocked for ever asks for its prefetch only until it is granted
 //   V4.5  UART TX run from L2 under the same contention vs from L1: bubbles per bit, waveform
+// Phase 5 (COPY, no contention):
+//   V5.1  every n = 1..64 x every dst with dst+n <= 64, and every src at n = 1: L1 = L2 words, rest unchanged
+//   V5.3  a COPY of n words keeps the engine waiting n+1 clocks
+//   V5.2  COPY from L1, dst+n = 65, src < lo, src+n-1 > hi, src+n-1 > 255: fault cause 3, nothing written
+//   V5.5  RUN dropped at every clock of an 8-word COPY: the written words are a prefix, clean restart
+//   V5.6  UART TX installed by COPY from L2 and run from L1 = UART TX loaded by the host (same edge spacing)
 module tb_engine_ops;
     reg         clk = 0, rst_n = 0, run = 0, drain = 1;
     reg         tx_wr_en = 0, rx_rd_en = 0;
@@ -44,6 +50,25 @@ module tb_engine_ops;
     integer errors = 0, nrx = 0, k, j, t, nbub = 0, first_set = 0, ck = 0, p_on, hpf, ntr = 0, dt, same;
     integer bub_pb [0:39][0:1];
     integer hk;                          // host-toggle loop counter (ck belongs to the clock counter)
+    integer nbad, ncase, cbad, ncopy;
+    always @(posedge clk) if (run && dut.copying) ncopy = ncopy + 1;
+    // one COPY src,dst,n from L2 0xF0 (then HALT); L1 pre-filled with markers; checks contents + duration
+    task copy_case(input [7:0] src, input [5:0] dst, input integer n);
+        integer q;
+        begin
+            l2w(8'hF0, I(`OP_COPY, ((n - 1) << 14) | (dst << 8) | src));
+            for (q = 0; q < 64; q = q + 1) dut.imem.poke(q, 32'hEEEE_0000 | q);
+            run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; ncopy = 0;
+            @(posedge clk); @(posedge clk); #1 run = 1;
+            for (q = 0; q < 200 && !halted; q = q + 1) @(posedge clk);
+            #1 ncase = ncase + 1;
+            for (q = 0; q < 64; q = q + 1)
+                if (dut.imem.peek(q) !== ((q >= dst && q < dst + n) ? ((src + q - dst == 8'hF1) ? I(`OP_HALT, 0) : (32'hC000_0000 | (src + q - dst))) : (32'hEEEE_0000 | q)))
+                    nbad = nbad + (q == 0 || 1);
+            if (!halted || fault) nbad = nbad + 1;
+            if (ncopy != n + 1) cbad = cbad + 1;
+        end
+    endtask
     integer ntr_j [0:1];
     integer bub_j [0:1];
     time    tr [0:31];
@@ -303,6 +328,68 @@ module tb_engine_ops;
         end
         `CHECK(bub_j[0] == 0 && same, "V4.5 UART from L2: same bits, never early, at most one clock late per bit")
         ph = 0;
+
+        // ---- Phase 5
+        rng = 16'hFF00; fcfg = 0; rv = 9'h1F0; w63 = I(`OP_HALT, 0);
+        for (k = 0; k < 256; k = k + 1) if (k < 8'hF0 || k > 8'hF1) l2w(k, 32'hC000_0000 | k);
+        l2w(8'hF1, I(`OP_HALT, 0));
+        nbad = 0; ncase = 0; cbad = 0;
+        for (j = 0; j < 64; j = j + 1) for (t = 0; t + j < 64; t = t + 1)          // n-1 = j, dst = t
+            copy_case(8'h10 + (j * 3 + t) % 160, t, j + 1);
+        for (k = 0; k < 256; k = k + 1) if (k != 8'hF0) copy_case(k, k % 64, 1);
+        $display("    V5.1 %0d COPY cases, %0d with wrong L1 contents, %0d with the wrong duration", ncase, nbad, cbad);
+        `CHECK(ncase == 2080 + 255 && nbad == 0, "V5.1 COPY: every word copied, nothing else written")
+        `CHECK(cbad == 0, "V5.3 COPY of n words: the engine waits exactly n+1 clocks")
+        // V5.2 refused COPYs: cause 3, L1 untouched
+        rng = 16'h8F40;
+        for (j = 0; j < 5; j = j + 1) begin
+            for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, 32'hEEEE_0000 | k);
+            case (j)
+                0: begin dut.imem.poke(0, I(`OP_COPY, (0 << 14) | (0 << 8) | 8'h41)); rv = 9'h000; end   // from L1
+                1: begin l2w(8'h40, I(`OP_COPY, (9 << 14) | (55 << 8) | 8'h41)); rv = 9'h140; end      // dst+n = 65
+                2: begin l2w(8'h40, I(`OP_COPY, (0 << 14) | (0 << 8) | 8'h3F)); rv = 9'h140; end       // src < lo
+                3: begin l2w(8'h40, I(`OP_COPY, (3 << 14) | (0 << 8) | 8'h8D)); rv = 9'h140; end       // src+n-1 > hi
+                4: begin rng = 16'hFF40; l2w(8'h40, I(`OP_COPY, (9 << 14) | (0 << 8) | 8'hF8)); rv = 9'h140; end  // > 255
+            endcase
+            run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; @(posedge clk); @(posedge clk); #1 run = 1;
+            for (k = 0; k < 100 && !halted; k = k + 1) @(posedge clk);
+            nbad = 0; for (k = 1; k < 64; k = k + 1) if (dut.imem.peek(k) !== (32'hEEEE_0000 | k)) nbad = nbad + 1;
+            `CHECK(halted && fault && cause == 3 && nbad == 0, "V5.2 refused COPY: fault cause 3, nothing written")
+            rng = 16'h8F40;
+        end
+        // V5.5 RUN dropped at clock 0..10 of an 8-word COPY (src 0x50, dst 8)
+        rng = 16'hFF00; rv = 9'h1F0; l2w(8'hF0, I(`OP_COPY, (7 << 14) | (8 << 8) | 8'h50));
+        for (j = 0; j < 11; j = j + 1) begin
+            for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, 32'hEEEE_0000 | k);
+            run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; @(posedge clk); @(posedge clk); #1 run = 1;
+            repeat (2 + j) @(posedge clk); #1 run = 0; repeat (3) @(posedge clk);
+            t = 0; nbad = 0;                                          // written words must be a prefix
+            for (k = 0; k < 8; k = k + 1)
+                if (dut.imem.peek(8 + k) === (32'hC000_0050 + k)) begin if (t != k) nbad = 1; t = t + 1; end
+                else if (dut.imem.peek(8 + k) !== (32'hEEEE_0008 + k)) nbad = 1;
+            for (k = 0; k < 64; k = k + 1)                            // and nothing outside dst..dst+7
+                if ((k < 8 || k > 15) && dut.imem.peek(k) !== (32'hEEEE_0000 | k)) nbad = 1;
+            `CHECK(nbad == 0, "V5.5 RUN drop mid-COPY: a prefix is written, every other L1 word unchanged")
+            #1 run = 1; for (k = 0; k < 40 && !halted; k = k + 1) @(posedge clk); #1;
+            nbad = 0; for (k = 0; k < 8; k = k + 1) if (dut.imem.peek(8 + k) !== (32'hC000_0050 + k)) nbad = 1;
+            `CHECK(halted && !fault && nbad == 0, "V5.5 restart after the drop: the COPY completes")
+        end
+        // V5.6 install UART TX (12 words, L1 addresses) from L2 0x60 into L1 0, then JMP 0
+        for (k = 0; k < 12; k = k + 1) l2w(8'h60 + k, utx[k]);
+        l2w(8'hF0, I(`OP_COPY, (11 << 14) | (0 << 8) | 8'h60)); l2w(8'hF1, I(`OP_JMP, 0));
+        for (j = 0; j < 2; j = j + 1) begin
+            for (k = 0; k < 64; k = k + 1) dut.imem.poke(k, j ? I(`OP_HALT, 0) : (k < 12 ? utx[k] : I(`OP_HALT, 0)));
+            rv = j ? 9'h1F0 : 9'h000;
+            run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; ntr = 0;
+            @(negedge clk) begin tx_wr_en = 1; tx_wr_data = 32'hA5; end @(negedge clk) tx_wr_en = 0;
+            @(posedge clk); @(posedge clk); #1 t_run = $time; p0_last = 0; run = 1;
+            repeat (434 * 12) @(posedge clk);
+            ntr_j[j] = ntr; for (k = 0; k < ntr && k < 32; k = k + 1) tr_j[j][k] = tr[k];
+        end
+        same = ntr_j[0] == ntr_j[1] && ntr_j[0] > 5;
+        for (k = 1; k < ntr_j[0] && k < 32; k = k + 1) if (tr_j[0][k] - tr_j[0][k-1] !== tr_j[1][k] - tr_j[1][k-1]) same = 0;
+        $display("    V5.6 UART TX host-loaded %0d edges, COPY-installed %0d edges, start offset %0t", ntr_j[0], ntr_j[1], tr_j[1][0] - tr_j[0][0]);
+        `CHECK(same, "V5.6 COPY-installed UART TX = host-loaded UART TX (every edge spacing)")
 
         `REPORT("tb_engine_ops")
         $finish;

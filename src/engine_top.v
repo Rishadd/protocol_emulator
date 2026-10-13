@@ -1,3 +1,4 @@
+`include "isa.vh"
 // Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
 // Fetch: instr_mem has a synchronous read (SRAM macros) and is addressed with pc_reg.next_pc,
@@ -44,6 +45,7 @@ module engine_top #(
     input  wire        l2_gnt,
     input  wire [31:0] l2_rdata,
     output wire        bubble,
+    output wire        copy_wait,        // clocks spent inside a COPY except its last (testbench reference)
     // status
     output wire        halted,
     output wire        fault,
@@ -66,6 +68,8 @@ module engine_top #(
     wire [1:0]  pc_fault = !pc[8] ? (pc[7:6] != 2'd0 ? 2'd1 : 2'd0) :   // reserved 0x040-0x0FF
                            !L2_EN ? 2'd1 : (pc[7:0] < lo || pc[7:0] > hi) ? 2'd2 : 2'd0;
     wire [31:0] l1_out;                 // L1 macro output
+    wire        copying, copy_bad, copy_done, cp_req, cp_we;
+    wire [5:0]  cp_wa;                  // L1 word a COPY writes
     wire        cu_bubble;
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value;
@@ -92,9 +96,9 @@ module engine_top #(
         .clk   (clk),
         .addr  (next_pc[5:0]),
         .instr (l1_out),
-        .we    (imem_we),
-        .waddr (imem_waddr),
-        .wdata (imem_wdata)
+        .we    (imem_we || cp_we),                       // host (engine held) or COPY (engine running)
+        .waddr (cp_we ? cp_wa : imem_waddr),
+        .wdata (cp_we ? l2_rdata : imem_wdata)
     );
 
     // ---- fetch: pc in L1 -> the L1 macro (exact, as before); pc in L2 -> the shared L2 port
@@ -107,6 +111,20 @@ module engine_top #(
     reg  [8:0]  pb_a;
     reg  [31:0] pb;
     wire        waiting;
+    // COPY src,dst,n: one L2 read per word (class 3, promoted after a loss), each word written to L1 the
+    // clock after its grant. k = words granted so far. All checks are done before the first write.
+    reg  [6:0]  k;
+    reg         got_c;
+    wire [5:0]  n1      = instr[19:14];                   // n - 1
+    wire [8:0]  src_end = {1'b0, instr[7:0]} + n1;
+    wire [6:0]  dst_end = {1'b0, instr[13:8]} + n1;
+    assign      cp_wa   = instr[13:8] + k[5:0] - 6'd1;    // word granted last clock
+    assign copy_bad  = !pc[8] || src_end[8] || instr[7:0] < lo || src_end[7:0] > hi || dst_end[6];
+    assign cp_req    = copying && (k <= {1'b0, n1});
+    assign cp_we     = got_c;
+    assign copy_done = got_c && (k == {1'b0, n1} + 7'd1);
+    assign copy_wait = (copying && !copy_done) ||
+                       (core_rst_n && !halted && pc_fault == 2'd0 && instr_valid && instr[31:27] == `OP_COPY && !copy_bad && !copying);
     wire [8:0]  pc1    = pc + 9'd1;
     wire        pb_has = pb_ok || pend;
     wire [31:0] pb_w   = pend ? l2_rdata : pb;
@@ -117,17 +135,19 @@ module engine_top #(
     wire pb_hit = pb_has && (pb_a == next_pc) && next_pc[8];
     wire need = L2_EN && core_rst_n && !halted && next_pc[8] && !keep && !pb_hit;   // urgent fetch of next_pc
     wire pf   = L2_EN && core_rst_n && fetch_cfg[0] && waiting && pc[8] && pc1[8] && !(pb_has && pb_a == pc1);
-    assign l2_req    = need || pf;
+    assign l2_req    = need || pf || cp_req;
     assign l2_req_hi = need || lost;
-    assign l2_addr   = need ? next_pc[7:0] : pc1[7:0];
+    assign l2_addr   = need ? next_pc[7:0] : cp_req ? instr[7:0] + k[5:0] : pc1[7:0];
     always @(posedge clk or negedge core_rst_n) begin
         if (!core_rst_n) begin
             ir2 <= 32'd0; got <= 1'b0; ir2_ok <= 1'b0;
-            pb <= 32'd0; pb_a <= 9'd0; pb_ok <= 1'b0; pend <= 1'b0; lost <= 1'b0;
+            pb <= 32'd0; pb_a <= 9'd0; pb_ok <= 1'b0; pend <= 1'b0; lost <= 1'b0; k <= 7'd0; got_c <= 1'b0;
         end else begin
             ir2 <= (pb_hit && !keep) ? pb_w : w2; got <= need && l2_gnt; ir2_ok <= keep || pb_hit;
             lost <= l2_req && !l2_gnt;
             pend <= pf && l2_gnt;
+            got_c <= cp_req && l2_gnt;
+            k <= copying ? k + (cp_req && l2_gnt) : 7'd0;
             if (pend) begin pb <= l2_rdata; pb_ok <= 1'b1; end
             if (pf && l2_gnt) begin pb_a <= pc1; pb_ok <= 1'b0; end
         end
@@ -135,11 +155,13 @@ module engine_top #(
 
 `ifdef FORMAL
     assign {f_instr, f_valid} = {instr, instr_valid};
-    assign {f_l1_we, f_l1_wa, f_l1_wd} = {1'b0, 6'd0, 32'd0};    // COPY writes: Phase 5
+    assign {f_l1_we, f_l1_wa, f_l1_wd} = {cp_we, cp_wa, l2_rdata};   // COPY writes into L1
     // F5: an L1 pc never waits for its word; F9: a held engine asks for nothing and keeps no L2 word
     always @(*) if (rst_n) begin
         if (!pc[8]) assert (instr_valid);
         if (!core_rst_n) assert (!l2_req && !got && !ir2_ok);
+        // F7: a COPY writes only inside dst .. dst+n-1, only while it runs (a refused COPY writes nothing)
+        if (cp_we) assert (copying && !copy_bad && (cp_wa - instr[13:8]) <= n1);
     end
 `endif
 
@@ -278,7 +300,10 @@ module engine_top #(
         .fault         (fault),
         .fault_cause   (fault_cause),
         .bubble        (cu_bubble),
-        .waiting       (waiting)
+        .waiting       (waiting),
+        .copy_bad      (copy_bad),
+        .copy_done     (copy_done),
+        .copying       (copying)
     );
     assign bubble = core_rst_n && cu_bubble;   // a held engine is not bubbling
 endmodule

@@ -29,7 +29,7 @@ SIM_PATH = os.pathsep.join([r"C:\iverilog\bin"] + OSS + [os.environ["PATH"]])
 FORMAL_PATH = os.pathsep.join(OSS + [os.environ["PATH"], r"C:\Users\risha\miniconda3\envs\eda\Library\bin"])  # make: eqy
 os.environ["PATH"] = SIM_PATH
 FORMAL = ["fv_l2_arb", "fv_mgmt", "fv_engine ctrl"]  # formal/<name>.sby [task], run in every tier
-PHASE = 4                                                # mutants of phases 1..PHASE run in tier 1
+PHASE = 5                                                # mutants of phases 1..PHASE run in tier 1
 RUN_TESTS = ["powershell", "-NoProfile", "-File", os.path.join(ROOT, "run_tests.ps1")]
 
 

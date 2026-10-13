@@ -26,6 +26,8 @@
 `define OP_JPO    5'd19  // [8:0] addr : jump if the next OSR bit is 1, else advance; OSR shifts (bit consumed)
 `define OP_PUSHI  5'd20  // v      : block until rx_fifo not full; rx_fifo <= zero-extended v; ISR untouched
 // All others trap.
-`define OP_LAST_LEGAL 5'd20
+`define OP_COPY   5'd21  // [7:0] src (L2 word), [13:8] dst (L1 word), [19:14] n-1 : copy n words L2 -> own L1;
+                         //   only from L2; checked before the first write (fault cause 3); the engine waits
+`define OP_LAST_LEGAL 5'd21
 
 `endif

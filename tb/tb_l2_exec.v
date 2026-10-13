@@ -42,6 +42,7 @@ module tb_l2_exec;
                .req(req), .req_hi(req_hi), .req_addr(ra), .policy(pol), .gnt(gnt), .rdata(l2d));
     genvar e;
     generate for (e = 0; e < 2; e = e + 1) begin : g
+        wire cw;
         engine_top dut (
             .clk(clk), .rst_n(rst_n), .run(run[e]),
             .imem_we(imem_we[e]), .imem_waddr(waddr), .imem_wdata(wdata),
@@ -50,12 +51,8 @@ module tb_l2_exec;
             .pin_in(pin_in), .pin_out(d_po[8*e +: 8]), .pin_oe(d_oe[8*e +: 8]),
             .reset_pc(rv[9*e +: 9]), .l2_range(rng[16*e +: 16]), .fetch_cfg(fcfg[2*e +: 2]),
             .l2_req(req[e]), .l2_req_hi(req_hi[e]), .l2_addr(ra[8*e +: 8]), .l2_gnt(gnt[e]), .l2_rdata(l2d),
-            .bubble(bub[e]), .halted(d_hlt[e]), .fault(d_flt[e]), .fault_cause(d_cause[2*e +: 2]), .pc(d_pc[9*e +: 9]));
-`ifdef HAS_COPY
-        assign cwait[e] = dut.copy_wait;     // DUT clocks spent inside a COPY (the model needs one)
-`else
-        assign cwait[e] = 1'b0;
-`endif
+            .bubble(bub[e]), .copy_wait(cw), .halted(d_hlt[e]), .fault(d_flt[e]), .fault_cause(d_cause[2*e +: 2]), .pc(d_pc[9*e +: 9]));
+        assign cwait[e] = cw;                // DUT clocks spent inside a COPY (the model needs one)
         assign ce[e] = !bub[e] && !cwait[e];
         ref_flat_engine m (
             .clk(clk), .rst_n(rst_n), .run(run[e]), .ce(ce[e]), .l2_en(1'b1),
@@ -216,6 +213,8 @@ module tb_l2_exec;
     reg [1:0] flt_prev = 0;
     always @(negedge clk) if (chk) begin
         for (i = 0; i < 2; i = i + 1) if (r_flt[i] && !flt_prev[i]) cov_fault[r_cause[2*i +: 2]] = cov_fault[r_cause[2*i +: 2]] + 1;
+        if (g[0].dut.copy_done) cov_copy = cov_copy + 1;
+        if (g[1].dut.copy_done) cov_copy = cov_copy + 1;
         flt_prev = r_flt;
     end
 
@@ -256,9 +255,6 @@ module tb_l2_exec;
         if ($value$plusargs("SEED=%d", seed)) ;
         if ($value$plusargs("CYCLES=%d", target)) ;
         if ($test$plusargs("NOCOPY")) nocopy = 1;
-`ifndef HAS_COPY
-        nocopy = 1;
-`endif
         for (i = 0; i < 4; i = i + 1) cov_fault[i] = 0;
         for (i = 0; i < 3; i = i + 1) cov_pol[i] = 0;
         halted_for[0] = 0; halted_for[1] = 0; streak[0] = 0; streak[1] = 0;
@@ -295,7 +291,10 @@ module tb_l2_exec;
                 if (halted_for[j] > 12 || rnd(3000) == 0) begin
                     cov_restart = cov_restart + 1;
                     tx_we = 0; rx_re = 0;
+                    x = j ? g[1].dut.copying : g[0].dut.copying;      // a COPY cut by RUN leaves a prefix
                     run[j] = 0; tick; tick;
+                    if (x) for (k = 0; k < 64; k = k + 1)                 // (checked by V5.5): sync the model
+                        if (j) g[1].m.l1[k] = g[1].dut.imem.peek(k); else g[0].m.l1[k] = g[0].dut.imem.peek(k);
                     if (rnd(3) == 0) new_range(j);
                     fcfg[2*j +: 2] = rnd(4);
                     load_engine(j, rnd(4) == 0);
@@ -323,6 +322,8 @@ module tb_l2_exec;
         `CHECK(cov_l1l2 > 0 && cov_l2l1 > 0 && cov_l2jmp > 0 && cov_l2seq > 0, "every tier transition seen")
         `CHECK(cov_pol[0] > 0 && cov_pol[1] > 0 && cov_pol[2] > 0, "collisions under every policy")
         `CHECK(cov_fault[0] > 0 && cov_fault[1] > 0 && cov_fault[2] > 0, "faults of causes 0, 1, 2")
+        $display("COPYs completed: %0d", cov_copy);
+        if (!nocopy) `CHECK(cov_copy > 0 && cov_fault[3] > 0, "COPYs completed and COPYs refused")
         $display("wait bounds (non-host losses in a row, class 2): round-robin max %0d, favoured engine max %0d", max_rr, max_fav);
         `CHECK(max_rr <= 1 && max_fav == 0, "V3.5 round-robin waits <= 1, the favoured engine never waits")
         `REPORT("tb_l2_exec")

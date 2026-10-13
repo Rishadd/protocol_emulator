@@ -12,6 +12,8 @@ module control_unit (
     input  wire        rst_n,
     input  wire [31:0] instr,
     input  wire        instr_valid,     // 0: the word for pc is not here yet (bubble)
+    input  wire        copy_bad,        // COPY may not run (from L1, outside the range, too long)
+    input  wire        copy_done,       // the COPY sequencer writes its last word this clock
     input  wire [1:0]  pc_fault,        // nonzero: current pc may not be executed (cause code)
     // program counter
     output reg         pc_advance,      // normal increment
@@ -56,12 +58,15 @@ module control_unit (
     output reg         fault,
     output reg  [1:0]  fault_cause,
     output wire        bubble,
-    output wire        waiting          // the current word is still the current one next clock
+    output wire        waiting,         // the current word is still the current one next clock
+    output wire        copying          // a COPY is running (the sequencer works, the engine waits)
 );
-    localparam S_EXEC = 1'b0;           // state for executing instructions
-    localparam S_HOLD = 1'b1;           // state for holding until a condition clears
+    localparam S_EXEC = 2'd0;           // state for executing instructions
+    localparam S_HOLD = 2'd1;           // state for holding until a condition clears
+    localparam S_COPY = 2'd2;           // COPY: wait for the sequencer
 
-    reg state;
+    reg [1:0] state;
+    assign copying = (state == S_COPY);
 
     wire [4:0]  opcode  = instr[31:27];
     wire [26:0] operand = instr[26:0];
@@ -111,10 +116,10 @@ module control_unit (
         end else if (!halted) begin
             case (state)
                 S_EXEC: begin
-                    if (pc_fault != 2'd0 || (instr_valid && !legal)) begin
+                    if (pc_fault != 2'd0 || (instr_valid && !legal) || (instr_valid && opcode == `OP_COPY && copy_bad)) begin
                         halted      <= 1'b1;
                         fault       <= 1'b1;
-                        fault_cause <= pc_fault;    // 0 = illegal opcode
+                        fault_cause <= (pc_fault != 2'd0 || !legal) ? pc_fault : 2'd3;   // 0 illegal, 3 COPY
                     end else if (!instr_valid) begin
                         ;                               // bubble: wait for the word
                     end else if (opcode == `OP_HALT) begin
@@ -128,9 +133,12 @@ module control_unit (
                         end
                         if (needs_hold)
                             state <= S_HOLD;
+                        if (opcode == `OP_COPY)
+                            state <= S_COPY;
                     end
                 end
                 S_HOLD: if (dc_last) state <= S_EXEC;
+                S_COPY: if (copy_done) state <= S_EXEC;
             endcase
         end
     end
@@ -154,7 +162,7 @@ module control_unit (
         dir_wr     = 1'b0;
         dir_wr_idx = 3'd0;
         dir_wr_val = 1'b0;
-        if (!halted && (instr_valid || state == S_HOLD) && pc_fault == 2'd0 && legal) begin   // a hold never waits
+        if (!halted && (instr_valid || state != S_EXEC) && pc_fault == 2'd0 && legal) begin   // a hold / COPY never waits
             case (state)
                 S_EXEC: if (!stall) begin
                     case (opcode)
@@ -228,6 +236,7 @@ module control_unit (
                     endcase
                 end
                 S_HOLD: if (dc_last) pc_advance = 1'b1;
+                S_COPY: if (copy_done) pc_advance = 1'b1;
             endcase
         end
     end
