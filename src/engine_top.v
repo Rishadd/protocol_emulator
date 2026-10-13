@@ -100,19 +100,36 @@ module engine_top #(
     // ---- fetch: pc in L1 -> the L1 macro (exact, as before); pc in L2 -> the shared L2 port
     reg  [31:0] ir2;                    // L2 word of the current pc
     reg         got, ir2_ok;            // got: l2_rdata holds it this clock (granted last clock)
+    // prefetch buffer PB (fetch_cfg[0]): while the current word waits (held or blocked), fetch pc+1.
+    // Tagged with its address, so it is only used for that pc. pend: its word is on l2_rdata now.
+    // A request that lost once (lost) is promoted to class 2 so it cannot starve.
+    reg         pb_ok, pend, lost;
+    reg  [8:0]  pb_a;
+    reg  [31:0] pb;
+    wire        waiting;
+    wire [8:0]  pc1    = pc + 9'd1;
+    wire        pb_has = pb_ok || pend;
+    wire [31:0] pb_w   = pend ? l2_rdata : pb;
     wire [31:0] w2 = got ? l2_rdata : ir2;
     wire        instr_valid = !pc[8] || got || ir2_ok;
     assign instr = pc[8] ? w2 : l1_out;
     wire keep = pc[8] && instr_valid && (next_pc == pc);                 // same word next clock
-    wire need = L2_EN && core_rst_n && !halted && next_pc[8] && !keep;   // urgent fetch of next_pc
-    assign l2_req    = need;
-    assign l2_req_hi = need;
-    assign l2_addr   = next_pc[7:0];
+    wire pb_hit = pb_has && (pb_a == next_pc) && next_pc[8];
+    wire need = L2_EN && core_rst_n && !halted && next_pc[8] && !keep && !pb_hit;   // urgent fetch of next_pc
+    wire pf   = L2_EN && core_rst_n && fetch_cfg[0] && waiting && pc[8] && pc1[8] && !(pb_has && pb_a == pc1);
+    assign l2_req    = need || pf;
+    assign l2_req_hi = need || lost;
+    assign l2_addr   = need ? next_pc[7:0] : pc1[7:0];
     always @(posedge clk or negedge core_rst_n) begin
         if (!core_rst_n) begin
             ir2 <= 32'd0; got <= 1'b0; ir2_ok <= 1'b0;
+            pb <= 32'd0; pb_a <= 9'd0; pb_ok <= 1'b0; pend <= 1'b0; lost <= 1'b0;
         end else begin
-            ir2 <= w2; got <= need && l2_gnt; ir2_ok <= keep;
+            ir2 <= (pb_hit && !keep) ? pb_w : w2; got <= need && l2_gnt; ir2_ok <= keep || pb_hit;
+            lost <= l2_req && !l2_gnt;
+            pend <= pf && l2_gnt;
+            if (pend) begin pb <= l2_rdata; pb_ok <= 1'b1; end
+            if (pf && l2_gnt) begin pb_a <= pc1; pb_ok <= 1'b0; end
         end
     end
 
@@ -260,7 +277,8 @@ module engine_top #(
         .halted        (halted),
         .fault         (fault),
         .fault_cause   (fault_cause),
-        .bubble        (cu_bubble)
+        .bubble        (cu_bubble),
+        .waiting       (waiting)
     );
     assign bubble = core_rst_n && cu_bubble;   // a held engine is not bubbling
 endmodule

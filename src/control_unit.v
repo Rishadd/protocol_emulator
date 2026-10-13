@@ -55,7 +55,8 @@ module control_unit (
     output reg         halted,
     output reg         fault,
     output reg  [1:0]  fault_cause,
-    output wire        bubble
+    output wire        bubble,
+    output wire        waiting          // the current word is still the current one next clock
 );
     localparam S_EXEC = 1'b0;           // state for executing instructions
     localparam S_HOLD = 1'b1;           // state for holding until a condition clears
@@ -93,6 +94,9 @@ module control_unit (
                  (opcode == `OP_WAITH) ? ~pin_in[pin_sel] :  // WAITH waits for pin to go high
                  (opcode == `OP_WAITL) ?  pin_in[pin_sel] :  // WAITL waits for pin to go low
                                           1'b0;              // all other opcodes never stall
+    // held (not in its last clock) or blocked: the next word is pc+1, so it may be prefetched
+    assign waiting = !halted && pc_fault == 2'd0 &&
+                     ((state == S_HOLD && !dc_last) || (state == S_EXEC && instr_valid && legal && (stall || needs_hold)));
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

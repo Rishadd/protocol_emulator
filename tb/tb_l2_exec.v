@@ -67,7 +67,7 @@ module tb_l2_exec;
     end endgenerate
 
     integer errors = 0, seed = 1, cycles = 0, target = 300000, mism = 0, arb_mism = 0, rd_mism = 0;
-    integer unexplained = 0, l1_bubbles = 0, held_req = 0, i, j, k, x, nocopy = 0;   // i: checkers only, j: stimulus only
+    integer unexplained = 0, l1_bubbles = 0, held_req = 0, bad_class = 0, i, j, k, x, nocopy = 0;   // i: checkers only, j: stimulus only
     integer cov_bub_eng = 0, cov_bub_host = 0, cov_bub_first = 0, cov_collide = 0, cov_restart = 0;
     integer cov_l1l2 = 0, cov_l2l1 = 0, cov_l2jmp = 0, cov_l2seq = 0, cov_pf = 0, cov_copy = 0;
     integer cov_fault [0:3];
@@ -175,6 +175,8 @@ module tb_l2_exec;
                     r_pc[9*i +: 9], r_po[8*i +: 8], r_oe[8*i +: 8], r_hlt[i], r_flt[i], r_cause[2*i +: 2], r_txf[i], r_rxe[i], r_rxd[32*i +: 32]);
             end
             if (req[i] && !run[i]) held_req = held_req + 1;                  // F9: a held engine asks for nothing
+            if (req[i] && req_hi[i] && !lost_prev[i] && (i ? g[1].dut.waiting : g[0].dut.waiting))
+                bad_class = bad_class + 1;                                    // a fresh prefetch must be class 3
             if (bub[i]) begin
                 if (!d_pc[9*i + 8]) l1_bubbles = l1_bubbles + 1;
                 if (lost_prev[i]) begin if (lost_host_prev[i]) cov_bub_host = cov_bub_host + 1; else cov_bub_eng = cov_bub_eng + 1; end
@@ -315,6 +317,7 @@ module tb_l2_exec;
         `CHECK(unexplained == 0, "every bubble explained")
         `CHECK(l1_bubbles == 0, "no bubble while the pc is in L1")
         `CHECK(held_req == 0, "F9 no L2 request from a held engine")
+        `CHECK(bad_class == 0, "a fresh prefetch asks at class 3")
         `CHECK(cycles >= target, "enough clocks compared")
         `CHECK(cov_bub_eng > 0 && cov_bub_host > 0 && cov_bub_first > 0, "every bubble cause seen")
         `CHECK(cov_l1l2 > 0 && cov_l2l1 > 0 && cov_l2jmp > 0 && cov_l2seq > 0, "every tier transition seen")

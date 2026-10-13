@@ -79,7 +79,7 @@ The first tier-1 run of the Phase 2 commit found:
 - `tb_mgmt_dual` still expected `0x1004`/`0x2004` to be unmapped (they are RESET_PC now); moved to `0x1018`/`0x2018`.
 - The committed combo baseline was empty: it was copied while that suite was still writing.
 - A Phase 1 mutant anchor already pointed at Phase 3 code (sequencing mistake).
-- Two transient failures caused by `iverilog` temp-file collisions (L7).
+- Two failures caused by a different simulator (Icarus 14) on `PATH` (L7).
 
 All of these were fixed in a follow-up commit on the Phase 2 branch, followed by a re-run.
 
@@ -132,6 +132,27 @@ During a bubble the word on the bus is always the last executed instruction, so 
 - The reference model I2 is an independent instruction-set model written from the documents, not the frozen Phase 1 `control_unit` with a gated clock. It is more independent, and it was itself checked by the L1-only lockstep.
 - Host arbiter model I4 is a Verilog function shared by `tb_arb` and `tb_l2_exec`, not a Python log reader.
 
+## Phase 4: prefetch buffer (2026-10-13)
+
+**RTL:** 2 files, +29 / -7 lines.
+- `control_unit`: `waiting` output, true when the current word stays current next clock (held, not in the last clock, or blocked).
+- `engine_top`: an address-tagged prefetch buffer (PB) that fetches pc+1 while waiting (`FETCH_CFG[0]`); prefetch requests are class 3 and are promoted to class 2 after one loss (`lost`).
+
+The plan's "invalidate on jump / COPY / host write" is not built: PB is tagged with its address and only in-range words are ever executed, which the host cannot change while the engine runs. So only reset clears it (deviation, no correctness effect).
+
+| Test | Result |
+|---|---|
+| V4.1 `tb_engine_ops`, worst contention (a phantom engine requesting urgently every clock + host reads every 2nd clock): bubbles in front of the next word, PB off/on, holds 1-7 and 21 clocks | holds of 1-3 clocks: same as PB off (1-3 bubbles). **Holds of 4 or more clocks: 0 bubbles with PB** (PB off: up to 1). **H_PF = 4 clocks** under round-robin |
+| V4.4 PB on never gives more bubbles than PB off (40 cases) | PASS |
+| V4.6 a prefetch waits at most 2 non-host clocks against an engine asking every clock | PASS; also proved at engine level (F10 engine side, `fv_engine ctrl`) |
+| V4.7 PULL blocked for ever: requests stop once pc+1 is in PB | PASS (0 requests in 50 clocks) |
+| V4.5 UART TX (434-clock bit) run from L2 under the same contention vs from L1 | same bits, never early, at most 1 clock late per bit (8 bubbles over the byte) |
+| V4.4/V4.8 `tb_l2_exec` with random `FETCH_CFG` | **50 seeds, 22,528,787 clocks: 0 mismatches**, 143,633 class-3 requests, every bubble explained, a fresh prefetch always asks at class 3 |
+| F1, F2, F5, F9, F10 engine side (`fv_engine ctrl`, PDR) | proved (unbounded); the promotion bound fails as it should when promotion is removed |
+| Mutants (`host/mutate.py 3 4`) | 16/16 detected |
+
+**D10 decision: BB (branch-ahead) not built.** Its only use would be the DJNZ-to-OUT1 fetch of UART-class loops run from L2. V4.5 shows that costs at most one clock per bit (0.23% of a 434-clock bit), well inside UART tolerance. The plan's BB tests (V4.2, V4.3) are therefore not applicable.
+
 ## L. Limitations and open issues (updated every phase)
 
 | # | Item | Kind | Status |
@@ -143,5 +164,7 @@ During a bubble the word on the bus is always the last executed instruction, so 
 | L5 | FPGA tops (`src/fpga/`) still instantiate the old `engine_top` port list (6-bit pc, no L2 ports); not built or run (D13). The UART hex images are unchanged and still valid | out of scope | open |
 | L8 | Fixed arbitration priority starves the other engine's L2 code with no bound (V3.6), as designed (D6); its L1 code is unaffected | by design | documented |
 | L9 | F3 (word integrity) is proved only to depth 12 on the full engine model; deeper proof needs a smaller memory abstraction | proof depth | open |
-| L7 | `iverilog` on Windows names its temp files with a small number that repeats between processes, so parallel compiles that share `%TEMP%` can collide. Seen once: a testbench failed to compile, and one SPI slave run reported every response one clock late (re-run: identical to the baseline). `regress.py` now gives every job its own `TMP`/`TEMP`; run suites in parallel by hand only with separate `TMP` folders | tool limit | worked around |
+| L7 | Two "transient" failures in the Phase 2 regression (a testbench refused to compile, and SPI slave response timings shifted by one clock) were caused by `regress.py` putting the OSS CAD Suite first on `PATH`, which brings **Icarus 14** instead of the project's Icarus 12. They were not temp-file collisions, as first suspected. `regress.py` now puts `C:\iverilog\bin` first; each job also keeps its own `TMP` (the temp names are not unique, but they did not cause these failures) | tool setup | fixed |
+| L10 | The SPI slave suite measures slave response points one clock later under Icarus 14 than under Icarus 12 (same RTL), most likely a same-time-step race between the testbench peer and the design. Not investigated (outside this plan); the project is verified on Icarus 12 | simulator sensitivity | open |
+| L11 | Without BB, a one-clock instruction just before a jump into or inside L2 can cost one bubble under contention: L2 placement of tight loops is bounded, not exact (T9) | design choice (D10) | documented |
 | L6 | Formal tools on Windows: Yosys formal has no hierarchical references (properties use ports or harness-side shadows), and `sby`/`eqy` read `[files]`/sources relative to the working directory. eqy partition file names break on auto-generated names that carry a drive letter, so sources are read through relative paths | tool limits | worked around |

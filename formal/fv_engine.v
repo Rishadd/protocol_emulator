@@ -67,6 +67,14 @@ module fv_engine (
         if (run) assume (!(h_we && in_rng));
     end
 
+    // F10 (engine side): a request of this engine (urgent, or a prefetch promoted after one loss) loses
+    // at most 2 times in a row outside host clocks under round-robin, whatever the other engine does
+    reg [1:0] eloss = 2'd0;
+    always @(posedge clk)
+        if (!rst_n || policy != 2'd0 || !req || gnt[0]) eloss <= 2'd0;
+        else if (!(h_we || h_re)) eloss <= eloss + 2'd1;
+    always @(*) if (rst_n) assert (eloss <= 2'd2);
+
     // F3: watched words
     (* anyconst *) reg [7:0] fa;
     (* anyconst *) reg [5:0] fl;
