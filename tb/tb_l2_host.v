@@ -185,6 +185,20 @@ module tb_l2_host;
         $display("    P0 transitions: quiet %0d, noisy %0d", quiet_n, ntr);
         `CHECK(quiet_n > 20 && n_ok, "P0 waveform identical with and without L2 traffic")
 
+        $display("--- V6 PERF registers through the link");
+        do_reset; rdreg(16'h1010); `CHECK(rd == 0, "PERF_BUBBLE0 reset 0")
+        rdreg(16'h2014); `CHECK(rd == 0 && dut.u_mgmt.err == 0, "PERF_L2RD1 reset 0")
+        l2w(8'h80, {`OP_NOP, 27'd0}); l2w(8'h81, {`OP_JMP, 27'h180});
+        wr(16'h1008, 32'h8180); wr(16'h1004, 32'h180); wr(16'h1000, 32'd1);   // engine 0 loops in L2
+        repeat (200) @(posedge clk);
+        rdreg(16'h1014); `CHECK(rd > 0, "PERF_L2RD0 counts L2 reads")
+        wr(16'h1000, 32'd0); rdreg(16'h1014); `CHECK(rd > 100, "RUN=0 keeps PERF_L2RD0 (one read per clock)")
+        rdreg(16'h1010); `CHECK(rd >= 1 && rd <= 2, "PERF_BUBBLE0: only the first L2 fetch after RUN")
+        wr(16'h2014, 32'd0); rdreg(16'h1014); `CHECK(rd > 100, "clearing engine 1 leaves engine 0")
+        wr(16'h1014, 32'hFFFF); rdreg(16'h1014); `CHECK(rd == 0, "write clears PERF_L2RD0")
+        `CHECK(dut.u_mgmt.err == 0, "PERF accesses are not errors")
+        wr(16'h1012, 32'd0); `CHECK(dut.u_mgmt.err == 1, "misaligned PERF address refused")
+
         `REPORT("tb_l2_host")
         $finish;
     end

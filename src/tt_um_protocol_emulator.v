@@ -50,6 +50,8 @@ module tt_um_protocol_emulator (
     wire [7:0]  l2_addr;
     wire [15:0] l2_req_addr;
     wire [1:0]  bubble;
+    wire [63:0] perf;
+    wire [3:0]  perf_clr;
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
 
@@ -72,6 +74,7 @@ module tt_um_protocol_emulator (
         .pad_sel(pad_sel), .pad_data(pad_data), .pad_ok(pad_ok), .pad_we(pad_we), .viol_clr(viol_clr),
         .pad_owner(pad_owner), .pad_od(pad_od), .pad_viol(pad_viol),
         .reset_pc(reset_pc), .l2_range(l2_range), .fetch_cfg(fetch_cfg), .arb_policy(arb_policy),
+        .perf(perf), .perf_clr(perf_clr),
         .l2_we(l2_we), .l2_re(l2_re), .l2_addr(l2_addr), .l2_wdata(l2_wdata), .l2_rdata(l2_rdata),
         .err(mgmt_err));
 
@@ -100,6 +103,7 @@ module tt_um_protocol_emulator (
         .reset_pc(reset_pc[8:0]), .l2_range(l2_range[15:0]), .fetch_cfg(fetch_cfg[1:0]),
         .l2_req(l2_req[0]), .l2_req_hi(l2_req_hi[0]), .l2_addr(l2_req_addr[7:0]), .l2_gnt(l2_gnt[0]),
         .l2_rdata(l2_rdata), .bubble(bubble[0]),
+        .perf_clr(perf_clr[1:0]), .perf_bubble(perf[15:0]), .perf_l2rd(perf[31:16]),
         .halted(halted[0]), .fault(fault[0]), .fault_cause(fault_cause[1:0]), .pc(pc0));
 
     engine_top #(.L2_EN(L2_EN)) u_eng1 (
@@ -111,6 +115,7 @@ module tt_um_protocol_emulator (
         .reset_pc(reset_pc[17:9]), .l2_range(l2_range[31:16]), .fetch_cfg(fetch_cfg[3:2]),
         .l2_req(l2_req[1]), .l2_req_hi(l2_req_hi[1]), .l2_addr(l2_req_addr[15:8]), .l2_gnt(l2_gnt[1]),
         .l2_rdata(l2_rdata), .bubble(bubble[1]),
+        .perf_clr(perf_clr[3:2]), .perf_bubble(perf[47:32]), .perf_l2rd(perf[63:48]),
         .halted(halted[1]), .fault(fault[1]), .fault_cause(fault_cause[3:2]), .pc(pc1));
 
     assign uo_out = {7'd0, miso};   // uo_out[7:1] status outputs come later

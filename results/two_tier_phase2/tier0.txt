@@ -1,0 +1,9 @@
+46
+PASS  run_tests                    RESULT tb_instr_mem: PASS; RESULT tb_pc_reg: PASS; RESULT tb_delay_counter: PASS; RESULT tb_loop_counter: PASS; RESULT tb_fif
+PASS  run_tests NO_L2              RESULT tb_instr_mem: PASS; RESULT tb_pc_reg: PASS; RESULT tb_delay_counter: PASS; RESULT tb_loop_counter: PASS; RESULT tb_fif
+PASS  test_isa                     RESULT test_isa: PASS
+PASS  formal fv_l2_arb             DONE (PASS, rc=0)
+PASS  formal fv_mgmt               DONE (PASS, rc=0); DONE (PASS, rc=0)
+RESULT regress tier 0: PASS  (logs: C:\Data\pe_p2\results\two_tier_2026-10-13\tier0)
+
+[exited with code 0]

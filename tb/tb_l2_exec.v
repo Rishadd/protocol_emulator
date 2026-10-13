@@ -26,6 +26,10 @@ module tb_l2_exec;
     reg  [31:0] rng = 32'h00FF_00FF;
     reg  [3:0]  fcfg = 0;
     reg  [1:0]  pol = 0;
+    reg  [3:0]  pclr = 0;
+    wire [31:0] pb_cnt, pr_cnt;
+    integer     n_bub [0:1];
+    integer     n_rd [0:1];
     reg         h_we = 0, h_re = 0;
     reg  [7:0]  h_a = 0;
     reg  [31:0] h_d = 0;
@@ -51,7 +55,8 @@ module tb_l2_exec;
             .pin_in(pin_in), .pin_out(d_po[8*e +: 8]), .pin_oe(d_oe[8*e +: 8]),
             .reset_pc(rv[9*e +: 9]), .l2_range(rng[16*e +: 16]), .fetch_cfg(fcfg[2*e +: 2]),
             .l2_req(req[e]), .l2_req_hi(req_hi[e]), .l2_addr(ra[8*e +: 8]), .l2_gnt(gnt[e]), .l2_rdata(l2d),
-            .bubble(bub[e]), .copy_wait(cw), .halted(d_hlt[e]), .fault(d_flt[e]), .fault_cause(d_cause[2*e +: 2]), .pc(d_pc[9*e +: 9]));
+            .bubble(bub[e]), .copy_wait(cw), .perf_clr(pclr[2*e +: 2]), .perf_bubble(pb_cnt[16*e +: 16]), .perf_l2rd(pr_cnt[16*e +: 16]),
+            .halted(d_hlt[e]), .fault(d_flt[e]), .fault_cause(d_cause[2*e +: 2]), .pc(d_pc[9*e +: 9]));
         assign cwait[e] = cw;                // DUT clocks spent inside a COPY (the model needs one)
         assign ce[e] = !bub[e] && !cwait[e];
         ref_flat_engine m (
@@ -209,6 +214,12 @@ module tb_l2_exec;
         run_prev = run; pc_prev = d_pc;
         if (|gnt) last_m = gnt[1];
     end
+    // V6.1: the testbench's own counts of bubbles and granted reads (cleared with the counters)
+    always @(posedge clk) for (i = 0; i < 2; i = i + 1) begin
+        if (pclr[2*i])          n_bub[i] = 0; else if (bub[i]) n_bub[i] = n_bub[i] + 1;
+        if (pclr[2*i + 1])      n_rd[i]  = 0; else if (req[i] && gnt[i]) n_rd[i] = n_rd[i] + 1;
+    end
+
     // count each fault once (rising edge of the model's fault)
     reg [1:0] flt_prev = 0;
     always @(negedge clk) if (chk) begin
@@ -257,7 +268,7 @@ module tb_l2_exec;
         if ($test$plusargs("NOCOPY")) nocopy = 1;
         for (i = 0; i < 4; i = i + 1) cov_fault[i] = 0;
         for (i = 0; i < 3; i = i + 1) cov_pol[i] = 0;
-        halted_for[0] = 0; halted_for[1] = 0; streak[0] = 0; streak[1] = 0;
+        halted_for[0] = 0; halted_for[1] = 0; streak[0] = 0; streak[1] = 0; n_bub[0] = 0; n_bub[1] = 0; n_rd[0] = 0; n_rd[1] = 0;
         tick; rst_n = 1; tick;
         new_range(0); new_range(1);
         for (k = 0; k < 256; k = k + 1) l2_write(k, gen(rnd(2), 9'h100 | k));   // every word known (no X)
@@ -282,6 +293,7 @@ module tb_l2_exec;
             if (x < 4) h_re = 1;
             else if (x < 7 && !in_use(h_a)) begin h_we = 1; h_d = gen(rnd(2), 9'h100 | h_a); end
             if (rnd(2000) == 0) pol = rnd(3);                               // policy change while running
+            pclr = (rnd(20000) == 0) ? (4'd1 << rnd(4)) : 4'd0;            // V6.2 clear while counting
             tick;
             if (h_we) begin g[0].m.l2[h_a] = h_d; g[1].m.l2[h_a] = h_d; end
             h_we = 0; h_re = 0;
@@ -323,6 +335,12 @@ module tb_l2_exec;
         `CHECK(cov_pol[0] > 0 && cov_pol[1] > 0 && cov_pol[2] > 0, "collisions under every policy")
         `CHECK(cov_fault[0] > 0 && cov_fault[1] > 0 && cov_fault[2] > 0, "faults of causes 0, 1, 2")
         $display("COPYs completed: %0d", cov_copy);
+        $display("PERF e0 bubbles %0d (tb %0d), L2 reads %0d (tb %0d) | e1 bubbles %0d (tb %0d), L2 reads %0d (tb %0d)",
+                 pb_cnt[15:0], n_bub[0], pr_cnt[15:0], n_rd[0], pb_cnt[31:16], n_bub[1], pr_cnt[31:16], n_rd[1]);
+        for (i = 0; i < 2; i = i + 1) begin
+            `CHECK(pb_cnt[16*i +: 16] == (n_bub[i] > 65535 ? 65535 : n_bub[i]), "V6.1 PERF_BUBBLE = bubbles seen (saturating)")
+            `CHECK(pr_cnt[16*i +: 16] == (n_rd[i] > 65535 ? 65535 : n_rd[i]), "V6.1 PERF_L2RD = grants seen (saturating)")
+        end
         if (!nocopy) `CHECK(cov_copy > 0 && cov_fault[3] > 0, "COPYs completed and COPYs refused")
         $display("wait bounds (non-host losses in a row, class 2): round-robin max %0d, favoured engine max %0d", max_rr, max_fav);
         `CHECK(max_rr <= 1 && max_fav == 0, "V3.5 round-robin waits <= 1, the favoured engine never waits")

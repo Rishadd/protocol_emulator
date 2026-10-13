@@ -46,6 +46,9 @@ module engine_top #(
     input  wire [31:0] l2_rdata,
     output wire        bubble,
     output wire        copy_wait,        // clocks spent inside a COPY except its last (testbench reference)
+    input  wire [1:0]  perf_clr,         // clear PERF_BUBBLE [0] / PERF_L2RD [1]
+    output reg  [15:0] perf_bubble,      // bubbles while running (saturates)
+    output reg  [15:0] perf_l2rd,        // granted L2 reads (saturates)
     // status
     output wire        halted,
     output wire        fault,
@@ -306,4 +309,16 @@ module engine_top #(
         .copying       (copying)
     );
     assign bubble = core_rst_n && cu_bubble;   // a held engine is not bubbling
+
+    // performance counters: kept over RUN changes, cleared by reset or by the host
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            perf_bubble <= 16'd0; perf_l2rd <= 16'd0;
+        end else begin
+            if (perf_clr[0])                          perf_bubble <= 16'd0;
+            else if (bubble && perf_bubble != 16'hFFFF) perf_bubble <= perf_bubble + 16'd1;
+            if (perf_clr[1])                          perf_l2rd <= 16'd0;
+            else if (l2_req && l2_gnt && perf_l2rd != 16'hFFFF) perf_l2rd <= perf_l2rd + 16'd1;
+        end
+    end
 endmodule

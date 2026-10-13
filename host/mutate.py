@@ -125,6 +125,16 @@ MUTANTS = {
         ("COPY keeps writing after RUN falls", "src/engine_top.v",
          "lost <= 1'b0; k <= 7'd0; got_c <= 1'b0;", "lost <= 1'b0; k <= 7'd0;", ["tb_engine_ops"]),
     ],
+    6: [
+        ("bubble counter wraps instead of saturating", "src/engine_top.v",
+         "else if (bubble && perf_bubble != 16'hFFFF)", "else if (bubble)", ["tb_engine_ops"]),
+        ("bubble counter counts held clocks", "src/engine_top.v",
+         "else if (bubble && perf_bubble != 16'hFFFF)", "else if (cu_bubble && perf_bubble != 16'hFFFF)", ["tb_l2_exec"]),
+        ("PERF_L2RD reads the bubble counter", "src/mgmt.v",
+         "(c_addr[11:0] == 12'h014) ? {16'd0, perf[32*c_eng + 16 +: 16]} :", "(c_addr[11:0] == 12'h014) ? {16'd0, perf[32*c_eng +: 16]} :", ["tb_l2_host"]),
+        ("PERF clear hits engine 0 only", "src/mgmt.v",
+         "perf_clr[2*eng + addr[2]] <= 1'b1;", "perf_clr[addr[2]] <= 1'b1;", ["tb_l2_host"]),
+    ],
 }
 
 

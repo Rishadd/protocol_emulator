@@ -28,6 +28,8 @@
 //   base+0x008       L2_RANGE  R/W [7:0] lo, [15:8] hi: L2 words the engine may execute/copy; lo > hi = none
 //                              (W only while held; reset 0x00FF = empty)
 //   base+0x00C       FETCH_CFG R/W [0] prefetch buffer enable, [1] reserved (W only while held; reset 3)
+//   base+0x010       PERF_BUBBLE R bubbles while running (16-bit saturating); W (any data) clears it
+//   base+0x014       PERF_L2RD   R granted L2 reads (16-bit saturating); W (any data) clears it
 //   0x0300           ARB_CFG   R/W [1:0] L2 arbitration: 0 round-robin, 1 engine 0 first, 2 engine 1 first
 //                              (any time; 3 refused)
 //   0x0400+4*i       L2        R/W shared L2 word i (i = 0..255). W refused (err) inside the L2_RANGE of a
@@ -83,6 +85,8 @@ module mgmt #(
     output wire [7:0]  l2_addr,
     output wire [31:0] l2_wdata,
     input  wire [31:0] l2_rdata,
+    input  wire [63:0] perf,         // {e1 L2 reads, e1 bubbles, e0 L2 reads, e0 bubbles}
+    output reg  [3:0]  perf_clr,     // {e1 L2 reads, e1 bubbles, e0 L2 reads, e0 bubbles}
     // status
     output reg         err          // sticky, cleared by reset
 );
@@ -113,6 +117,7 @@ module mgmt #(
     wire at_rng   = L2_EN && eng_ok && (addr[11:0] == 12'h008);
     wire at_fcfg  = L2_EN && eng_ok && (addr[11:0] == 12'h00C);
     wire hit_arb  = L2_EN && (addr == 16'h0300);
+    wire at_perf  = L2_EN && eng_ok && (addr[11:3] == 9'h002) && (addr[1:0] == 2'b00);   // 0x010, 0x014
     wire hit_l2   = L2_EN && (addr[15:10] == 6'b000001) && (addr[1:0] == 2'b00);   // 0x0400..0x07FC
     // a host write may not change a word a running engine may execute or copy
     wire [7:0] wi = addr[9:2];
@@ -144,6 +149,8 @@ module mgmt #(
                            (c_addr[11:0] == 12'h004) ? {23'd0, reset_pc[9*c_eng +: 9]} :
                            (c_addr[11:0] == 12'h008) ? {16'd0, l2_range[16*c_eng +: 16]} :
                            (c_addr[11:0] == 12'h00C) ? {30'd0, fetch_cfg[2*c_eng +: 2]} :
+                           (c_addr[11:0] == 12'h010) ? {16'd0, perf[32*c_eng +: 16]} :
+                           (c_addr[11:0] == 12'h014) ? {16'd0, perf[32*c_eng + 16 +: 16]} :
                                                        32'd0;
 
     // byte to send next = index nbytes
@@ -181,6 +188,7 @@ module mgmt #(
             viol_clr    <= 16'd0;
             err         <= 1'b0;
             l2_cap      <= 1'b0;
+            perf_clr    <= 4'd0;
             l2_we       <= 1'b0;
             reset_pc    <= 18'd0;
             l2_range    <= 32'h00FF_00FF;
@@ -188,6 +196,7 @@ module mgmt #(
             arb_policy  <= 2'd0;
         end else begin
             l2_we    <= 1'b0;
+            perf_clr <= 4'd0;
             l2_cap   <= l2_re;
             imem_we  <= 2'b00;
             rx_rd_en <= 2'b00;
@@ -220,9 +229,11 @@ module mgmt #(
                     fetch_cfg[2*eng +: 2] <= data[1:0];
                 else if (len_ok && is_write && hit_arb && data[31:2] == 30'd0 && data[1:0] != 2'd3)
                     arb_policy <= data[1:0];
+                else if (len_ok && is_write && at_perf)
+                    perf_clr[2*eng + addr[2]] <= 1'b1;
                 else if (len_ok && is_write && hit_l2 && !l2_prot)
                     l2_we <= 1'b1;
-                else if (len_ok && is_read && (at_ctrl || hit_pad || hit_viol || at_rv || at_rng || at_fcfg || hit_arb || hit_l2))
+                else if (len_ok && is_read && (at_ctrl || hit_pad || hit_viol || at_rv || at_rng || at_fcfg || hit_arb || hit_l2 || at_perf))
                     ;                                   // plain register read, no side effect
                 else if (nbytes != 4'd0)                // an empty CS_N pulse is not an error
                     err <= 1'b1;

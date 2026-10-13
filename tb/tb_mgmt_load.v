@@ -22,7 +22,7 @@ module tb_mgmt_load;
     wire [7:0] ref_out, ref_oe;
     wire [8:0] ref_pc;
     engine_top gold (
-        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0),   // L1 only, as in the chip at reset
+        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0), .perf_clr(2'b00),   // L1 only, as in the chip at reset
         .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[0]),
         .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
         .tx_wr_en(1'b0), .tx_wr_data(32'd0), .tx_full(),

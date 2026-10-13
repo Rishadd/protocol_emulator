@@ -38,6 +38,8 @@ module tb_engine_ops;
 
     reg  [8:0]  rv = 0;
     reg         ph = 0;                  // phantom engine 1: urgent request every clock
+    reg  [1:0]  pclr = 2'b00;
+    wire [15:0] perf_b, perf_r;
     reg  [1:0]  fcfg = 2'b00;
     reg  [15:0] rng = 16'h00FF;
     reg         h_we = 0, h_re = 0;
@@ -90,6 +92,7 @@ module tb_engine_ops;
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),
         .reset_pc(rv), .l2_range(rng), .fetch_cfg(fcfg),
         .l2_req(l2_req), .l2_req_hi(l2_hi), .l2_addr(l2_a), .l2_gnt(gnt[0]), .l2_rdata(l2d), .bubble(bubble),
+        .perf_clr(pclr), .perf_bubble(perf_b), .perf_l2rd(perf_r),
         .halted(halted), .fault(fault), .fault_cause(cause), .pc(pc));
     l2_mem l2 (.clk(clk), .rst_n(rst_n), .h_we(h_we), .h_re(h_re), .h_addr(h_a), .h_wdata(h_d),
                .req({ph, l2_req}), .req_hi({ph, l2_hi}), .req_addr({8'd0, l2_a}), .policy(2'd0), .gnt(gnt), .rdata(l2d));
@@ -390,6 +393,22 @@ module tb_engine_ops;
         for (k = 1; k < ntr_j[0] && k < 32; k = k + 1) if (tr_j[0][k] - tr_j[0][k-1] !== tr_j[1][k] - tr_j[1][k-1]) same = 0;
         $display("    V5.6 UART TX host-loaded %0d edges, COPY-installed %0d edges, start offset %0t", ntr_j[0], ntr_j[1], tr_j[1][0] - tr_j[0][0]);
         `CHECK(same, "V5.6 COPY-installed UART TX = host-loaded UART TX (every edge spacing)")
+
+        // ---- Phase 6 (V6.2): counters saturate at 0xFFFF and clear on request; RUN does not clear them
+        rng = 16'hFF00; fcfg = 0; ph = 1;
+        l2w(8'hF0, I(`OP_NOP, 0)); l2w(8'hF1, I(`OP_JMP, 9'h1F0)); rv = 9'h1F0;
+        run = 0; rst_n = 0; @(posedge clk); #1 rst_n = 1; @(posedge clk); @(posedge clk); #1 run = 1;
+        nbub = 0; repeat (1000) @(posedge clk); #1;
+        `CHECK(perf_b == nbub && perf_r > 0, "V6.2 PERF_BUBBLE counts every bubble")
+        run = 0; repeat (5) @(posedge clk); #1;
+        `CHECK(perf_b == nbub, "V6.2 RUN falling keeps the counters")
+        run = 1; repeat (140000) @(posedge clk); #1;
+        `CHECK(perf_b == 16'hFFFF && perf_r == 16'hFFFF, "V6.2 both counters saturate at 0xFFFF")
+        pclr = 2'b01; @(posedge clk); #1 pclr = 2'b00;
+        `CHECK(perf_b <= 1 && perf_r == 16'hFFFF, "V6.2 clearing PERF_BUBBLE leaves PERF_L2RD")
+        pclr = 2'b10; @(posedge clk); #1 pclr = 2'b00;
+        `CHECK(perf_r <= 1, "V6.2 PERF_L2RD cleared")
+        run = 0; ph = 0;
 
         `REPORT("tb_engine_ops")
         $finish;

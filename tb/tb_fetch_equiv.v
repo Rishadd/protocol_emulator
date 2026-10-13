@@ -31,7 +31,7 @@ module tb_fetch_equiv;
     wire [1:0]  d_cause;
 
     engine_top dut (
-        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0),   // L1 only, as in the chip at reset
+        .reset_pc(9'd0), .l2_range(16'h00FF), .fetch_cfg(2'b00), .l2_gnt(1'b0), .l2_rdata(32'd0), .perf_clr(2'b00),   // L1 only, as in the chip at reset
         .clk(clk), .rst_n(rst_n), .run(run),
         .imem_we(we), .imem_waddr(waddr), .imem_wdata(wdata),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(d_txf),

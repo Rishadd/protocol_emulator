@@ -17,7 +17,8 @@ module fv_mgmt #(parameter L2_EN = 1) (
     input wire [3:0]  fault_cause,
     input wire [31:0] rx_data0, rx_data1, l2_rdata,
     input wire [15:0] pad_owner, pad_viol,
-    input wire [7:0]  pad_od
+    input wire [7:0]  pad_od,
+    input wire [63:0] perf
 );
     wire [7:0]  tx_byte;
     wire [1:0]  eng_run, imem_we, rx_rd_en, tx_wr_en;
@@ -30,6 +31,7 @@ module fv_mgmt #(parameter L2_EN = 1) (
     wire [3:0]  fetch_cfg;
     wire [1:0]  arb_policy;
     wire [7:0]  l2_addr;
+    wire [3:0]  perf_clr;
     mgmt #(.L2_EN(L2_EN)) dut (
         .clk(clk), .rst_n(rst_n), .byte_valid(byte_valid), .rx_byte(rx_byte), .tx_byte(tx_byte),
         .active(active), .frame_end(frame_end), .frame_clean(frame_clean),
@@ -40,6 +42,7 @@ module fv_mgmt #(parameter L2_EN = 1) (
         .pad_sel(pad_sel), .pad_data(pad_data), .pad_ok(pad_ok_in[0]), .pad_we(pad_we), .viol_clr(viol_clr),
         .pad_owner(pad_owner), .pad_od(pad_od), .pad_viol(pad_viol),
         .reset_pc(reset_pc), .l2_range(l2_range), .fetch_cfg(fetch_cfg), .arb_policy(arb_policy),
+        .perf(perf), .perf_clr(perf_clr),
         .l2_we(l2_we), .l2_re(l2_re), .l2_addr(l2_addr), .l2_wdata(l2_wdata), .l2_rdata(l2_rdata),
         .err(err));
 

@@ -182,6 +182,25 @@ The plan's "invalidate on jump / COPY / host write" is not built: PB is tagged w
 - No prefetch runs during a COPY (the plan says "may"): the word after a COPY is fetched urgently.
 - V5.7 (runtime protocol switch) needs the firmware library and is done in Phase 7.
 
+## Phase 6: performance counters (2026-10-13)
+
+**RTL:**
+- `engine_top`: `PERF_BUBBLE` (bubbles while running) and `PERF_L2RD` (granted L2 reads), each 16-bit saturating, reset only by chip reset (kept across RUN), cleared by the host.
+- `mgmt`: `base+0x010` / `base+0x014`; a read returns the count, a write of any data clears that counter; absent with `L2_EN = 0`.
+
+The plan's optional `HOST_COPY` is **not built**: the host already loads L1 directly while an engine is held, and firmware installs with `COPY`; no use case needs it.
+
+| Test | Result |
+|---|---|
+| V6.1 `tb_l2_exec`: both counters of both engines = the testbench's own counts (random clears included) | equal at the end of every run |
+| V6.2 `tb_engine_ops`: counts every bubble; kept when RUN falls; both saturate at 0xFFFF; each clears on its own | PASS |
+| `tb_l2_host` through the link: reset 0; L2 reads counted; bubble = only the first fetch after RUN; write clears; clearing engine 1 leaves engine 0; misaligned address refused | PASS |
+| Formal (`fv_l2_arb`, `fv_mgmt` l2/noL2, `fv_engine ctrl`) with the new ports | all proved |
+| Mutants (`host/mutate.py 6`) | 4/4 detected |
+| `run_tests.ps1` normal and `-Define NO_L2` | all PASS |
+
+**Phase 2 closed:** clean tier-1 run in the worktree, 46/48 jobs PASS. The 2 formal jobs failed only because Yosys does not start with Icarus's DLLs first on `PATH`. `regress.py` now uses a separate `PATH` for formal jobs, and tier 0 then passed with both proofs. Tagged `tt-phase2`; logs in `results/two_tier_phase2/`.
+
 ## L. Limitations and open issues (updated every phase)
 
 | # | Item | Kind | Status |

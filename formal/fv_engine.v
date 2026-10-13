@@ -27,7 +27,8 @@ module fv_engine (
     input wire        o_req,
     input wire        o_hi,
     input wire [7:0]  o_addr,
-    input wire [1:0]  policy
+    input wire [1:0]  policy,
+    input wire [1:0]  perf_clr
 );
     wire [31:0] rx_rd_data, l2d, f_instr;
     wire [7:0]  pin_out, pin_oe, l2_a;
@@ -43,6 +44,7 @@ module fv_engine (
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),
         .reset_pc(reset_pc), .l2_range(l2_range), .fetch_cfg(fetch_cfg),
         .l2_req(req), .l2_req_hi(hi), .l2_addr(l2_a), .l2_gnt(gnt[0]), .l2_rdata(l2d), .bubble(bubble),
+        .perf_clr(perf_clr), .perf_bubble(), .perf_l2rd(), .copy_wait(),
         .halted(halted), .fault(fault), .fault_cause(cause), .pc(pc),
         .f_instr(f_instr), .f_valid(f_valid), .f_l1_we(f_l1_we), .f_l1_wa(f_l1_wa), .f_l1_wd(f_l1_wd));
     l2_mem l2 (.clk(clk), .rst_n(rst_n), .h_we(h_we), .h_re(h_re), .h_addr(h_addr), .h_wdata(h_wdata),
