@@ -293,19 +293,23 @@ def check(L, words, slaves, khz, spec=True):
 
 
 def case(name, txs, khz=400, expect="pass", rise=1, prog=None, s1=None, s2=False, spec=True, tb="tb_i2c_engine",
-         role=0, **plus):
+         role=0, l2=None, **plus):
     """txs: list of word lists (one per transaction)."""
     words = [w for t in txs for w in t]
     slaves = [Slave(0x50, **(s1 or {})), Slave(0x23, en=s2)]
     files = {"HTX": words}
-    if role == 0:
+    if role in (0, 3):
         files["PROG"] = prog or ip.master(khz)
+    if l2:
+        files["L2PROG"] = l2
     args = dict(ROLE=role, N=len(words), S2EN=int(s2), TMAX=50_000_000)
     if s1:
         if "nack_at" in s1:
             args["S_NACK_AT"] = s1["nack_at"]
         if not s1.get("en", True):
             args["S1EN"] = 0
+    if role == 3:
+        args["S1EN"] = 0                                    # the engine is slave 0x50
     args.update({k.upper(): v for k, v in plus.items()})
     L = run_sim(tb, name, files, args, rise)
     errs, st = check(L, words, slaves, khz, spec)
@@ -457,6 +461,54 @@ def _find(ws, op, arg, after=0):
     return next(i for i in range(after, len(ws)) if ws[i] == w)
 
 
+SPEEDS = ((100, 4800, 4100), (400, 1400, 700), (1000, 600, 300))       # kHz, master model low / high ns
+
+
+def slave_case(name, txs, khz, lo, hi, split=False, expect="pass", **kw):
+    """Engine = slave 0x50 (i2c_prog.slave), the Verilog master model drives the words. The master model
+    is not spec-exact, so only what the slave controls is timed: SDA setup before SCL rises."""
+    prog = ip.slave(khz, split=split, l2_base=0x40)
+    l2 = [prog["l2"].get(i, ip.OP["HALT"] << 27) for i in range(256)] if split else None
+    ok = case(name, txs, khz, expect, role=3, prog=prog["l1"], l2=l2, rv=prog["rv"], range=prog["hi"] << 8 | prog["lo"],
+              spec=False, m_low_ns=lo, m_high_ns=hi, **kw)
+    su = LAST.get("su_dat", [])
+    if expect == "pass" and su and min(su) < ip.SPEC[khz]["su_dat"]:
+        report(name + " (SDA setup)", [f"t_SU;DAT {min(su)} ns < {ip.SPEC[khz]['su_dat']} ns"], "")
+    return ok and (expect != "pass" or not su or min(su) >= ip.SPEC[khz]["su_dat"])
+
+
+def phase_slave():
+    print("Phase 7: engine = I2C slave 0x50 (two-tier plan V7.6), peer = Verilog master model, host = tb model")
+    rng = random.Random(7)
+    for khz, lo, hi in SPEEDS:
+        for split in (False, True):
+            tag = f"slave {khz} kHz {'L1+L2' if split else 'L1'}"
+            slave_case(f"{tag} basic set", basic_set(rng), khz, lo, hi, split)
+            slave_case(f"{tag} NACK at data byte 2", [W(0x50, [0x01, 0x11, 0x22, 0x33]), W(0x50, [0x01], stop=False) + W(0x50, rd=3)],
+                       khz, lo, hi, split, s1=dict(nack_at=2))
+        slave_case(f"slave {khz} kHz STOP after every byte position",
+                   [W(0x50, [0x30] + list(range(n))) for n in range(8)] + [W(0x50, rd=n) for n in range(1, 9)], khz, lo, hi)
+    slave_case("slave 400 kHz foreign addresses only", [W(0x51, [1, 2]), W(0x23, rd=2), W(0x00, [5])], 400, 1400, 700)
+    slave_case("slave 400 kHz slow host (20 us per answer: SCL stretched)", basic_set(rng, 1), 400, 1400, 700, hlat_ns=20000)
+    slave_case("slave 400 kHz L1+L2 slow host", basic_set(rng, 1), 400, 1400, 700, split=True, hlat_ns=20000)
+    big = []
+    while sum(len(t) for t in big) < 1024:
+        p_ = rng.randrange(256)
+        big += [W(0x50, [p_] + [rng.randrange(256) for _ in range(rng.randrange(1, 12))]),
+                W(0x50, [p_], stop=False) + W(0x50, rd=rng.randrange(1, 12))]
+    slave_case(f"slave 400 kHz stress ({sum(len(t) for t in big)} words)", big, 400, 1400, 700)
+    slave_case(f"slave 1000 kHz L1+L2 stress ({sum(len(t) for t in big)} words)", big, 1000, 600, 300, split=True)
+    last, fail = None, None                              # master speed sweep: the slave's limit
+    for lo in (500, 400, 300, 250, 200, 160, 120, 100, 80):
+        if slave_case(f"slave sweep master low {lo} ns high {lo // 2} ns", basic_set(random.Random(1), 1), 1000, lo, lo // 2,
+                      expect="info"):
+            last = f"low {lo} / high {lo // 2} ns"
+        else:
+            fail = f"low {lo} / high {lo // 2} ns"
+            break
+    LIMITS.append(("I2C slave vs master speed", last, fail))
+
+
 def phase_mutants():
     print("Mutants: broken firmware / pad setup must be caught (400 kHz)")
     rng = random.Random(6)
@@ -479,7 +531,7 @@ def phase_mutants():
     case("mut pads claimed push-pull (drives SDA/SCL high)", basic_set(rng, 1), 400, pushpull=1, expect="fail")
 
 
-PHASES = dict(selftest=phase_selftest, peers=phase_peers, master=phase_master, chip=phase_chip,
+PHASES = dict(selftest=phase_selftest, peers=phase_peers, master=phase_master, slave=phase_slave, chip=phase_chip,
               mutants=phase_mutants)
 
 if __name__ == "__main__":

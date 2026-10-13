@@ -17,10 +17,11 @@ import argparse
 import math
 
 from spi_prog import OP, assemble, write_hex   # same encoder
+import link
 
 SDA, SCL = 6, 7
 EV = 1 << 26                  # PUSHI event codes (bus data words are <= 9 bits)
-EV_NACK = EV | 3
+EV_START, EV_STOP, EV_NACK = EV | 1, EV | 2, EV | 3
 
 # UM10204 minimums in ns (Sm, Fm, Fm+), rise = max t_r
 SPEC = {
@@ -44,8 +45,9 @@ def delays(khz, f_clk=50e6, margin=2):
                 su_sto=c(s["su_sto"]), buf=c(s["buf"]))
 
 
-def master(khz=400, f_clk=50e6, d=None):
-    """d overrides delays() (used by the speed sweep)."""
+def master(khz=400, f_clk=50e6, d=None, sda=SDA, scl=SCL):
+    """d overrides delays() (used by the speed sweep); sda/scl: pin map."""
+    SDA, SCL = sda, scl
     d = d or delays(khz, f_clk)
     L = {}                                       # labels, resolved in a second pass
     p = [("CFG", SDA | SDA << 3 | 1 << 6 | 1 << 7),          # OUT1 / IN1 on SDA, MSB-first
@@ -68,11 +70,45 @@ def master(khz=400, f_clk=50e6, d=None):
     out = []
     for m, a in p:
         if m == "JPH":
-            a = (SDA, L[a])
+            a = (sda, L[a])
         elif isinstance(a, str):
             a = L[a]
         out.append((m, a))
     return assemble(out)
+
+
+def slave(khz=400, f_clk=50e6, split=False, sda=SDA, scl=SCL, l2_base=0):
+    """I2C slave (target) firmware (docs/TWO_TIER_RESULTS.md, Phase 7). One path for every byte:
+    before a byte the slave holds SCL low and PULLs a slot word (bits to drive at [31:24], 0xFF = listen);
+    it releases SCL, watches the first bit for STOP / repeated START, reads 8 bits, holds SCL, PUSHes the
+    byte ([7:0]) and PULLs an ACK word ([31] = 9th bit to drive: 0 ACK, 1 NACK or release when sending);
+    after the 9th bit it holds SCL and PUSHes the 9th bit as sampled ([0]). START / STOP are pushed as
+    EV_START / EV_STOP. A 1 in the 9th bit (NACK) releases SDA and only waits for STOP / Sr.
+    The host decides every ACK (also the address match). split=True: init, idle and STOP handling go to
+    L2 (cold), the byte loop stays in L1 (hot). Returns the linked program (link.link)."""
+    s = SPEC[1000 if khz > 400 else 400 if khz > 100 else 100]
+    tsu = -(-int(s["su_dat"]) * int(f_clk) // 10**9) + 2        # clocks from SDA change to SCL release
+    cold = (".l2",) if split else (".l1",)
+    p = [cold, ("lab", "init"), ("CFG", sda | sda << 3 | 1 << 6 | 1 << 7),
+         ("SETH", sda), ("SETH", scl), ("DIRO", scl),
+         ("lab", "idle"), ("JPL", (scl, "idle")), ("JPL", (sda, "idle")),         # wait for both high
+         ("lab", "idle2"), ("JPL", (scl, "idle")), ("JPH", (sda, "idle2"))]      # SDA falls, SCL high: START
+    p += [("JMP", "sr")] if split else []
+    p += [(".l1",),
+          ("lab", "sr"), ("WAITL", scl), ("SETLO", scl), ("PUSHI", EV_START),   # hold SCL, report
+          ("lab", "held"), ("PULL", 0), ("DIRO", sda), ("SETL", 7), ("OUT1", tsu), ("SETH", scl),
+          ("lab", "first"), ("WAITH", scl), ("IN1", 0), ("JPH", (sda, "w1")),
+          ("lab", "w0"), ("JPL", (scl, "cont")), ("JPH", (sda, "stop")), ("JMP", "w0")]   # SDA rises: STOP
+    p += [("lab", "w1"), ("JPL", (scl, "cont")), ("JPL", (sda, "sr")), ("JMP", "w1"),     # SDA falls: Sr
+          ("lab", "cont"), ("OUT1", tsu), ("WAITH", scl), ("IN1", 0), ("WAITL", scl), ("DJNZ", "cont"),
+          ("SETLO", scl), ("PUSH", 0), ("PULL", 0), ("OUT1", tsu), ("SETH", scl), ("WAITH", scl),
+          ("IN1", 0), ("JPH", (sda, "nack")), ("WAITL", scl), ("SETLO", scl), ("PUSH", 0), ("JMP", "held"),
+          ("lab", "nack"), ("WAITL", scl), ("SETLO", scl), ("PUSH", 0), ("DIRI", sda), ("SETH", scl),
+          ("JMP", "first"),
+          cold, ("lab", "stop"), ("PUSHI", EV_STOP), ("JMP", "idle")]
+    prog = link.link(p, l2_base)
+    prog["rv"] = prog["sym"]["init"]
+    return prog
 
 
 def word(slot9, s=0, c=0, p=0):

@@ -1,0 +1,6 @@
+compared 173412 cycles over 300 random programs: 0 output mismatches, 0 instr-bus mismatches
+coverage: 9756 jumps, 47253 stall cycles, 911 RUN drops, 3214 host rewrites while held
+opcode cycles: 0:1748 1:7477 2:11596 3:12178 4:2202 5:2690 6:8316 7:5418 8:6935 9:3317 10:1922 11:1956 12:1001 13:1209 14:8382 15:8624 16:875 17:3090 18:3458 19:1110 20:99 21:7024 22:6254 23:5962 24:1707 25:1490 26:204 27:904 28:8381 29:7903 30:7096 31:6801
+  FAIL @1734146000: every legal opcode executed
+RESULT tb_fetch_equiv_v2: FAIL (1 errors)
+tb/tb_fetch_equiv.v:213: $finish called at 1734146000 (1ps)

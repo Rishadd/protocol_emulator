@@ -133,7 +133,7 @@ module engine_top #(
     wire [31:0] pb_w   = pend ? l2_rdata : pb;
     wire [31:0] w2 = got ? l2_rdata : ir2;
     wire        instr_valid = !pc[8] || got || ir2_ok;
-    assign instr = pc[8] ? w2 : l1_out;
+    assign instr = (L2_EN ? pc[8] : 1'b0) ? w2 : l1_out;   // no L2: exactly the L1 output (as before L2, E2)
     wire keep = pc[8] && instr_valid && (next_pc == pc);                 // same word next clock
     wire pb_hit = pb_has && (pb_a == next_pc) && next_pc[8];
     wire need = L2_EN && core_rst_n && !halted && next_pc[8] && !keep && !pb_hit;   // urgent fetch of next_pc

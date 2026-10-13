@@ -1,0 +1,5 @@
+compared 174538 cycles over 300 random programs: 0 output mismatches, 0 instr-bus mismatches
+coverage: 10422 jumps, 48506 stall cycles, 921 RUN drops, 3227 host rewrites while held
+opcode cycles: 0:1905 1:7934 2:14994 3:11746 4:3446 5:3463 6:7470 7:6840 8:6192 9:4196 10:1332 11:1687 12:1223 13:858 14:7733 15:6808 16:1240 17:2558 18:3173 19:1049 20:390 21:9018 22:6753 23:6147 24:1118 25:1565 26:1430 27:825 28:5450 29:5302 30:6918 31:7649
+RESULT tb_fetch_equiv_v2: PASS
+tb/tb_fetch_equiv.v:213: $finish called at 1745406000 (1ps)

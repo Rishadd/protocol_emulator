@@ -1,0 +1,4 @@
+V1.5 round trip: 4025 words
+V1.6 generators: 55 programs, 99 JPH/JPL words re-encoded, every other word unchanged
+1.7 committed UART images == generator output
+RESULT test_isa: PASS
