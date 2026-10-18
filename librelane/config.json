@@ -1,0 +1,53 @@
+{
+  "DESIGN_NAME": "tt_um_protocol_emulator",
+  "VERILOG_FILES": [
+    "dir::../src/alu_unit.v", "dir::../src/control_unit.v", "dir::../src/crc_unit.v", "dir::../src/delay_counter.v", "dir::../src/engine_top.v",
+    "dir::../src/fifo.v", "dir::../src/instr_mem.v", "dir::../src/loop_counter.v",
+    "dir::../src/mgmt.v", "dir::../src/pc_reg.v", "dir::../src/pin_block.v", "dir::../src/pin_mgr.v",
+    "dir::../src/shift_reg.v", "dir::../src/spi_slave.v", "dir::../src/tt_um_protocol_emulator.v"
+  ],
+  "VERILOG_INCLUDE_DIRS": ["dir::../src"],
+  "VERILOG_DEFINES": ["SYNTHESIS"],
+  "CLOCK_PORT": "clk",
+  "CLOCK_PERIOD": 20,
+
+  "FP_SIZING": "absolute",
+  "DIE_AREA": [0, 0, 1200, 600],
+  "PL_TARGET_DENSITY_PCT": 50,
+  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,
+  "GRT_ALLOW_CONGESTION": true,
+  "RUN_LINTER": true,
+  "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": false,
+  "RUN_KLAYOUT_XOR": false,
+  "RUN_KLAYOUT_DRC": false,
+  "MAGIC_DEF_LABELS": false,
+  "MAGIC_WRITE_LEF_PINONLY": true,
+
+  "MACROS": {
+    "RM_IHPSG13_1P_256x32_c2_bm_bist": {
+      "instances": {
+        "u_eng0.imem.u_mem": { "location": [60, 60],  "orientation": "N" },
+        "u_eng1.imem.u_mem": { "location": [60, 260], "orientation": "N" }
+      },
+      "gds": ["pdk_dir::libs.ref/sg13cmos5l_sram/gds/RM_IHPSG13_1P_256x32_c2_bm_bist.gds"],
+      "lef": ["pdk_dir::libs.ref/sg13cmos5l_sram/lef/RM_IHPSG13_1P_256x32_c2_bm_bist.lef"],
+      "lib": {
+        "nom_typ_1p20V_25C":  ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"],
+        "nom_fast_1p32V_m40C": ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib"],
+        "nom_slow_1p08V_125C": ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib"],
+        "*":                  ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"]
+      },
+      "nl": ["dir::macro/RM_IHPSG13_1P_256x32_c2_bm_bist.v"]
+    }
+  },
+  "PDN_MACRO_CONNECTIONS": [
+    "u_eng0.imem.u_mem VPWR VGND VDD! VSS!",
+    "u_eng0.imem.u_mem VPWR VGND VDDARRAY! VSS!",
+    "u_eng1.imem.u_mem VPWR VGND VDD! VSS!",
+    "u_eng1.imem.u_mem VPWR VGND VDDARRAY! VSS!"
+  ],
+  "MAGIC_MACRO_STD_CELL_SOURCE": "PDK",
+  "ERROR_ON_MAGIC_DRC": false,
+  "MAGIC_EXT_ABSTRACT_CELLS": ["RM_IHPSG13_.*"]
+}

@@ -1,0 +1,65 @@
+# Tiny Tapeout project information
+project:
+  title:        "Protocol Emulator"
+  author:       "Rishad"
+  discord:      ""
+  description:  "Programmable pin-level protocol engines with ALU and CRC units (UART, SPI, I2C master/slave, Modbus, 1-Wire, JTAG, CAN as firmware), SRAM instruction memory and an SPI management port"
+  language:     "Verilog"
+  clock_hz:     50000000
+
+  # Jane Street protocol emulator competition: 6x4 tiles
+  tiles: "6x4"
+
+  top_module:  "tt_um_protocol_emulator"
+
+  # Include files (isa.vh) are found through VERILOG_INCLUDE_DIRS in src/config.json
+  source_files:
+    - "alu_unit.v"
+    - "control_unit.v"
+    - "crc_unit.v"
+    - "delay_counter.v"
+    - "engine_top.v"
+    - "fifo.v"
+    - "instr_mem.v"
+    - "loop_counter.v"
+    - "mgmt.v"
+    - "pc_reg.v"
+    - "pin_block.v"
+    - "pin_mgr.v"
+    - "shift_reg.v"
+    - "spi_slave.v"
+    - "tt_um_protocol_emulator.v"
+
+pinout:
+  # Inputs
+  ui[0]: "MGMT_SCLK"
+  ui[1]: "MGMT_MOSI"
+  ui[2]: "MGMT_CS_N"
+  ui[3]: ""
+  ui[4]: ""
+  ui[5]: ""
+  ui[6]: ""
+  ui[7]: ""
+
+  # Outputs
+  uo[0]: "MGMT_MISO"
+  uo[1]: ""
+  uo[2]: ""
+  uo[3]: ""
+  uo[4]: ""
+  uo[5]: ""
+  uo[6]: ""
+  uo[7]: ""
+
+  # Bidirectional pins: protocol pads shared by both engines through the pin manager
+  uio[0]: "P0"
+  uio[1]: "P1"
+  uio[2]: "P2"
+  uio[3]: "P3"
+  uio[4]: "P4"
+  uio[5]: "P5"
+  uio[6]: "P6"
+  uio[7]: "P7"
+
+# Do not change!
+yaml_version: 6

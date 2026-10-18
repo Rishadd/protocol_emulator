@@ -1,0 +1,22 @@
+{
+  "//": "Overrides for the compact symmetric floorplan (src/floorplan_engines_compact.json): SRAM 0 at x = 60 + 2 x 44.96 = 149.92, SRAM 1 at 149.92 + 12 x 44.96 = 689.44 (whole stripe pitches from the placement that passed the precheck). Use: CFG_EXTRA=\"$(cat librelane/floorplan_compact_cfg.json)\" bash librelane/flow_run_wsl.sh <tag> boxed floorplan_engines_compact.json",
+  "ROUTING_OBSTRUCTIONS": [["Metal4", 148.92, 12.78, 567.56, 133.56], ["Metal4", 688.44, 12.78, 1107.08, 133.56]],
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "MACROS": {
+    "RM_IHPSG13_1P_256x32_c2_bm_bist": {
+      "instances": {
+        "u_eng0.imem.u_mem": {"location": [149.92, 13.78], "orientation": "FS"},
+        "u_eng1.imem.u_mem": {"location": [689.44, 13.78], "orientation": "FS"}
+      },
+      "gds": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.gds"],
+      "lef": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.lef"],
+      "lib": {
+        "*_typ_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"],
+        "*_fast_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib"],
+        "*_slow_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib"]
+      },
+      "nl": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.v"],
+      "spice": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.cdl"]
+    }
+  }
+}

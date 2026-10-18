@@ -1,0 +1,23 @@
+{
+  "//": "Overrides for the symmetric floorplan (src/floorplan_engines_symmetric.json): SRAM 0 at x = 60 (the placement that passed the precheck), SRAM 1 mirrored at x = 60 + 17 x 44.96 = 824.32, so both macros' power columns sit under the Metal4 stripes in the same way. Not in the very corners: with SRAM 1 at the right core edge its 17 um halo reached past the die and global placement crashed (GPL-0316 getGCell index out of bounds, run tt9c first attempt). Use: CFG_EXTRA=\"$(cat librelane/floorplan_symmetric_cfg.json)\" bash librelane/flow_run_wsl.sh <tag> boxed floorplan_engines_symmetric.json",
+  "ROUTING_OBSTRUCTIONS": [["Metal4", 59, 12.78, 477.64, 133.56], ["Metal4", 823.32, 12.78, 1241.96, 133.56]],
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "//keep_resize": "Timing-driven global placement with fence regions crashed (GPL-0316 getGCell index out of bounds): the buffers the resizer inserts during the timing-driven iterations have no place in the regions' bin grids. 0 = the resizer's trial changes are always reverted (net weighting stays timing-driven); the normal repair steps after placement still run.",
+  "MACROS": {
+    "RM_IHPSG13_1P_256x32_c2_bm_bist": {
+      "instances": {
+        "u_eng0.imem.u_mem": {"location": [60.0, 13.78], "orientation": "FS"},
+        "u_eng1.imem.u_mem": {"location": [824.32, 13.78], "orientation": "FS"}
+      },
+      "gds": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.gds"],
+      "lef": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.lef"],
+      "lib": {
+        "*_typ_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"],
+        "*_fast_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib"],
+        "*_slow_*": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib"]
+      },
+      "nl": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.v"],
+      "spice": ["dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.cdl"]
+    }
+  }
+}
