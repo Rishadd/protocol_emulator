@@ -10,8 +10,8 @@
 //
 // Address map (architecture doc §6 windows), e = engine 0 or 1, base = 0x1000 * (e + 1):
 //   base+0x000       CTRL     W: bit 0 RUN (reset 0 = engine held, imem writable)
-//                             R: {pc[13:8], fault[2], halted[1], RUN[0]}
-//   base+0x100+4*i   IMEM     W: instruction word i (only while that RUN = 0)
+//                             R: {pc[15:8], fault[2], halted[1], RUN[0]}
+//   base+0x400+4*i   IMEM     W: instruction word i, i = 0..255 (only while that RUN = 0)
 //   base+0x200       TX_DATA  W: word pushed into the engine's TX FIFO (any RUN state, so TX can be
 //                             preloaded). Accepted only if this frame's STATUS showed tx_full = 0
 //                             for that engine; otherwise dropped (not an error): the host resends.
@@ -38,13 +38,13 @@ module mgmt (
     // engines: per-engine RUN and write enable, shared write address/data
     output reg  [1:0]  eng_run,
     output reg  [1:0]  imem_we,
-    output wire [5:0]  imem_waddr,
+    output wire [7:0]  imem_waddr,
     output wire [31:0] imem_wdata,
     // engine status and RX FIFOs
     input  wire [1:0]  halted,
     input  wire [1:0]  fault,
-    input  wire [5:0]  pc0,
-    input  wire [5:0]  pc1,
+    input  wire [7:0]  pc0,
+    input  wire [7:0]  pc1,
     input  wire [1:0]  tx_full,
     input  wire [1:0]  rx_empty,
     input  wire [31:0] rx_data0,
@@ -81,7 +81,7 @@ module mgmt (
     wire eng      = addr[13];       // 0x1xxx -> 0, 0x2xxx -> 1
     wire at_ctrl  = eng_ok && (addr[11:0] == 12'h000);
     wire hit_ctrl = at_ctrl && (data[31:1] == 31'd0);
-    wire hit_imem = eng_ok && (addr[11:8] == 4'h1) && (addr[1:0] == 2'b00);
+    wire hit_imem = eng_ok && (addr[11:10] == 2'b01) && (addr[1:0] == 2'b00);   // 0x400..0x7FC
     wire hit_rx   = eng_ok && (addr[11:0] == 12'h204);
     wire hit_tx   = eng_ok && (addr[11:0] == 12'h200);
     wire hit_pad  = (addr[15:5] == 11'h010) && (addr[1:0] == 2'b00);   // 0x0200..0x021C
@@ -96,7 +96,7 @@ module mgmt (
     wire [15:0] c_addr   = frame[15:0];
     wire        c_eng_ok = (c_addr[15:12] == 4'h1) || (c_addr[15:12] == 4'h2);
     wire        c_eng    = c_addr[13];
-    wire [5:0]  pc_e     = c_eng ? pc1 : pc0;
+    wire [7:0]  pc_e     = c_eng ? pc1 : pc0;
     wire [31:0] rx_e     = c_eng ? rx_data1 : rx_data0;
     wire [2:0]  c_pad    = c_addr[4:2];
     wire [31:0] rd_mux   = (c_op != 8'h02) ? 32'd0 :
@@ -104,7 +104,7 @@ module mgmt (
                                {29'd0, pad_od[c_pad], pad_owner[2*c_pad +: 2]} :
                            (c_addr == 16'h0220) ? {16'd0, pad_viol} :
                            !c_eng_ok ? 32'd0 :
-                           (c_addr[11:0] == 12'h000) ? {18'd0, pc_e, 5'd0, fault[c_eng], halted[c_eng], eng_run[c_eng]} :
+                           (c_addr[11:0] == 12'h000) ? {16'd0, pc_e, 5'd0, fault[c_eng], halted[c_eng], eng_run[c_eng]} :
                            (c_addr[11:0] == 12'h204) ? (status_snap[c_eng] ? rx_e : 32'd0) :
                                                        32'd0;
 
@@ -117,7 +117,7 @@ module mgmt (
 
     // frame holds still after frame_end (the next byte is >= 8 SCLK edges away),
     // so the write port reads it directly instead of copying it into more flops
-    assign imem_waddr = addr[7:2];
+    assign imem_waddr = addr[9:2];
     assign imem_wdata = data;
     assign tx_wr_data = data;
     assign pad_sel    = addr[4:2];

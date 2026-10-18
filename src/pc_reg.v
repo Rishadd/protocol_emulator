@@ -3,7 +3,7 @@
 // instruction memory has a synchronous read, so it is addressed with next_pc: the word for
 // the new pc is then on its output in the very cycle pc changes (see instr_mem.v).
 module pc_reg #(
-    parameter WIDTH = 6
+    parameter WIDTH = 8
 )(
     input  wire             clk,
     input  wire             rst_n,

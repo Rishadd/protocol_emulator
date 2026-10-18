@@ -24,7 +24,7 @@ module tt_um_protocol_emulator (
     wire        byte_valid, spi_active, frame_end, frame_clean, miso;
     wire [7:0]  rx_byte, tx_byte;
     wire [1:0]  eng_run, imem_we, rx_rd_en, tx_wr_en;
-    wire [5:0]  imem_waddr;
+    wire [7:0]  imem_waddr;
     wire [31:0] imem_wdata, tx_wr_data;
     wire        mgmt_err;
     wire [2:0]  pad_sel, pad_data;
@@ -33,7 +33,7 @@ module tt_um_protocol_emulator (
     wire [7:0]  pad_od;
 
     wire [7:0]  out0, oe0, out1, oe1;
-    wire [5:0]  pc0, pc1;
+    wire [7:0]  pc0, pc1;
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
 
