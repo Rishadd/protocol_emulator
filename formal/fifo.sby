@@ -1,0 +1,14 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal fifo.v
+read -formal fifo_props.sv
+prep -top fifo_props
+
+[files]
+../src/fifo.v
+fifo_props.sv

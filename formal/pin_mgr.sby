@@ -1,0 +1,14 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal pin_mgr.v
+read -formal pin_mgr_props.sv
+prep -top pin_mgr_props
+
+[files]
+../src/pin_mgr.v
+pin_mgr_props.sv

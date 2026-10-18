@@ -1,0 +1,18 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal spi_slave.v
+read -formal mgmt.v
+read -formal pin_mgr.v
+read -formal mgmt_props.sv
+prep -top mgmt_props
+
+[files]
+../src/spi_slave.v
+../src/mgmt.v
+../src/pin_mgr.v
+mgmt_props.sv
