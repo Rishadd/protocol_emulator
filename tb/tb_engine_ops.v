@@ -11,14 +11,14 @@ module tb_engine_ops;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [7:0]  pc;
 
     integer errors = 0, nrx = 0, k;
     reg [31:0] rx [0:15];
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n), .run(run),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),

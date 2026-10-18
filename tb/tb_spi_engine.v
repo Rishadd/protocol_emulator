@@ -15,7 +15,7 @@ module tb_spi_engine;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [7:0]  pc;
     wire        p_cs, p_sclk, p_mosi, p_miso;
 
     `include "spi_peer.vh"
@@ -27,7 +27,7 @@ module tb_spi_engine;
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n), .run(run),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in({2'b00, p_cs, p_miso, p_mosi, p_sclk, 2'b00}), .pin_out(pin_out), .pin_oe(pin_oe),

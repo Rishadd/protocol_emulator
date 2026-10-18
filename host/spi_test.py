@@ -29,7 +29,7 @@ CLK = 10
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+            ("RM_IHPSG13_1P_core_behavioral_bm_bist.v", "RM_IHPSG13_1P_256x32_c2_bm_bist.v")]
 
 
 # ------------------------------------------------------------------ data

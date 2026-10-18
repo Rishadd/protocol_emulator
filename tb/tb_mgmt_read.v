@@ -29,7 +29,7 @@ module tb_mgmt_read;
     reg [7:0]  st;                                  // STATUS byte of the last frame
     reg [15:0] mid;                                 // MISO bytes 1-2 of the last frame
     reg [31:0] rd;                                  // MISO bytes 3-6 of the last frame
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
 
     always #5 clk = ~clk;
 
@@ -52,10 +52,10 @@ module tb_mgmt_read;
     task load_rx_image(input e);
         integer j;
         begin
-            for (j = 0; j < 64; j = j + 1) img[j] = W_HALT;
+            for (j = 0; j < 256; j = j + 1) img[j] = W_HALT;
             $readmemh("src/fpga/uart_rx_prog.hex", img);
             ctrl(e, 0);
-            for (j = 0; j < 64; j = j + 1) wr(base(e) + 16'h100 + 4 * j, img[j]);
+            for (j = 0; j < 256; j = j + 1) wr(base(e) + 16'h400 + 4 * j, img[j]);
         end
     endtask
 
@@ -99,7 +99,7 @@ module tb_mgmt_read;
         ctrl(1, 1);
         rdreg(16'h2000);
         `CHECK(st == (ST_ALIVE | ST_RUN1), "status shows RUN1")
-        `CHECK(rd == {18'd0, 6'd2, 5'd0, 3'b001}, "CTRL1 = pc 2, not halted, no fault, RUN")
+        `CHECK(rd == {16'd0, 8'd2, 5'd0, 3'b001}, "CTRL1 = pc 2, not halted, no fault, RUN")
 
         $display("--- R3 one UART byte -> STATUS rx bit -> READ pops it");
         uart_send(8'h55); repeat (100) @(posedge clk);
@@ -154,19 +154,28 @@ module tb_mgmt_read;
         expect_byte(1, 8'h22, "engine 1 second byte");
 
         $display("--- R8 CTRL read reflects halted and fault");
-        ctrl(0, 0); wr(16'h1100, W_HALT); ctrl(0, 1);
+        ctrl(0, 0); wr(16'h1400, W_HALT); ctrl(0, 1);
         rdreg(16'h1000);
         `CHECK(rd == 32'h0000_0003, "CTRL0: RUN, halted, pc 0")
-        ctrl(0, 0); wr(16'h1100, {5'd31, 27'd0}); ctrl(0, 1);
+        ctrl(0, 0); wr(16'h1400, {5'd31, 27'd0}); ctrl(0, 1);
         rdreg(16'h1000);
         `CHECK(rd == 32'h0000_0007, "CTRL0: RUN, halted, fault")
         ctrl(0, 0);
         rdreg(16'h1000);
         `CHECK(rd == 32'h0000_0000, "CTRL0 after RUN=0: all clear")
 
+        $display("--- R8b CTRL read shows an 8-bit pc (words above 63)");
+        ctrl(0, 0); wr(16'h1400, {5'd2, 27'd200}); wr(16'h1400 + 4 * 200, W_HALT); ctrl(0, 1);   // JMP 200; word 200 = HALT
+        rdreg(16'h1000);
+        `CHECK(rd == {16'd0, 8'd200, 5'd0, 3'b011}, "CTRL0: RUN, halted, pc 200")
+        ctrl(1, 0); wr(16'h2400, {5'd2, 27'd129}); wr(16'h2400 + 4 * 129, W_HALT); ctrl(1, 1);   // JMP 129; word 129 = HALT
+        rdreg(16'h2000);
+        `CHECK(rd == {16'd0, 8'd129, 5'd0, 3'b011}, "CTRL1: RUN, halted, pc 129")
+        ctrl(0, 0); ctrl(1, 0); wr(16'h2400, img[0]);        // engine 1 back to the RX image's first word
+
         $display("--- R9 unreadable addresses: data 0 and err");
         do_reset;
-        rdreg(16'h1100); `CHECK(rd == 0 && dut.u_mgmt.err == 1, "IMEM window not readable") do_reset;
+        rdreg(16'h1400); `CHECK(rd == 0 && dut.u_mgmt.err == 1, "IMEM window not readable") do_reset;
         rdreg(16'h1200); `CHECK(rd == 0 && dut.u_mgmt.err == 1, "0x1200 not readable") do_reset;
         rdreg(16'h3204); `CHECK(rd == 0 && dut.u_mgmt.err == 1, "0x3204 unmapped") do_reset;
         rdreg(16'h2206); `CHECK(rd == 0 && dut.u_mgmt.err == 1, "misaligned RX_DATA") do_reset;

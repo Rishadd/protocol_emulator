@@ -9,19 +9,19 @@ module tb_engine_top;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe;
-    wire [5:0]  pc;
+    wire [7:0]  pc;
 
     integer errors = 0, i, n, edges;
     integer cycle = 0;
     reg  [7:0] rxb;
     reg  [7:0] bytes [0:3];
     reg  [7:0] pin1_hist [0:31];
-    reg  [5:0] pc_hist   [0:31];
+    reg  [7:0] pc_hist   [0:31];
     reg        halt_hist [0:31];
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0), .run(1'b1),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),

@@ -34,7 +34,8 @@ module tb_i2c_chip;
 
     reg [8*256-1:0] prog_f, htx_f, out_f;
     reg [31:0] htx [0:8191];
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
+    integer nimg;
     integer eng = 0, n = 0, tmax = 50000000, half = 200, fd, k;
     integer cyc = 0, sent = 0, recv = 0, retries = 0, polls = 0, frames = 0, drive_high = 0, idle = 0, empty = 0;
     reg [7:0]  st;
@@ -85,9 +86,11 @@ module tb_i2c_chip;
         repeat (4) @(posedge clk);
         frame(OP_WR, 16'h0218, 32'd5 + eng);                        // pad 6 (SDA): engine, open-drain
         frame(OP_WR, 16'h021C, 32'd5 + eng);                        // pad 7 (SCL)
-        for (k = 0; k < 64; k = k + 1) img[k] = W_HALT;
+        for (k = 0; k < 256; k = k + 1) img[k] = W_HALT;
         $readmemh(prog_f, img);
-        for (k = 0; k < 64; k = k + 1) frame(OP_WR, base + 16'h100 + 4 * k, img[k]);
+        nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
+        if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
+        for (k = 0; k < nimg; k = k + 1) frame(OP_WR, base + 16'h400 + 4 * k, img[k]);
         frame(OP_WR, base, 32'd1);                                  // RUN
 
         while ((sent < n || idle < 2000 || empty < 3) && cyc < tmax) begin

@@ -22,12 +22,12 @@ module tb_mgmt_tx;
 
     wire [7:0] g_out [0:1];
     wire [7:0] g_oe  [0:1];
-    wire [5:0] g_pc  [0:1];
+    wire [7:0] g_pc  [0:1];
     genvar ge;
     generate for (ge = 0; ge < 2; ge = ge + 1) begin : gold
         engine_top eng (
             .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[ge]),
-            .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+            .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
             .tx_wr_en(dut.u_mgmt.tx_wr_en[ge]), .tx_wr_data(dut.u_mgmt.tx_wr_data), .tx_full(),
             .rx_rd_en(1'b0), .rx_rd_data(), .rx_empty(),
             .pin_in(uio_in), .pin_out(g_out[ge]), .pin_oe(g_oe[ge]),
@@ -44,7 +44,7 @@ module tb_mgmt_tx;
     reg [7:0]  st;
     reg [15:0] mid;
     reg [31:0] rd;
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
     reg [7:0]  rx_log [0:1023];
     reg [7:0]  msg    [0:1023];
 
@@ -103,11 +103,11 @@ module tb_mgmt_tx;
     task load_tx_image(input e);
         integer j;
         begin
-            for (j = 0; j < 64; j = j + 1) img[j] = W_HALT;
+            for (j = 0; j < 256; j = j + 1) img[j] = W_HALT;
             $readmemh("src/fpga/uart_tx_prog.hex", img);
             ctrl(e, 0);
-            for (j = 0; j < 64; j = j + 1) begin
-                wr(base(e) + 16'h100 + 4 * j, img[j]);
+            for (j = 0; j < 256; j = j + 1) begin
+                wr(base(e) + 16'h400 + 4 * j, img[j]);
                 if (e) gold[1].eng.imem.poke(j, img[j]); else gold[0].eng.imem.poke(j, img[j]);
             end
         end

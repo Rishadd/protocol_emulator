@@ -10,11 +10,11 @@ module tb_uart_rx;
     wire        tx_full, rx_empty, rx_rd_en, halted, fault;
     wire [31:0] rx_rd_data;
     wire [7:0]  pin_out, pin_oe, led;
-    wire [5:0]  pc;
+    wire [7:0]  pc;
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0), .run(1'b1),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0), .run(1'b1),
         .tx_wr_en(1'b0), .tx_wr_data(32'd0), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in({6'd0, rx, 1'b0}), .pin_out(pin_out), .pin_oe(pin_oe),

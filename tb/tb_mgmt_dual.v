@@ -21,12 +21,12 @@ module tb_mgmt_dual;
 
     wire [7:0] g_out [0:1];
     wire [7:0] g_oe  [0:1];
-    wire [5:0] g_pc  [0:1];
+    wire [7:0] g_pc  [0:1];
     genvar ge;
     generate for (ge = 0; ge < 2; ge = ge + 1) begin : gold
         engine_top eng (
             .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[ge]),
-            .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+            .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
             .tx_wr_en(1'b0), .tx_wr_data(32'd0), .tx_full(),
             .rx_rd_en(1'b0), .rx_rd_data(), .rx_empty(),
             .pin_in(uio_in), .pin_out(g_out[ge]), .pin_oe(g_oe[ge]),
@@ -40,9 +40,9 @@ module tb_mgmt_dual;
 
     integer errors = 0, k, frames = 0;
     integer mism0 = 0, mism1 = 0, padmis = 0, run_cyc0 = 0, run_cyc1 = 0;
-    reg [31:0] img   [0:127];       // engine e word j = img[64*e + j]
-    reg [31:0] model [0:127];       // what each DUT memory must hold (X = never written)
-    reg [5:0]  max_pc0, max_pc1;
+    reg [31:0] img   [0:511];       // engine e word j = img[256*e + j]
+    reg [31:0] model [0:511];       // what each DUT memory must hold (X = never written)
+    reg [7:0]  max_pc0, max_pc1;
 
     always #5 clk = ~clk;
 
@@ -96,10 +96,10 @@ module tb_mgmt_dual;
     task ctrl(input e, input r);
         wr(base(e), {31'd0, r});
     endtask
-    task wr_word(input e, input [5:0] j);
+    task wr_word(input e, input [7:0] j);
         begin
-            wr(base(e) + 16'h100 + 4 * j, img[64 * e + j]);
-            if (!dut.u_mgmt.eng_run[e]) model[64 * e + j] = img[64 * e + j];
+            wr(base(e) + 16'h400 + 4 * j, img[256 * e + j]);
+            if (!dut.u_mgmt.eng_run[e]) model[256 * e + j] = img[256 * e + j];
         end
     endtask
 
@@ -107,23 +107,23 @@ module tb_mgmt_dual;
         integer j, bad;
         begin
             bad = 0;
-            for (j = 0; j < 64; j = j + 1) begin
+            for (j = 0; j < 256; j = j + 1) begin
                 if (dut.u_eng0.imem.peek(j) !== model[j])      bad = bad + 1;
-                if (dut.u_eng1.imem.peek(j) !== model[64 + j]) bad = bad + 1;
+                if (dut.u_eng1.imem.peek(j) !== model[256 + j]) bad = bad + 1;
             end
             `CHECK(bad == 0, tag)
             if (bad != 0) $display("    %0d words wrong", bad);
         end
     endtask
 
-    // full load of one engine (halt, 64 words, check), golden copy updated
+    // full load of one engine (halt, 256 words, check), golden copy updated
     task load(input e);
         integer j;
         begin
             ctrl(e, 0);
-            for (j = 0; j < 64; j = j + 1) wr_word(e, j);
-            for (j = 0; j < 64; j = j + 1)
-                if (e) gold[1].eng.imem.poke(j, img[64 + j]); else gold[0].eng.imem.poke(j, img[j]);
+            for (j = 0; j < 256; j = j + 1) wr_word(e, j);
+            for (j = 0; j < 256; j = j + 1)
+                if (e) gold[1].eng.imem.poke(j, img[256 + j]); else gold[0].eng.imem.poke(j, img[j]);
             check_mems("both memories exact after load");
         end
     endtask
@@ -133,10 +133,10 @@ module tb_mgmt_dual;
         integer j;
         begin
             ctrl(0, 0); ctrl(1, 0);
-            for (j = 0; j < 64; j = j + 1) begin wr_word(0, j); wr_word(1, j); end
-            for (j = 0; j < 64; j = j + 1) begin
+            for (j = 0; j < 256; j = j + 1) begin wr_word(0, j); wr_word(1, j); end
+            for (j = 0; j < 256; j = j + 1) begin
                 gold[0].eng.imem.poke(j, img[j]);
-                gold[1].eng.imem.poke(j, img[64 + j]);
+                gold[1].eng.imem.poke(j, img[256 + j]);
             end
             check_mems("both memories exact after interleaved load");
         end
@@ -145,13 +145,13 @@ module tb_mgmt_dual;
     task claim(input [7:0] pads, input [1:0] owner);   // pin manager window 0x0200
         integer p; begin for (p = 0; p < 8; p = p + 1) if (pads[p]) wr(16'h0200 + 4 * p, {30'd0, owner}); end
     endtask
-    task fill_halt(input e); integer j; begin for (j = 0; j < 64; j = j + 1) img[64 * e + j] = W_HALT; end endtask
+    task fill_halt(input e); integer j; begin for (j = 0; j < 256; j = j + 1) img[256 * e + j] = W_HALT; end endtask
 
     // pin-pattern program on pins p..p+2 (OUT1 on p), WAITH on P7
     task pattern(input e, input [2:0] p, input [26:0] w);
         integer o;
         begin
-            fill_halt(e); o = 64 * e;
+            fill_halt(e); o = 256 * e;
             img[o+0]  = I(`OP_CFG, {24'd0, p});     img[o+1]  = I(`OP_DIRO, p);
             img[o+2]  = I(`OP_DIRO, p + 3'd1);      img[o+3]  = I(`OP_DIRO, p + 3'd2);
             img[o+4]  = I(`OP_SETL, 5);             img[o+5]  = I(`OP_SETH, p);
@@ -166,11 +166,11 @@ module tb_mgmt_dual;
     endtask
 
     task hex_image(input e, input [8*40-1:0] file);
-        integer j; reg [31:0] tmp [0:63];
+        integer j; reg [31:0] tmp [0:255];
         begin
-            for (j = 0; j < 64; j = j + 1) tmp[j] = W_HALT;
+            for (j = 0; j < 256; j = j + 1) tmp[j] = W_HALT;
             $readmemh(file, tmp);
-            for (j = 0; j < 64; j = j + 1) img[64 * e + j] = tmp[j];
+            for (j = 0; j < 256; j = j + 1) img[256 * e + j] = tmp[j];
         end
     endtask
 
@@ -248,7 +248,7 @@ module tb_mgmt_dual;
         pattern(0, 3'd0, 6); load(0); claim(8'h07, 1); claim(8'h70, 2);
         max_pc0 = 0; ctrl(0, 1);
         pattern(1, 3'd4, 4); load(1);                // engine 0 keeps running throughout
-        wr(16'h1100, W_HALT);
+        wr(16'h1400, W_HALT);
         `CHECK(dut.u_mgmt.err == 1, "write to running engine 0 refused")
         check_mems("engine 0 memory untouched by refused write");
         max_pc1 = 0; ctrl(1, 1); repeat (3000) @(posedge clk); #1;
@@ -267,7 +267,7 @@ module tb_mgmt_dual;
         $display("--- D8 pin conflict: both engines drive P0, owned by engine 0 (pin manager)");
         do_reset;
         fill_halt(0); img[0] = I(`OP_DIRO, 0); img[1] = I(`OP_SETH, 0);  img[2] = I(`OP_HALT, 0);
-        fill_halt(1); img[64] = I(`OP_DIRO, 0); img[65] = I(`OP_SETLO, 0); img[66] = I(`OP_HALT, 0);
+        fill_halt(1); img[256] = I(`OP_DIRO, 0); img[257] = I(`OP_SETLO, 0); img[258] = I(`OP_HALT, 0);
         load(0); load(1); claim(8'h01, 1); ctrl(1, 1); ctrl(0, 1);
         `CHECK(uio_oe[0] === 1'b1 && uio_out[0] === 1'b1, "P0 shows its owner's (engine 0) high")
         `CHECK(dut.u_pins.viol === 16'h0100, "engine 1's drive on P0 blocked and recorded as a violation")
@@ -283,8 +283,21 @@ module tb_mgmt_dual;
         bad(16'h6100, 32'h1111_1111, "0x6100 rejected");
         bad(16'hF100, 32'h1111_1111, "0xF100 rejected");
         bad(16'h0100, 32'h1111_1111, "0x0100 rejected");
+        bad(16'h1100, 32'h1111_1111, "0x1100 (old 64-word IMEM base) rejected");
+        bad(16'h2300, 32'h1111_1111, "0x2300 rejected");
+        bad(16'h1800, 32'h1111_1111, "0x1800 (first address past word 255) rejected");
+        bad(16'h2800, 32'h1111_1111, "0x2800 (first address past word 255) rejected");
         bad(16'h2102, 32'h1111_1111, "misaligned 0x2102 rejected");
         bad(16'h2000, 32'h8000_0001, "ENG1_CTRL reserved bit rejected");
+
+        $display("--- D10 distinct data in all 256 words of both engines (no aliasing on any of the 8 address bits)");
+        do_reset;
+        for (k = 0; k < 256; k = k + 1) begin img[k] = {5'd0, 11'd0 + k[7:0], 16'hA5C3 ^ (k[7:0] * 16'h0101)}; img[256 + k] = ~img[k]; end
+        load_both_interleaved;
+        for (k = 0; k < 256; k = k + 1) begin
+            `CHECK(dut.u_eng0.imem.peek(k) === img[k],       "eng0 word holds its own value")
+            `CHECK(dut.u_eng1.imem.peek(k) === img[256 + k], "eng1 word holds its own value")
+        end
 
         $display("    frames: %0d, running cycles compared: eng0 %0d, eng1 %0d; mismatches %0d/%0d, pad %0d",
                  frames, run_cyc0, run_cyc1, mism0, mism1, padmis);

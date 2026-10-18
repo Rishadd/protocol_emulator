@@ -43,7 +43,7 @@ module tb_combo_chip;
 
     reg [8*256-1:0] prog0_f, prog1_f, htx0_f, htx1_f, stx_f, out_f;
     reg [31:0] htx [0:1][0:8191];
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
     integer n [0:1], sent [0:1], recv [0:1], empty [0:1];
     integer tmax = 50000000, half = 200, k, e, cyc = 0, frames = 0, retries = 0, polls = 0, drive_high = 0;
     integer idle0 = 0, idle1 = 0;
@@ -70,10 +70,13 @@ module tb_combo_chip;
         end
     endtask
     task load(input [15:0] b, input [8*256-1:0] file);
+        integer nimg;
         begin
-            for (k = 0; k < 64; k = k + 1) img[k] = W_HALT;
+            for (k = 0; k < 256; k = k + 1) img[k] = W_HALT;
             $readmemh(file, img);
-            for (k = 0; k < 64; k = k + 1) frame(OP_WR, b + 16'h100 + 4 * k, img[k]);
+            nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
+            if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
+            for (k = 0; k < nimg; k = k + 1) frame(OP_WR, b + 16'h400 + 4 * k, img[k]);
         end
     endtask
     function done(input integer x);

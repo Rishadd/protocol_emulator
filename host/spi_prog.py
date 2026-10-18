@@ -11,8 +11,11 @@ Run directly to print every variant:  python host/spi_prog.py [--bits 8] [--h 4]
 """
 import argparse
 
+from fw_layout import place
+
 OP = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9,
-          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20)
+          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20,
+          LDI=21, ALU=22, JCC=23, RGET=24, RPUT=25, WAITR=26, CRC=27)
 SCLK, MOSI, MISO, CS = 2, 3, 4, 5
 
 
@@ -23,7 +26,7 @@ def _cfg(out_pin, in_pin, lsb):
 
 def _jp(level, pin, addr):
     """Jump to addr if pin == level (JPH / JPL)."""
-    return ("JPH" if level else "JPL", pin << 6 | addr)
+    return ("JPH" if level else "JPL", pin << 8 | addr)      # operand: [7:0] addr, [10:8] pin
 
 
 def master(mode, bits=8, lsb=False, h=4):
@@ -70,8 +73,8 @@ def slave(mode, bits=8, lsb=False):
 
 
 def assemble(prog):
-    assert len(prog) <= 64
-    return [OP[m] << 27 | a for m, a in prog]
+    assert len(prog) <= 256
+    return place([OP[m] << 27 | a for m, a in prog])      # FW_ORG relocates (fw_layout.py)
 
 
 def tx_word(v, bits, lsb):
@@ -90,7 +93,7 @@ def write_hex(words, path):
 def disasm(w):
     name = {v: k for k, v in OP.items()}.get(w >> 27, "?")
     a = w & 0x7FFFFFF
-    return f"{name} {a >> 6},{a & 63}" if name in ("JPH", "JPL") else f"{name} {a}"
+    return f"{name} {a >> 8},{a & 255}" if name in ("JPH", "JPL") else f"{name} {a}"
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ module tb_spi_chip;
 
     reg [8*256-1:0] prog_f, htx_f, mtx_f, stx_f, out_f;
     reg [31:0] htx [0:4095];
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
     integer role = 0, eng = 0, n = 0, tmax = 5000000, half = 100, k;
     integer cyc = 0, sent = 0, recv = 0, retries = 0, polls = 0, frames = 0, oe_other = 0, idle = 0;
     reg [7:0]  st;
@@ -65,12 +65,14 @@ module tb_spi_chip;
     endtask
 
     task load(input [8*256-1:0] file);
-        integer j;
+        integer j, nimg;
         begin
-            for (j = 0; j < 64; j = j + 1) img[j] = W_HALT;
+            for (j = 0; j < 256; j = j + 1) img[j] = W_HALT;
             $readmemh(file, img);
+            nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
+            if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
             frame(OP_WR, base, 32'd0);                              // RUN = 0
-            for (j = 0; j < 64; j = j + 1) frame(OP_WR, base + 16'h100 + 4 * j, img[j]);
+            for (j = 0; j < nimg; j = j + 1) frame(OP_WR, base + 16'h400 + 4 * j, img[j]);
         end
     endtask
 

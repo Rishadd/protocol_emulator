@@ -20,10 +20,10 @@ module tb_mgmt_load;
 
     // golden reference: same RTL, image loaded directly, same reset and RUN
     wire [7:0] ref_out, ref_oe;
-    wire [5:0] ref_pc;
+    wire [7:0] ref_pc;
     engine_top gold (
         .clk(clk), .rst_n(dut.srst_n), .run(dut.u_mgmt.eng_run[0]),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
         .tx_wr_en(1'b0), .tx_wr_data(32'd0), .tx_full(),
         .rx_rd_en(1'b0), .rx_rd_data(), .rx_empty(),
         .pin_in(uio_in), .pin_out(ref_out), .pin_oe(ref_oe),
@@ -33,12 +33,12 @@ module tb_mgmt_load;
 
     localparam [7:0]  OP_WR  = 8'h01;
     localparam [15:0] A_CTRL = 16'h1000;
-    localparam [15:0] A_IMEM = 16'h1100;
+    localparam [15:0] A_IMEM = 16'h1400;
     localparam [31:0] W_HALT = {`OP_HALT, 27'd0};
 
     integer errors = 0, k, mism = 0, cmp_cycles = 0, frames = 0;
-    reg [5:0]  max_pc;
-    reg [31:0] img [0:63];
+    reg [7:0]  max_pc;
+    reg [31:0] img [0:255];
 
     always #5 clk = ~clk;
 
@@ -65,18 +65,18 @@ module tb_mgmt_load;
         end
     endtask
 
-    // full loading procedure: halt, write all 64 words, verify, (caller arms)
+    // full loading procedure: halt, write all 256 words, verify, (caller arms)
     task load(input [8*24-1:0] name);
         integer j, bad;
         begin
             wr(A_CTRL, 32'd0);
-            for (j = 0; j < 64; j = j + 1) wr(A_IMEM + 4 * j, img[j]);
+            for (j = 0; j < 256; j = j + 1) wr(A_IMEM + 4 * j, img[j]);
             bad = 0;
-            for (j = 0; j < 64; j = j + 1) begin
+            for (j = 0; j < 256; j = j + 1) begin
                 if (dut.u_eng0.imem.peek(j) !== img[j]) bad = bad + 1;
                 gold.imem.poke(j, img[j]);
             end
-            `CHECK(bad == 0, "all 64 words loaded exactly")
+            `CHECK(bad == 0, "all 256 words loaded exactly")
             `CHECK(dut.u_mgmt.err == 0, "no management error while loading")
             if (bad != 0) $display("    %0s: %0d words differ", name, bad);
         end
@@ -93,7 +93,7 @@ module tb_mgmt_load;
     endtask
 
     task claim_all; integer p; begin for (p = 0; p < 8; p = p + 1) wr(16'h0200 + 4 * p, 32'd1); end endtask  // pads -> engine 0
-    task fill_halt; integer j; begin for (j = 0; j < 64; j = j + 1) img[j] = W_HALT; end endtask
+    task fill_halt; integer j; begin for (j = 0; j < 256; j = j + 1) img[j] = W_HALT; end endtask
 
     initial begin
         $dumpfile("build/tb_mgmt_load.vcd");
@@ -123,18 +123,18 @@ module tb_mgmt_load;
         rst_n = 0; repeat (2) @(posedge clk); #1 rst_n = 1; repeat (2) @(posedge clk); #1;  // clear err
         claim_all;
 
-        $display("--- L3 64-word program that executes every word");
+        $display("--- L3 256-word program that executes every word (jump back from word 255)");
         img[0] = I(`OP_CFG, 0); img[1] = I(`OP_DIRO, 0); img[2] = I(`OP_DIRO, 1);
-        for (k = 3; k < 63; k = k + 1)
+        for (k = 3; k < 255; k = k + 1)
             case (k % 3)
                 0: img[k] = I(`OP_SETH, k % 2);
                 1: img[k] = I(`OP_WAIT, k);
                 2: img[k] = I(`OP_SETLO, k % 2);
             endcase
-        img[63] = I(`OP_JMP, 3);
-        load("full64");
-        run_and_compare(6000, "full64: lockstep with reference");
-        `CHECK(max_pc == 63, "full64 reached word 63");
+        img[255] = I(`OP_JMP, 3);
+        load("full256");
+        run_and_compare(30000, "full256: lockstep with reference");
+        `CHECK(max_pc == 255, "full256 reached word 255");
 
         $display("--- L4 UART TX image (src/fpga/uart_tx_prog.hex) loaded over SPI");
         fill_halt; $readmemh("src/fpga/uart_tx_prog.hex", img);

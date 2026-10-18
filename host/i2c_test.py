@@ -28,7 +28,7 @@ BUILD = os.path.join(ROOT, "build", "i2c")
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+            ("RM_IHPSG13_1P_core_behavioral_bm_bist.v", "RM_IHPSG13_1P_256x32_c2_bm_bist.v")]
 EV_NACK = ip.EV_NACK
 
 
@@ -228,7 +228,7 @@ def run_sim(tb, name, files, plus, rise=1):
     r = subprocess.run(["vvp", "-n", compile_tb(tb, rise), *args], capture_output=True, text=True)
     if r.returncode or "ERROR" in r.stdout:
         raise RuntimeError(f"{name}: simulation failed\n{r.stdout}{r.stderr}")
-    L = dict(P=[], R=[], MEM={}, END={})
+    L = dict(P=[], R=[], S=[], MEM={}, END={})
     for line in open(log):
         p = line.split()
         if not p:
@@ -241,6 +241,8 @@ def run_sim(tb, name, files, plus, rise=1):
                 L["P"].append((t, p[2]))
         elif p[0] == "R":
             L["R"].append(int(p[2], 16) if "x" not in p[2] else None)
+        elif p[0] == "S":                      # RX words of an engine running the I2C slave firmware
+            L["S"].append(int(p[2], 16) if "x" not in p[2] else None)
         elif p[0] == "MEM":
             L["MEM"][int(p[1])] = [int(p[2][i:i + 2], 16) for i in range(0, 512, 2)]
         elif p[0] == "END":
@@ -475,7 +477,8 @@ def phase_mutants():
     m("samples SDA while SCL is low", lambda ws: ws.__setitem__(slice(bit + 2, bit + 5),
       [ws[bit + 4], ws[bit + 2], ws[bit + 3]]))
     m("STOP does not pull SDA low first", lambda ws: ws.__setitem__(_find(ws, "SETLO", 6), I("NOP")))
-    m("t_HD;STA = 0", lambda ws: ws.__setitem__(len(ws) - 2, I("WAIT", 0)))
+    last = max(i for i, w in enumerate(good) if w >> 27 != sp.OP["HALT"])      # image may be padded (FW_ORG)
+    m("t_HD;STA = 0", lambda ws: ws.__setitem__(last - 1, I("WAIT", 0)))
     m("t_LOW too short (OUT1 0)", lambda ws: ws.__setitem__(bit + 1, I("OUT1", 0)))
     case("mut pads claimed push-pull (drives SDA/SCL high)", basic_set(rng, 1), 400, pushpull=1, expect="fail")
 

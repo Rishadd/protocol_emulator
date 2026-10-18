@@ -113,11 +113,14 @@ def main():
     payload = uw.make_payload()
 
     # F11: the committed hex must be exactly what the generator produces
-    gen = os.path.join(BUILD, "gen_115200.hex")
-    rxp.write_hex(gen, 432, 115200)
-    same = open(gen).read() == open(HEX).read()
-    print(f"committed uart_rx_prog.hex == generator output: {'PASS' if same else 'FAIL'}")
-    fails += not same
+    if os.environ.get("FW_ORG"):
+        print("committed uart_rx_prog.hex == generator output: skipped (FW_ORG relocates the generator output)")
+    else:
+        gen = os.path.join(BUILD, "gen_115200.hex")
+        rxp.write_hex(gen, 432, 115200)
+        same = open(gen).read() == open(HEX).read()
+        print(f"committed uart_rx_prog.hex == generator output: {'PASS' if same else 'FAIL'}")
+        fails += not same
 
     print(f"{'run':<12} {'baud':>7} {'err':>7} {'sent':>5} {'got':>5}  result")
 

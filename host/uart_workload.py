@@ -18,6 +18,8 @@ import subprocess
 import sys
 import time
 
+from fw_layout import org, place
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.abspath("..")
 BUILD = os.path.join(ROOT, "build", "workload")
@@ -25,11 +27,11 @@ F_CLK = 50_000_000
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 
-# instr_mem is two IHP SG13 SRAM macros (1P 64x16), simulated with the PDK functional models in
+# instr_mem is one IHP SG13 SRAM macro per engine (1P 256x32), simulated with the PDK functional models in
 # sim/ihp_sram. Every harness compiles the RTL with these two lists.
 SIM_DEFS = ["-DFUNCTIONAL"]
 SIM_LIBS = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-            ("RM_IHPSG13_1P_core_behavioral.v", "RM_IHPSG13_1P_64x16_c2.v")]
+            ("RM_IHPSG13_1P_core_behavioral_bm_bist.v", "RM_IHPSG13_1P_256x32_c2_bm_bist.v")]
 
 STANDARD_BAUDS = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400,
                   57600, 76800, 115200, 230400, 460800, 921600,
@@ -50,7 +52,7 @@ def uart_tx_program(D):
         word("PULL"), word("SETL", 8), word("SETLO", 0), word("WAIT", D),
         word("OUT1", D), word("DJNZ", 7), word("SETH", 0), word("WAIT", D), word("JMP", 3),
     ]
-    return prog + [word("HALT")] * (64 - len(prog))
+    return place(prog + [word("HALT")] * (64 - len(prog)))     # FW_ORG relocates (fw_layout.py)
 
 
 # ----------------------------------------------------------------------------- payload
@@ -143,7 +145,7 @@ def run_sim(vvp, tag, D, payload, gaps, cpb, nowait=0):
     write_hex(data_f, payload, 2)
     write_hex(gaps_f, gaps, 8)
     cmd = ["vvp", "-n", vvp, f"+PROG={prog_f}", f"+DATA={data_f}", f"+GAPS={gaps_f}",
-           f"+OUT={out_f}", f"+N={len(payload)}", f"+CPB={cpb}", f"+NOWAIT={nowait}"]
+           f"+OUT={out_f}", f"+N={len(payload)}", f"+CPB={cpb}", f"+NOWAIT={nowait}", f"+PULLPC={3 + org()}"]
     t0 = time.time()
     subprocess.run(cmd, check=True, capture_output=True)
     return out_f, time.time() - t0

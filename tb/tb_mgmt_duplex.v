@@ -13,7 +13,7 @@
 //   otherwise                   live: UART echo peer receives each byte on P0 and sends it back
 //                               on P1 as soon as its stop bit is sampled (+PEERBIT_PS bit time,
 //                               +JITTER_NS edge jitter)
-// Plusargs: +PROG0 +PROG1 +PAYLOAD(hex bytes) +N +OUT +SPIHALF_NS +TMAX(cycles) [+BIT(clocks, 434)]
+// Plusargs: +PROG0 +PROG1 +PAYLOAD(hex bytes) +N +OUT +SPIHALF_NS +TMAX(cycles after loading) [+BIT(clocks, 434)]
 //           [+RXEDGES] [+PEERBIT_PS] [+JITTER_NS] [+STALL_AT +STALL_CYC] [+SEED] [+RXONLY=1: no TX writes]
 //           [+RXREL=1: RXEDGES times are relative to the end of program loading]
 //           + host workload knobs (host_knobs.vh: +HOSTGAP_NS +ABORT_EVERY +NOISE_EVERY +BURST)
@@ -46,7 +46,7 @@ module tb_mgmt_duplex;
     integer cyc = 0, sent = 0, recv = 0, retries = 0, polls = 0, frames = 0, rx_full_stall = 0;
     reg     replay = 0, live_peer = 1;
     reg [7:0]  pay [0:65535];
-    reg [31:0] img [0:63];
+    reg [31:0] img [0:255];
     reg [7:0]  st;
     reg [15:0] mid;
     reg [31:0] rd;
@@ -133,12 +133,14 @@ module tb_mgmt_duplex;
     endtask
 
     task load(input [15:0] base, input [8*256-1:0] file);
-        integer j;
+        integer j, nimg;
         begin
-            for (j = 0; j < 64; j = j + 1) img[j] = W_HALT;
+            for (j = 0; j < 256; j = j + 1) img[j] = W_HALT;
             $readmemh(file, img);
+            nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
+            if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
             frame(OP_WR, base, 32'd0);                              // RUN = 0
-            for (j = 0; j < 64; j = j + 1) frame(OP_WR, base + 16'h100 + 4 * j, img[j]);
+            for (j = 0; j < nimg; j = j + 1) frame(OP_WR, base + 16'h400 + 4 * j, img[j]);
         end
     endtask
 
@@ -177,6 +179,7 @@ module tb_mgmt_duplex;
         loaded_t = $time;
 
         want_rx = 0; last_progress = cyc; stalled = 0;
+        tmax = tmax + cyc;                          // +TMAX is the run budget: it starts when loading ends
         if ($value$plusargs("RXONLY=%d", rxonly) && rxonly) sent = n;  // RX-only workload: the host never writes
         while ((sent < n || recv < n) && cyc < tmax && cyc - last_progress < 200 * BIT) begin
             if (!stalled && stall_at >= 0 && sent == stall_at) begin

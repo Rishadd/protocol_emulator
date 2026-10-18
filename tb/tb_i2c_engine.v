@@ -3,6 +3,8 @@
 // I2C at engine level (engine_top + the real pin_mgr, pads 6/7 claimed open-drain for engine 0),
 // orchestrated by host/i2c_test.py. 20 ns = 1 system clock (50 MHz), so timing checks are in real ns.
 //   +ROLE=0 engine is the master        +ROLE=2 no engine: Verilog master model (same word semantics)
+//   +ROLE=1 engine is the SLAVE (host/i2c_prog.py slave()): the Verilog master model drives the bus with +HTX words, the host
+//           feeds the engine's TX FIFO from +STX (+NS words: own address first, then read data); RX words are logged as "S"
 // Bus: wired-AND with pull-ups; a released line rises after T_RISE ns (compile-time -P parameter).
 // Slaves: s1 at 0x50 (+S1EN=0 removes it), s2 at 0x23 (only with +S2EN=1); knobs +S_TVD_NS
 // +S_STRETCH_NS +S_STRETCH_MODE +S_NACK_AT apply to s1. Host: +HTX words, +N, +TXLATE_NS, +RXOFF_NS,
@@ -17,7 +19,7 @@ module tb_i2c_engine;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe, pad_oe, pad_out, od;
     wire [15:0] owner, viol;
-    wire [5:0]  pc;
+    wire [7:0]  pc;
     reg  [2:0]  cfg_pad = 0;
     reg         cfg_we = 0;
     reg  [2:0]  padcfg = 3'b101;           // engine 0, open-drain (+PUSHPULL=1: 3'b001)
@@ -32,7 +34,7 @@ module tb_i2c_engine;
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n), .run(run),
-        .imem_we(1'b0), .imem_waddr(6'd0), .imem_wdata(32'd0),
+        .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in({scl, sda, 6'd0}), .pin_out(pin_out), .pin_oe(pin_oe),
@@ -43,14 +45,21 @@ module tb_i2c_engine;
     i2c_slave_model #(7'h50) s1 (.sda(sda), .scl(scl), .sda_low(s1_sda), .scl_low(s1_scl));
     i2c_slave_model #(7'h23) s2 (.sda(sda), .scl(scl), .sda_low(s2_sda), .scl_low(s2_scl));
 
-    reg [8*256-1:0] prog_f, htx_f, out_f;
+    reg [8*256-1:0] prog_f, htx_f, out_f, stx_f;
     reg [31:0] htx [0:8191];
+    reg [31:0] stx [0:8191];
+    integer ns = 0, nsw = 0, stxlate = 0, stxgap = 0;
     integer role = 0, n = 0, tmax = 10000000, txlate = 0, rxoff = 0, txgap = 0, fd, cyc = 0, nw = 0, nr = 0;
     integer drive_high = 0, idle = 0, k;
     integer m_low = 1300, m_high = 600;
 
     always #10 clk = ~clk;
     always @(posedge clk) cyc = cyc + 1;
+    // watchdog for the master-model roles (ROLE=0 has its own wait): a broken slave that holds SCL low forever must not hang the run
+    always @(posedge clk) if (role != 0 && cyc >= tmax && fd != 0) begin
+        $fdisplay(fd, "END cyc=%0d nw=%0d nr=%0d fault=%0d halted=%0d pc=%0d drive_high=%0d viol=%0d timeout=1", cyc, nw, nr, fault, halted, pc, drive_high, viol);
+        $fclose(fd); $finish;
+    end
     always @(sda or scl) if (fd) $fdisplay(fd, "P %0d %b%b", $time, sda, scl);
     always @(negedge clk) begin
         if ((pad_oe[6] & pad_out[6]) | (pad_oe[7] & pad_out[7])) drive_high = drive_high + 1;
@@ -59,9 +68,13 @@ module tb_i2c_engine;
             tx_wr_en = 1; tx_wr_data = htx[nw]; nw = nw + 1; txlate = $time + txgap;
             $fdisplay(fd, "W %0d %h", $time, tx_wr_data);
         end
+        if (role == 1 && run && nsw < ns && !tx_full && (nsw == 0 || $time >= stxlate)) begin   // slave role: host TX words (address, then read data)
+            tx_wr_en = 1; tx_wr_data = stx[nsw]; nsw = nsw + 1;
+            if (nsw > 1) stxlate = $time + stxgap;                                   // gap applies to the read-data words
+        end
         if (!rx_empty && $time >= rxoff) begin
             rx_rd_en = 1; nr = nr + 1;
-            $fdisplay(fd, "R %0d %h", $time, rx_rd_data);
+            $fdisplay(fd, "%s %0d %h", role == 1 ? "S" : "R", $time, rx_rd_data);
         end
         idle = (dut.tx_empty && dut.cu.opcode == `OP_PULL) ? idle + 1 : 0;
     end
@@ -114,6 +127,10 @@ module tb_i2c_engine;
             $display("ERROR: missing plusargs"); $finish;
         end
         $readmemh(htx_f, htx);
+        if ($value$plusargs("STX=%s", stx_f)) $readmemh(stx_f, stx);
+        if ($value$plusargs("NS=%d", ns)) ;
+        if ($value$plusargs("STXLATE_NS=%d", stxlate)) ;
+        if ($value$plusargs("STXGAP_NS=%d", stxgap)) ;
         if ($value$plusargs("PROG=%s", prog_f)) dut.imem.load_hex(prog_f);
         if ($value$plusargs("TMAX=%d", tmax)) ;
         if ($value$plusargs("TXLATE_NS=%d", txlate)) ;
@@ -142,8 +159,10 @@ module tb_i2c_engine;
             #1 run = 1;
             wait ((nw >= n && idle > 2000) || cyc >= tmax);
         end else begin
+            if (role == 1) begin #1 run = 1; repeat (300) @(posedge clk); end   // slave firmware initialises, first TX word is its address
             for (k = 0; k < n; k = k + 1) m_word(htx[k]);
             if (m_open) m_stop;
+            if (role == 1) repeat (3000) @(posedge clk);                          // let the slave report the last events
         end
         repeat (200) @(posedge clk);
         $fwrite(fd, "MEM 1 "); for (k = 0; k < 256; k = k + 1) $fwrite(fd, "%h", s1.mem[k]); $fdisplay(fd, "");

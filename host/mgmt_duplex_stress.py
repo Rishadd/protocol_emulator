@@ -41,7 +41,7 @@ def set_baud(baud):
     (the committed hex files are the 115200 build)."""
     global CPB, BAUD, BUILD, PROG0, PROG1
     BAUD, CPB = baud, round(uw.F_CLK / baud)
-    if baud == 115200:
+    if baud == 115200 and not os.environ.get("FW_ORG"):
         return
     BUILD = f"{BUILD}_{baud}"          # own dir: may run next to the 115200 suite
     os.makedirs(BUILD, exist_ok=True)

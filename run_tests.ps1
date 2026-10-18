@@ -4,9 +4,10 @@ Set-Location $PSScriptRoot
 if (-not (Get-Command iverilog -ErrorAction SilentlyContinue)) { $env:Path += ';C:\iverilog\bin' }
 
 $src  = Get-ChildItem src\*.v | ForEach-Object { $_.FullName }
-# instr_mem is two IHP SRAM macros: simulate them with the PDK functional models
-$sim  = @('sim\ihp_sram\RM_IHPSG13_1P_core_behavioral.v', 'sim\ihp_sram\RM_IHPSG13_1P_64x16_c2.v')
+# instr_mem is one IHP SRAM macro (1P 256x32): simulate it with the PDK functional models
+$sim  = @('sim\ihp_sram\RM_IHPSG13_1P_core_behavioral_bm_bist.v', 'sim\ihp_sram\RM_IHPSG13_1P_256x32_c2_bm_bist.v')
 $tbs = @('tb_instr_mem', 'tb_pc_reg','tb_delay_counter', 'tb_loop_counter', 'tb_fifo', 'tb_shift_reg',
+         'tb_alu_unit', 'tb_crc_unit', 'tb_engine_alu',
          'tb_pin_block', 'tb_control_unit', 'tb_engine_top', 'tb_rx_led_sink',
          'tb_mgmt_frame', 'tb_mgmt_load', 'tb_mgmt_dual', 'tb_mgmt_read', 'tb_mgmt_tx', 'tb_fetch_equiv',
          'tb_engine_ops', 'tb_pin_mgr', 'tb_mgmt_pins')

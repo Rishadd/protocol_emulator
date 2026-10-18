@@ -2,10 +2,10 @@
 `include "tb_common.vh"
 module tb_pc_reg;
     reg        clk = 0, rst_n = 0, advance = 0, jump = 0;
-    reg  [5:0] jump_addr = 0;
-    wire [5:0] pc, next_pc;
+    reg  [7:0] jump_addr = 0;
+    wire [7:0] pc, next_pc;
     integer errors = 0, i;
-    reg [5:0] nxt;
+    reg [7:0] nxt;
 
     pc_reg dut (.clk(clk), .rst_n(rst_n), .advance(advance), .jump(jump),
                 .jump_addr(jump_addr), .pc(pc), .next_pc(next_pc));
@@ -38,11 +38,11 @@ module tb_pc_reg;
         jump = 0; advance = 0; jump_addr = 0; #1;
         `CHECK(next_pc == pc, "A2 hold: next_pc == pc")
         advance = 1; #1;
-        `CHECK(next_pc == pc + 6'd1, "A2 advance: next_pc == pc+1")
-        jump = 1; jump_addr = 6'd42; #1;
-        `CHECK(next_pc == 6'd42, "A2 jump beats advance in next_pc")
+        `CHECK(next_pc == pc + 8'd1, "A2 advance: next_pc == pc+1")
+        jump = 1; jump_addr = 8'd42; #1;
+        `CHECK(next_pc == 8'd42, "A2 jump beats advance in next_pc")
         tick;
-        `CHECK(pc == 6'd42, "A2 pc took the predicted value")
+        `CHECK(pc == 8'd42, "A2 pc took the predicted value")
         jump = 0; advance = 0; jump_addr = 0;
         for (i = 0; i < 40; i = i + 1) begin
             advance = i[0] | i[2]; jump = (i % 7) == 3; jump_addr = (i * 11) & 63; #1;
@@ -51,7 +51,7 @@ module tb_pc_reg;
         end
         advance = 0; jump = 0;
         $display("--- A3 reset: next_pc is 0 while rst_n=0 even with advance/jump asserted");
-        advance = 1; jump = 1; jump_addr = 6'd9; rst_n = 0; #1;
+        advance = 1; jump = 1; jump_addr = 8'd9; rst_n = 0; #1;
         `CHECK(pc == 0,      "A3 async reset clears pc")
         `CHECK(next_pc == 0, "A3 next_pc forced 0 in reset")
         advance = 0; jump = 0; rst_n = 1; tick;

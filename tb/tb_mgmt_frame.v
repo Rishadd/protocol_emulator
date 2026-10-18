@@ -19,18 +19,18 @@ module tb_mgmt_frame;
 
     localparam [7:0]  OP_WR    = 8'h01;
     localparam [15:0] A_CTRL   = 16'h1000;
-    localparam [15:0] A_IMEM   = 16'h1100;
+    localparam [15:0] A_IMEM   = 16'h1400;
     localparam [31:0] W_HALT   = {`OP_HALT, 27'd0};
     localparam [31:0] W_ILLEGAL = {5'd31, 27'd0};
 
     integer errors = 0, k, cyc = 0, we_count = 0, we_cycle = -1, we_width = 0, cs_cycle = 0;
-    reg [31:0] model [0:63];
+    reg [31:0] model [0:255];
 
     wire run    = dut.u_mgmt.eng_run[0];
     wire err    = dut.u_mgmt.err;
     wire halted = dut.u_eng0.halted;
     wire fault  = dut.u_eng0.fault;
-    wire [5:0] pc = dut.u_eng0.pc;
+    wire [7:0] pc = dut.u_eng0.pc;
 
     always #5 clk = ~clk;
     always @(posedge clk) cyc = cyc + 1;
@@ -62,14 +62,14 @@ module tb_mgmt_frame;
         integer j, bad;
         begin
             bad = 0;
-            for (j = 0; j < 64; j = j + 1)
+            for (j = 0; j < 256; j = j + 1)
                 if (dut.u_eng0.imem.peek(j) !== model[j]) bad = bad + 1;
             `CHECK(bad == 0, tag)
         end
     endtask
 
     // one instruction write, checked at the strobe level
-    task wr_instr(input [5:0] i, input [31:0] w);
+    task wr_instr(input [7:0] i, input [31:0] w);
         integer n0;
         begin
             n0 = we_count;
@@ -100,7 +100,7 @@ module tb_mgmt_frame;
     initial begin
         $dumpfile("build/tb_mgmt_frame.vcd");
         $dumpvars(0, tb_mgmt_frame);
-        for (k = 0; k < 64; k = k + 1) model[k] = 32'bx;     // never-written words must stay X
+        for (k = 0; k < 256; k = k + 1) model[k] = 32'bx;     // never-written words must stay X
         repeat (3) @(posedge clk); #1 rst_n = 1;
         repeat (4) @(posedge clk); #1;
 
@@ -114,9 +114,12 @@ module tb_mgmt_frame;
         $display("--- F2 explicit halt (CTRL=0), then single instruction writes");
         wr(A_CTRL, 32'd0);
         `CHECK(run == 0 && err == 0, "CTRL=0 accepted")
-        wr_instr(6'd0,  W_HALT);
-        wr_instr(6'd37, 32'h3000_0000);
-        wr_instr(6'd63, 32'h8000_0000);
+        wr_instr(8'd0,  W_HALT);
+        wr_instr(8'd37, 32'h3000_0000);
+        wr_instr(8'd63, 32'h8000_0000);
+        wr_instr(8'd64, 32'h4000_0040);        // above the old 64-word limit
+        wr_instr(8'd128, 32'h5000_0080);
+        wr_instr(8'd255, 32'h6000_00FF);       // last word
 
         $display("--- F3 RUN executes the written word: HALT");
         wr(A_CTRL, 32'd1);
@@ -131,19 +134,19 @@ module tb_mgmt_frame;
         `CHECK(run == 0 && err == 0 && halted == 0, "reset: RUN=0, err=0, core held")
 
         $display("--- F5 overwrite word 0 with a reserved opcode -> fault proves new word executes");
-        wr_instr(6'd0, W_ILLEGAL);
+        wr_instr(8'd0, W_ILLEGAL);
         wr(A_CTRL, 32'd1);
         `CHECK(fault == 1 && halted == 1, "reserved opcode trapped")
         wr(A_CTRL, 32'd0);
         `CHECK(fault == 0 && halted == 0 && pc == 0, "RUN=0 clears fault/halt, PC=0")
-        wr_instr(6'd0, W_HALT);
+        wr_instr(8'd0, W_HALT);
         wr(A_CTRL, 32'd1);
         `CHECK(fault == 0 && halted == 1, "HALT again, no fault")
         wr(A_CTRL, 32'd0);
 
         $display("--- F6 RUN released the pins it drove (word 0 = DIRO 4, word 1 = HALT)");
-        wr_instr(6'd1, W_HALT);
-        wr_instr(6'd0, {`OP_DIRO, 27'd4});
+        wr_instr(8'd1, W_HALT);
+        wr_instr(8'd0, {`OP_DIRO, 27'd4});
         wr(16'h0210, 32'd1);                         // pin manager: pad 4 -> engine 0
         wr(A_CTRL, 32'd1);
         `CHECK(uio_oe === 8'h10 && halted == 1, "DIRO 4 drove pin 4, then HALT")
@@ -153,7 +156,10 @@ module tb_mgmt_frame;
         $display("--- F7 rejected frames");
         bad({72'd0, 8'h00,  A_IMEM, 32'h1111_1111}, 56, "op 0x00 rejected");
         bad({72'd0, 8'h7F,  A_IMEM, 32'h1111_1111}, 56, "op 0x7F rejected");
-        bad({72'd0, OP_WR, 16'h1101, 32'h1111_1111}, 56, "misaligned address rejected");
+        bad({72'd0, OP_WR, 16'h1401, 32'h1111_1111}, 56, "misaligned address rejected");
+        bad({72'd0, OP_WR, 16'h1100, 32'h1111_1111}, 56, "0x1100 (old IMEM base) rejected");
+        bad({72'd0, OP_WR, 16'h1800, 32'h1111_1111}, 56, "0x1800 (one past word 255) rejected");
+        bad({72'd0, OP_WR, 16'h1C00, 32'h1111_1111}, 56, "0x1C00 rejected");
         bad({72'd0, OP_WR, 16'h1208, 32'h1111_1111}, 56, "unmapped 0x1208 rejected");
         bad({72'd0, OP_WR, 16'h3100, 32'h1111_1111}, 56, "unmapped 0x3100 rejected");
         bad({72'd0, OP_WR, 16'h0000, 32'h1111_1111}, 56, "unmapped 0x0000 rejected");
@@ -170,12 +176,12 @@ module tb_mgmt_frame;
         do_reset;
 
         $display("--- F8 SCLK sweep (half period 8.7, 13.3, 50, 8 clocks) and back-to-back frames");
-        spi_half_ns = 87.0;  wr_instr(6'd10, 32'hA5C3_1E7F);
-        spi_half_ns = 133.0; wr_instr(6'd11, 32'h0000_0001);
-        spi_half_ns = 500.0; wr_instr(6'd12, 32'hFFFF_FFFF);
+        spi_half_ns = 87.0;  wr_instr(8'd10, 32'hA5C3_1E7F);
+        spi_half_ns = 133.0; wr_instr(8'd11, 32'h0000_0001);
+        spi_half_ns = 500.0; wr_instr(8'd12, 32'hFFFF_FFFF);
         spi_half_ns = 80.0;  spi_cs_ns = 40.0;
-        wr_instr(6'd13, 32'h0BAD_F00D);
-        wr_instr(6'd14, 32'h600D_CAFE);
+        wr_instr(8'd13, 32'h0BAD_F00D);
+        wr_instr(8'd14, 32'h600D_CAFE);
         spi_cs_ns = 60.0;
 
         $display("--- F9 reset mid-frame leaves no residue");
@@ -184,7 +190,7 @@ module tb_mgmt_frame;
         spi_bits({96'd0, 32'h2222_2222}, 32);               // only 4 bytes after reset
         #(spi_cs_ns); cs_n = 1'b1; #(spi_cs_ns); settle;
         check_mem("no write after reset mid-frame");
-        wr_instr(6'd15, 32'hC0DE_0042);
+        wr_instr(8'd15, 32'hC0DE_0042);
 
         `REPORT("tb_mgmt_frame")
         $finish;
