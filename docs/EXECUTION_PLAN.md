@@ -8,15 +8,42 @@ Status (2026-10-12, superseded by the table below): **two engines, SRAM instruct
 | Item | State | Where |
 |---|---|---|
 | Instruction set | 28 opcodes: the 21 old ones plus `LDI`, `ALU`, `JCC`, `RGET`, `RPUT`, `WAITR`, `CRC` | [../instructions.md](../instructions.md) |
-| ALU (8 x 32-bit registers, 13 functions, flags) and programmable CRC unit | done; random differential test 0 mismatches, 66 of 66 planted bugs caught | [TEST_RESULTS.md](TEST_RESULTS.md) sections 2-3 |
+| ALU (8 x 32-bit registers, 13 functions, flags) and programmable CRC unit | done; CRC unit pipelined, ALU with two register read ports (timing); random differential test 0 mismatches, 75/75 coverage points, all planted bugs caught | [TEST_RESULTS.md](TEST_RESULTS.md) sections 2-3, 8.4 |
 | Instruction memory | IHP SRAM macro, 256 x 32 per engine | [BIGMEM_RESULTS.md](BIGMEM_RESULTS.md) |
-| Protocols as firmware | UART, SPI (4 modes), I2C master + slave, SMBus PEC, Modbus RTU, 1-Wire, JTAG, CAN 2.0A, all against peer models; USB low speed dropped | [TEST_RESULTS.md](TEST_RESULTS.md) section 4 |
+| Protocols as firmware | UART, SPI (4 modes), I2C master + slave, SMBus PEC, Modbus RTU, 1-Wire, JTAG, CAN 2.0A, all against peer models; USB low speed planned (weeks 2-4) | [TEST_RESULTS.md](TEST_RESULTS.md) section 4 |
 | Regression | 26 of 26 suites pass (`python host/regress.py`) | [TEST_RESULTS.md](TEST_RESULTS.md) |
-| Tiny Tapeout flow | design before the ALU / CRC units: precheck, LVS, gate-level pass (tt5). With the units: routing clean, signoff clock 30 ns (33 MHz; typical corner meets 50 MHz) | [TEST_RESULTS.md](TEST_RESULTS.md) section 8, [ALU_CRC_RESULTS.md](ALU_CRC_RESULTS.md) |
-| Floorplan | flat against bounding boxes compared; engine boxes requested | [TEST_RESULTS.md](TEST_RESULTS.md) section 8.3 |
-| Open | management frame v2 (CRC, sequence number); shuttle acceptance of the SRAM macro on CMOS5L (A9); FPGA bring-up of SPI / I2C / new protocols; formal properties; repository public and GitHub workflows run; 50 MHz at the slow corner (needs a pipeline stage for `CRC BYTE`) | [CHALLENGE_CHECK.md](CHALLENGE_CHECK.md) |
+| Tiny Tapeout flow | **tapeout candidate tt10c**: signed off at **50 MHz in all corners** (pipelined CRC unit, two register read ports), compact symmetric floorplan with one fence per engine, 0 DRC / 0 LVS, TT precheck and gate-level test pass, IR drop 0.2 mV. Local flow now uses Tiny Tapeout's PDK and LibreLane release (reproduces the GitHub build exactly) | [TEST_RESULTS.md](TEST_RESULTS.md) section 8.4 |
+| Formal | 4 unbounded SymbiYosys proofs (pin manager, FIFO, management end to end from the SPI pins, held engine releases pins), 20/20 planted bugs rejected | [../formal/README.md](../formal/README.md) |
+| Repository | public; `main` pushed; GitHub `test` and `docs` workflows pass; `gds` workflow: global placement diverged with the action's tools, fix under test (branches `ci/gpl-phi`, `ci/gpl-noroute`) | GitHub Actions |
+| Open | shuttle acceptance of the SRAM macro on CMOS5L (A9: strong evidence it is fine: Tiny Tapeout allow-listed the SRAM layers in the CMOS5L precheck, and other entries pass the official build with it; email drafted); management frame v2 (CRC, sequence number); FPGA bring-up beyond UART | [CHALLENGE_CHECK.md](CHALLENGE_CHECK.md) |
 
-Challenge deadline: **2027-01-18** (about 14 weeks from this revision). Target shuttle: March 2027 CMOS5L.
+Challenge deadline: **2027-01-18**. **Working deadline: 2026-12-30** (design, verification and signoff GDS finished; January only for
+documentation and the submission package). Target shuttle: March 2027 CMOS5L.
+
+## Plan to 2026-12-30 (agreed 2026-10-18)
+
+New features: **USB low speed** ([USB_LS_PLAN.md](USB_LS_PLAN.md)) and the **logic analyser, protocol sniffer and engine debug**
+([DEBUG_LA_PLAN.md](DEBUG_LA_PLAN.md)), on top of **pin mapping, spare-pin defaults and bring-up debug** ([PIN_MAP_PLAN.md](PIN_MAP_PLAN.md)).
+Chosen after reviewing the public entries: the strongest ones show USB LS, broad protocol lists and checked timing.
+
+| Weeks | Dates | Work | Done when |
+|---|---|---|---|
+| 1 | Oct 19 - 25 | GitHub `gds` green (placement fix), commit formal + toolchain alignment; email Tiny Tapeout (SRAM confirmation, 8x4); the three specs reviewed | baseline green in CI |
+| 2 | Oct 26 - Nov 1 | **pin mapping** + SAFE_N / IRQ / debug views 0-4 + memory self-test, with formal; USB **line coder** RTL + `LINE` opcode | every pin except the management link remappable; line coder unit-tested |
+| 3 | Nov 2 - 8 | USB host peer model, packet layer and control transfers; **management frame v2** (CRC-16, sequence number) | |
+| 4 | Nov 9 - 15 | USB enumeration + HID reports against the peer, mutants, flow run; start SWD / PS/2 / WS2812 | USB LS device verified; 50 MHz still closes |
+| 4-5 | Nov 9 - 22 | **SWD, PS/2, WS2812** firmware with peer models and mutants | 13 verified protocols |
+| 5-7 | Nov 16 - Dec 6 | **logic analyser** (third SRAM), timestamp counter, engine debug (step, breakpoint, read-back), **sniffer** firmware and protocol triggers | verified against models, formal, flow run |
+| 7 | Nov 30 - Dec 6 | **automated mutation campaign** (generated faults, kill rate) and a **timing checker** built on `Asm.arrivals` (firmware bit times proven) | numbers in TEST_RESULTS |
+| 8 | Dec 7 - 13 | **RTL freeze Dec 13**; FPGA demos: USB keyboard on a PC, a capture opened in PulseView | freeze tagged |
+| 9-10 | Dec 14 - 27 | final flow runs (Tiny Tapeout's tools), GitHub `gds` / `precheck` / `gl_test` green, full regression, formal suite, release tag | submission-ready GDS from the official workflow |
+| - | Dec 28 - 30 | buffer | |
+| - | January | documentation and submission package | |
+
+Rules: every feature gets the same verification standard (peer model from the specification, mutants, regression, formal where it
+fits) and a flow run that must still meet 50 MHz; new hardware stays off the ALU critical path. **Checkpoint Nov 29:** if the logic
+analyser is behind, cut it to sniffer + engine debug + a flip-flop buffer and keep the freeze date. Risks and fallbacks are in the
+three specs (third SRAM macro, USB turnaround in firmware, the GitHub build's 6-hour limit).
 
 ## Progress snapshot (2026-10-11)
 

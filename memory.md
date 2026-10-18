@@ -209,5 +209,44 @@ Full numbers: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) section 8.4. Runs and
 - 2026-10-18 floorplans on the same RTL (A + B, 30 ns): compact tt10b wire 1,088k um vs symmetric tt10d 1,120k (-2.9 %), slow-corner
   slack +10.55 vs +10.46 ns, power 4.99 vs 5.05 mW. As predicted by the draft: ~3 % less wire, no clock gain. **Decision: compact
   floorplan, tt10c setup (signed off at 20 ns) is the tapeout candidate.**
+- 2026-10-18 pushed to GitHub: `main` 70d332d (5 commits: Quartus cleanup, RTL, verification + firmware, TT flow with tt10c as
+  the default config, docs + results) and `exp/fetch-stage` ab88e31 (fetch stage, `[skip ci]`, docs/FETCH_STAGE.md). Custom
+  LibreLane steps moved to `librelane_plugin_project/` at the repo root so tt_tool.py --harden finds them; src/config.json = tt10c
+  setup (checked key by key against the tt10c run). The push to main starts the gds / test workflows on GitHub.
+- 2026-10-18 first GitHub gds run (39143586275): the custom steps (power bridge, fences) ran, so the plugin package works in
+  CI; the build stopped in global placement, GPL-0307 divergence. Cause: the action pins an older PDK (IHP-Open-PDK 2bbec75,
+  2026-09-08) than our local dev checkout (89d42ee, 2026-10-16): 16,040 vs 15,597 cells after synthesis, so placement takes another
+  path (and 4 threads). Test branches pushed: ci/gpl-phi (PL_MAX_PHI_COEFFICIENT 1.03), ci/gpl-noroute (routability off). Local
+  flow to use the action's PDK from now on (`librelane/install_tt_pdk_wsl.sh` -> ~/pdk_tt) so local signoff predicts the
+  official build. RTL test and docs workflows pass on GitHub.
+- 2026-10-18 formal verification started (`formal/`, SymbiYosys `abc pdr`, unbounded proofs, run with
+  `bash formal/run_formal_wsl.sh`; `python3 formal/formal_mutants.py` checks each proof rejects planted bugs):
+  pin_mgr (only the owner drives a pad, open-drain never high, no reclaim under a running engine, violations flagged) 6/6 mutants;
+  fifo (equivalent to an ideal depth-4 queue) 6/6; mgmt end to end with the real SPI slave and free SPI pins (pin claims only
+  with the pin manager's consent, memory writes only to a held engine, state changes only after a clean 7-byte frame) 5/5.
+  + engine (a held or reset engine drives no pin, SRAM output arbitrary via formal/sram_free.v) 3/3. Total 4 proofs, 20/20
+  mutants (formal/README.md).
+- 2026-10-18 local flow scripts switched to Tiny Tapeout's PDK revision (~/pdk_tt); tt12a = main config with it (predicts CI).
+- 2026-10-18 IR drop on tt10c (OpenROAD.IRDropReport on the routed layout, typical corner, 7.49 mW at 50 MHz): VPWR worst 0.21 mV,
+  VGND 0.18 mV (0.02 %), all shapes connected (VDD!/VDDARRAY! of both SRAMs). PRISM (kdp1965, competitor, same SRAM family on
+  CMOS5L, same 44.96 um stripe pitch) reports 0.38 -> 0.27 mV after adding stripes over the SRAM: no change needed for us.
+  PRISM notes: TT allow-listed the SRAM GDS layers (25/0, 16/0) in the CMOS5L precheck in Sept 2026; maintainers OK'd Metal4
+  stripes over macro power columns; PRISM uses an 8x4 tile "allowed by the Jane Street competition" (check whether 8x4 is open);
+  lists 12 protocols incl. USB, Ethernet, SWD, PS/2 (SWD, PS/2 are cheap gaps for us).
+- 2026-10-18 tt12a (main config, Tiny Tapeout's PDK ~/pdk_tt, our LibreLane): 0 DRC / 0 LVS, slow corner +0.67 ns at 20 ns
+  (tt10c +0.18), typical +7.98. Synthesis identical to the dev PDK (15,597 cells): the PDK is NOT why GitHub differs. GitHub's
+  resolved config lacks SYNTH_ABC_NEW, DESIGN_REPAIR_PRE_PLACEMENT and two repair limits: the action's pip LibreLane 3.1.0.dev3
+  (tag, 2026-08-13) is 20 commits older than ~/librelane-dev (2026-10-08) and synthesises 16,040 cells. Local runs should use
+  the release: `librelane/install_tt_librelane_wsl.sh` -> ~/librelane-3.1.0.dev3, then LLDIR=~/librelane-3.1.0.dev3.
+- 2026-10-18 tt13a = main config with the action's exact LibreLane (~/librelane-3.1.0.dev3, Yosys 0.66) + PDK: reproduces GitHub
+  exactly (16,040 cells, GPL-0307 at the same iteration). tt13b (PL_MAX_PHI_COEFFICIENT 1.03) and tt13c (routability off) both pass
+  global placement with these tools; full runs going.
+- 2026-10-18 public entries reviewed (11): strongest MarcosAsh (Hardcaml, 43 firmwares incl. USB / 10BASE-T, proven timing kernel,
+  FPGA USB demo) and Loom (13 protocols incl. USB LS, 911 mutants, 8x4); we are third: deep peer-verified protocols, 50 MHz slow
+  corner, formal pin safety, real hardware. Gaps: USB LS, SWD / PS/2 / WS2812, checked timing, automated mutation.
+- 2026-10-18 **plan to 2026-12-30 agreed** (docs/EXECUTION_PLAN.md): week 2 pin mapping (every pin except the management link
+  remappable, debug views / SAFE_N / IRQ only as defaults after reset) + USB line coder; weeks 3-4 USB LS device, frame v2; 4-5 SWD,
+  PS/2, WS2812; 5-7 logic analyser (third SRAM), sniffer, engine debug; 7 mutation campaign + timing checker; RTL freeze Dec 13;
+  signoff Dec 14-27. Specs: docs/PIN_MAP_PLAN.md, docs/USB_LS_PLAN.md, docs/DEBUG_LA_PLAN.md.
 - 2026-10-18 **working deadline 2026-12-30** (set by the user): design, verification and signoff GDS finished by then; January
   2027 only for documentation and the submission package (challenge deadline 2027-01-18).
