@@ -1,6 +1,8 @@
 # Project Memory: UART on the Protocol Emulator (DE0-Nano + HC-05)
 
-**Idea:** a programmable protocol engine (17-opcode ISA, 64-word program memory, FIFOs, 8 pins). UART is *firmware* running on it, not dedicated hardware. Target board: DE0-Nano at 50 MHz, talking to a phone through an HC-05 Bluetooth module.
+> **Historical log** (UART and the first engine phases, up to 2026-10-17). Current status: [docs/EXECUTION_PLAN.md](docs/EXECUTION_PLAN.md), all results: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md), documentation map: [docs/README.md](docs/README.md).
+
+**Idea:** a programmable protocol engine (21-opcode ISA, 256-word program memory since 2026-10-17 (was 64), FIFOs, 8 pins). UART is *firmware* running on it, not dedicated hardware. Target board: DE0-Nano at 50 MHz, talking to a phone through an HC-05 Bluetooth module.
 
 ## Where we are (as of 2026-10-08)
 | Step | Result |
@@ -143,3 +145,69 @@ Plan: [docs/I2C_PLAN.md](docs/I2C_PLAN.md). Update this section at the end of ev
   waveforms must start relative to LOADED and within the host's 200-bit no-progress timeout.
 - Docs added/updated 2026-10-12: I2C_RESULTS.md, WORKLOAD_RESULTS.md, CHALLENGE_CHECK.md (rules check + to-do),
   I2C_PLAN status, instructions.md §4/§6, MGMT_PLAN registers, architecture/area-study/execution-plan statuses, README.
+
+## 256-word instruction memory per engine (DONE 2026-10-17, simulation only, no synthesis)
+Write-up and all numbers: [docs/BIGMEM_RESULTS.md](docs/BIGMEM_RESULTS.md). Evidence: `results/bigmem_2026-10-17/`.
+- `instr_mem` = ONE IHP 1P 256x32 macro (`RM_IHPSG13_1P_256x32_c2_bm_bist`, A_BM all ones, BIST tied off) per engine. PC / `next_pc` / `pc` 8 bits.
+  Jump operand `[7:0]`; **JPH/JPL pin field moved to `[10:8]`** (was `[8:6]`). Mgmt IMEM window moved to `base+0x400+4i` (i 0..255; `0x100` window is now unmapped -> err);
+  CTRL read `{pc[15:8], fault, halted, RUN}`.
+- Sim models in `sim/ihp_sram/`: real IHP `SRAM_1P_behavioral_bm_bist` (fetched from the IHP-Open-PDK repo) + the 256x32 wrapper.
+- Firmware: all generators unchanged except JPH/JPL pin shift (`spi_prog._jp`, `i2c_prog`); `host/fw_layout.py` + env `FW_ORG=n` relocates any image to word n (word 0 = JMP n) so every suite also runs from the top of the memory (FW_ORG=192).
+- Result: all protocol suites give the same results as with 64 words (UART TX/RX/duplex, SPI 312/312, I2C 60/60, workload campaign); only differences are load frames (tb writes the program, not 256 words, in workload tbs) and +1 clock when relocated (the JMP). Lockstep vs combinational-flop 256-word reference: 0 mismatches over 5.8 M clocks (5 seeds x 1,500 programs, all 20 legal opcodes incl. JPH/JPL/JPO with 8-bit targets).
+- Lessons: harness code assumed 64 words in four places (UART drain loop waited for `pc == 3`; I2C mutant patched `len(ws)-2`; host cycle budget TMAX ate by loading 512 words at 100 us/frame; CTRL-read test never used pc >= 64 so a pc-truncation mutant survived until R8b).
+- Open: synthesis/area/timing NOT done (macro 49,488 um^2 vs 2 x 15,240 = +19.0k per engine, +38.0k chip); CMOS5L acceptance of 256x32 bm_bist macro unconfirmed; I2C slave still not written (now fits easily, 256 words); FPGA tops still do not build.
+
+## LibreLane run in a Nix shell in WSL (DONE 2026-10-17)
+Write-up: [docs/LIBRELANE_RESULTS.md](docs/LIBRELANE_RESULTS.md). Files: `librelane/` (config.json, run_wsl.sh, collect_wsl.sh, macro blackbox). Evidence: `results/librelane_2026-10-17/`.
+- Setup (WSL2 Ubuntu): Nix installed system-wide via `wsl -u root` (no sudo password), flakes + fossi cache; LibreLane **dev** branch in `~/librelane-dev` (needs full clone; main 3.0.16 cannot read the CMOS5L PDK); PDK = `~/IHP-Open-PDK` dev branch with `--manual-pdk --pdk ihp-sg13cmos5l` (Ciel lacks the family). Always `bash -lc` in wsl (nix not on PATH otherwise); wsl.exe expands `$VAR` in the command line, so put logic in script files; git-bash needs `MSYS_NO_PATHCONV=1` for /mnt paths.
+- Result run3: flow complete, die 1200x600 (assumed), stdcells 134.4k + macros 99.0k = 233k um^2 (32 %), setup +7.86 ns @20 ns slow corner, hold +0.09, 0 routing DRC, LVS clean. Magic DRC 116,612 errors all inside the SRAM macros (ignored as in the SRAM reference design); 78 slew / 30 cap / 81 fanout violations unrepaired; KLayout DRC off.
+- Run1 had 2 TopMetal1 shorts; Metal4 cap (run2) was much worse; placement density 50 % (run3) routed clean. Metal stack is only Metal1-4 + TopMetal1 (no Metal5).
+- Not the Tiny Tapeout flow (no public CMOS5L TT template): own die size, auto pins. Open: macro acceptance (A9), KLayout DRC verdict, DRV repair, GL simulation.
+
+## Live log from 2026-10-18: timing and floorplan work (brief entries, newest last)
+Full numbers: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) section 8.4. Runs and images: `results/tt_flow_2026-10-18/index.html`.
+- 2026-10-18 root-cause analysis of the runs that never finished clean: wrong SRAM timing model in the slow corner, 0.25 ns clock
+  uncertainty on hold (4,260 hold buffers), SRAMs as routing walls under the chip pins, repair after global routing, timing-driven
+  placement off, CRC byte step in the fetch cycle. All fixed (config, `src/pnr.sdc`, floorplan, pipelined CRC unit).
+- 2026-10-18 pipelined CRC unit (command register, pre-aligned polynomial, `RGET CRC` right after a `CRC` waits 1 clock): regression
+  26/26, differential test 0 mismatches 75/75 coverage, mutants 26/26 engine + 20/20 CRC.
+- 2026-10-18 two signoff-clean layouts (0 DRC / 0 LVS / TT precheck / gate-level 3/3): tt9b flat 48.8 MHz slow corner, tt9c symmetric
+  with engine fences 43.4 MHz. Precheck lessons: macros only on whole stripe pitches, macro halo 17 um (no sliver rows), timing-driven
+  placement + fences needs `PL_KEEP_RESIZE_BELOW_OVERFLOW 0` (else GPL-0316 crash).
+- 2026-10-18 next, three independent tracks in parallel: (1) compact symmetric floorplan, tt10a (current RTL, 30 ns), draft
+  `results/tt_flow_2026-10-18/floorplan_draft_compact.png`; (2) RTL A + B, timing-neutral: two register read ports (no opcode decode
+  before the register read), adder output last in the ALU result mux; (3) fetch stage (SRAM output registered), changes firmware
+  timing, developed in a separate copy of the project.
+- 2026-10-18 RTL A + B done in the main tree: ALU unit 30/30 mutants, 22/22 RTL testbenches; full regression running
+  (`results/regression_2026-10-18_alu_ports`). Flows started: tt10a (compact, old RTL), tt10b (compact + A+B, 30 ns), tt10c
+  (compact + A+B, flow constrained at 20 ns).
+- 2026-10-18 fetch stage (copy `C:\Data\protocol_emulator_fetch`, includes A + B): turned out it needs NO firmware change.
+  `src/fetch_unit.v` registers the SRAM output (instruction register); while X executes, the next word Y is on the SRAM output and
+  Y's branch is resolved one clock early from the next-state (D-input) values of loop counter, flags, OSR bit and pin synchroniser,
+  so every instruction still takes the same clocks. Priming after reset / memory write / run falling: 2 clocks (run must rise 2+
+  clocks after the last write; the real chip writes and starts in separate management frames). Sim checker compares every fetch
+  decision with the control unit's. tb_fetch_equiv: 300 random programs, 234,066 clocks, 0 mismatches against the original engine.
+  Two testbenches given the 2-clock start (tb_engine_top ties run high; tb_fetch_equiv started 1 clock after its last write).
+  Differential test 600 programs 0 mismatches, 75/75 coverage, 35/35 mutants (7 new fetch mutants; a fetch/control-unit
+  disagreement now fails the test). Full regression running (`results/regression_fetch_stage` in the copy).
+- 2026-10-18 tt10b (compact floorplan + A + B, 30 ns): slow corner 19.45 ns = 51.4 MHz (tt9c: 23.0 ns), typical 12.1 ns = 83 MHz,
+  0 DRC / 0 LVS; wire 1,088k um (tt9c 1,069k: the compact layout itself did not shorten wires). tt10a (compact, old RTL) stalled
+  70 min in detailed routing with three flows sharing 16 cores / 7 GB WSL memory: stopped, to rerun later. tt11a (fetch stage
+  + A + B, compact, constrained at 20 ns) started from the copy (SRC=/mnt/c/Data/protocol_emulator_fetch).
+- 2026-10-18 RTL A + B regression **26/26 PASS** (now `results/regression_2026-10-18`): A + B is the main baseline.
+- 2026-10-18 tt10c (compact + A + B, flow constrained at 20 ns): signs off at 50 MHz, slow-corner slack +0.18 ns (19.8 ns),
+  typical 12.4 ns; 0 DRC / 0 LVS. The tighter constraint gained nothing over tt10b (19.45 ns at 30 ns): A + B removed the slack the
+  resizer could have used. Precheck + gate-level test running. tt10a dropped (old RTL no longer in the tree); tt10d (symmetric
+  floorplan + A + B, 30 ns) started to compare floorplans on the same RTL.
+- 2026-10-18 tt11a (fetch stage + A + B, compact, 20 ns): **no gain**, slow corner -0.6 ns at 20 ns (20.6 ns; tt10c 19.8 ns).
+  New critical path IR -> buf_1 fanout chain (~3.3 ns) -> ALU -> next flags -> JCC condition -> SRAM address, with two hold delay
+  cells (~1.4 ns) the SRAM address hold requirement adds on that net. The 5.5 ns SRAM read was traded for as much new delay.
+  Fixes (IR duplication, fast Z, hold fix off the path) might give 1-3 ns for 2-3 more iterations: recommendation is not to
+  merge; keep `C:\Data\protocol_emulator_fetch` as a verified experiment (only needed for the USB low-speed path, 60+ MHz).
+- 2026-10-18 tt10c complete 50 MHz candidate: TT precheck PASS, gate-level cocotb 3/3 PASS (plus 0 DRC / 0 LVS, no violations
+  at 20 ns in any corner).
+- 2026-10-18 floorplans on the same RTL (A + B, 30 ns): compact tt10b wire 1,088k um vs symmetric tt10d 1,120k (-2.9 %), slow-corner
+  slack +10.55 vs +10.46 ns, power 4.99 vs 5.05 mW. As predicted by the draft: ~3 % less wire, no clock gain. **Decision: compact
+  floorplan, tt10c setup (signed off at 20 ns) is the tapeout candidate.**
+- 2026-10-18 **working deadline 2026-12-30** (set by the user): design, verification and signoff GDS finished by then; January
+  2027 only for documentation and the submission package (challenge deadline 2027-01-18).

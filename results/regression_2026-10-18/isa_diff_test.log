@@ -1,0 +1,34 @@
+RESULT isa_model: PASS
+  batch 0: 150 programs x 400 clocks: 0 mismatching programs
+  batch 1: 150 programs x 400 clocks: 0 mismatching programs
+  batch 2: 150 programs x 400 clocks: 0 mismatching programs
+  batch 3: 150 programs x 400 clocks: 0 mismatching programs
+  coverage: 58838 instructions committed; trap kinds seen: 8; 75/75 coverage points met
+  MUTANT  0 caught  RGET TXF does not stall when the FIFO is empty
+  MUTANT  1 caught  RGET CRC does not wait for the CRC unit
+  MUTANT  2 caught  CRC busy not connected
+  MUTANT  3 caught  RPUT RXF does not stall when full
+  MUTANT  4 caught  JCC GTU is the LEU condition
+  MUTANT  5 caught  JCC C and NC swapped
+  MUTANT  6 caught  WAITR holds even when the register is 0
+  MUTANT  7 caught  ALU source read from operand[2:0] (wrong read port)
+  MUTANT  8 caught  ALU function 13 is legal
+  MUTANT  9 caught  RGET source 6 is legal
+  MUTANT 10 caught  CRC operation 7 is legal
+  MUTANT 11 caught  opcode 28 is legal
+  MUTANT 12 caught  RPUT OSR also pops the TX FIFO
+  MUTANT 13 caught  RPUT LC loads the operand
+  MUTANT 14 caught  RPUT ISR does nothing
+  MUTANT 15 caught  RGET src field decoded from [5:3]
+  MUTANT 16 caught  RGET PIN reads the unsynchronized pins
+  MUTANT 17 caught  RGET LC returns the load value
+  MUTANT 18 caught  RPUT RXF pushes the ISR
+  MUTANT 19 caught  RPUT OSR loads the TX word
+  MUTANT 20 caught  WAITR delay truncated to 8 bits
+  MUTANT 21 caught  CRC config data is the operand
+  MUTANT 22 caught  CRC byte is rs[15:8]
+  MUTANT 23 caught  RGET data into the register file is the TX word
+  MUTANT 24 caught  RPUT ISR loads zero
+  MUTANT 25 caught  RPUT LC value truncated
+  mutants caught: 26/26
+RESULT isa_diff_test: PASS

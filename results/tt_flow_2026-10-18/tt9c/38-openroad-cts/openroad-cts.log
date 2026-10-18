@@ -1,0 +1,193 @@
+Reading timing models for corner nom_fast_1p32V_m40C…
+Reading timing library for the 'nom_fast_1p32V_m40C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_fast_1p32V_m40C.lib'…
+Reading timing library for the 'nom_fast_1p32V_m40C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/lib/sg13cmos5l_io_fast_1p32V_3p6V_m40C.lib'…
+Reading timing library for the 'nom_fast_1p32V_m40C' corner at '/home/rishadd/pe_tt9c/macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib'…
+Reading timing models for corner nom_slow_1p08V_125C…
+Reading timing library for the 'nom_slow_1p08V_125C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_slow_1p08V_125C.lib'…
+Reading timing library for the 'nom_slow_1p08V_125C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/lib/sg13cmos5l_io_slow_1p08V_3p0V_125C.lib'…
+Reading timing library for the 'nom_slow_1p08V_125C' corner at '/home/rishadd/pe_tt9c/macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib'…
+Reading timing models for corner nom_typ_1p20V_25C…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_typ_1p20V_25C.lib'…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/lib/sg13cmos5l_io_typ_1p2V_3p3V_25C.lib'…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/pe_tt9c/macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib'…
+Reading OpenROAD database at '/home/rishadd/pe_tt9c/runs/tt9c/37-openroad-detailedplacement/tt_um_protocol_emulator.odb'…
+Reading design constraints file at '/home/rishadd/pe_tt9c/src/pnr.sdc'…
+[INFO] Clock uncertainty: setup 0.25 ns, hold 0.1 ns
+[INFO] Configuring cts characterization…
++ configure_cts_characterization 
+[INFO] Performing clock tree synthesis…
+[INFO] Looking for the following net(s): clk
+[INFO] Running Clock Tree Synthesis…
++ clock_tree_synthesis -buf_list sg13cmos5l_buf_8 sg13cmos5l_buf_4 sg13cmos5l_buf_2 -root_buf sg13cmos5l_buf_16 -sink_clustering_enable -apply_ndr half
+[INFO CTS-0050] Root buffer is sg13cmos5l_buf_16.
+[INFO CTS-0051] Sink buffer is sg13cmos5l_buf_8.
+[INFO CTS-0052] The following clock buffers will be used for CTS:
+                    sg13cmos5l_buf_2
+                    sg13cmos5l_buf_4
+                    sg13cmos5l_buf_8
+[INFO CTS-0049] Characterization buffer is sg13cmos5l_buf_8.
+[INFO CTS-0007] Net "clk" found for clock "clk".
+[INFO CTS-0011]  Clock net "clk" for macros has 2 sinks.
+[INFO CTS-0011]  Clock net "clk_regs" for registers has 2002 sinks.
+[INFO CTS-0008] TritonCTS found 2 clock nets.
+[INFO CTS-0097] Characterization used 3 buffer(s) types.
+[INFO CTS-0201] 2 blockages from hard placement blockages and placed macros will be used.
+[INFO CTS-0027] Generating H-Tree topology for net clk.
+[INFO CTS-0028]  Total number of sinks: 2.
+[INFO CTS-0029]  Macro  sinks will be clustered in groups of up to 4 and with maximum cluster diameter of 833.3 um.
+[INFO CTS-0030]  Number of static layers: 0.
+[INFO CTS-0020]  Wire segment unit: 18900  dbu (18 um).
+[INFO CTS-0023]  Original sink region: [(262610, 132430), (1026930, 132430)].
+[INFO CTS-0024]  Normalized sink region: [(13.8947, 7.00688), (54.3349, 7.00688)].
+[INFO CTS-0025]     Width:  40.4402.
+[INFO CTS-0026]     Height: 0.0000.
+ Level 1
+    Direction: Horizontal
+    Sinks per sub-region: 1
+    Sub-region size: 20.2201 X 0.0000
+[INFO CTS-0034]     Segment length (rounded): 10.
+[INFO CTS-0032]  Stop criterion found. Max number of sinks is 8.
+[INFO CTS-0035]  Number of sinks covered: 2.
+[INFO CTS-0201] 2 blockages from hard placement blockages and placed macros will be used.
+[INFO CTS-0027] Generating H-Tree topology for net clk_regs.
+[INFO CTS-0028]  Total number of sinks: 2002.
+[INFO CTS-0090]  Sinks will be clustered based on buffer max cap.
+[INFO CTS-0030]  Number of static layers: 0.
+[INFO CTS-0020]  Wire segment unit: 18900  dbu (18 um).
+[INFO CTS-0206] Best clustering solution was found from clustering size of 8 and clustering diameter of 50.
+[INFO CTS-0019]  Total number of sinks after clustering: 149.
+[INFO CTS-0024]  Normalized sink region: [(1.53228, 0.930159), (67.0277, 36.4032)].
+[INFO CTS-0025]     Width:  65.4954.
+[INFO CTS-0026]     Height: 35.4730.
+ Level 1
+    Direction: Horizontal
+    Sinks per sub-region: 75
+    Sub-region size: 32.7477 X 35.4730
+[INFO CTS-0034]     Segment length (rounded): 16.
+ Level 2
+    Direction: Vertical
+    Sinks per sub-region: 38
+    Sub-region size: 32.7477 X 17.7365
+[INFO CTS-0034]     Segment length (rounded): 8.
+ Level 3
+    Direction: Horizontal
+    Sinks per sub-region: 19
+    Sub-region size: 16.3738 X 17.7365
+[INFO CTS-0034]     Segment length (rounded): 8.
+ Level 4
+    Direction: Vertical
+    Sinks per sub-region: 10
+    Sub-region size: 16.3738 X 8.8683
+[INFO CTS-0034]     Segment length (rounded): 4.
+ Level 5
+    Direction: Horizontal
+    Sinks per sub-region: 5
+    Sub-region size: 8.1869 X 8.8683
+[INFO CTS-0034]     Segment length (rounded): 4.
+[INFO CTS-0032]  Stop criterion found. Max number of sinks is 8.
+[INFO CTS-0035]  Number of sinks covered: 149.
+[INFO CTS-0018]     Created 3 clock buffers.
+[INFO CTS-0012]     Minimum number of buffers in the clock path: 2.
+[INFO CTS-0013]     Maximum number of buffers in the clock path: 2.
+[INFO CTS-0015]     Created 3 clock nets.
+[INFO CTS-0016]     Fanout distribution for the current clock = 1:2..
+[INFO CTS-0017]     Max level of the clock tree: 1.
+[INFO CTS-0018]     Created 190 clock buffers.
+[INFO CTS-0012]     Minimum number of buffers in the clock path: 4.
+[INFO CTS-0013]     Maximum number of buffers in the clock path: 4.
+[INFO CTS-0015]     Created 190 clock nets.
+[INFO CTS-0016]     Fanout distribution for the current clock = 4:11, 5:22, 6:1, 7:1, 8:3, 9:2, 10:8, 11:13, 12:18, 13:18, 14:30, 15:28, 16:16, 17:7, 18:3..
+[INFO CTS-0017]     Max level of the clock tree: 5.
+[INFO CTS-0098] Clock net "clk"
+[INFO CTS-0099]  Sinks 2
+[INFO CTS-0100]  Leaf buffers 0
+[INFO CTS-0101]  Average sink wire length 1458.26 um
+[INFO CTS-0102]  Path depth 2 - 2
+[INFO CTS-0207]  Dummy loads inserted 0
+[INFO CTS-0098] Clock net "clk_regs"
+[INFO CTS-0099]  Sinks 2115
+[INFO CTS-0100]  Leaf buffers 149
+[INFO CTS-0101]  Average sink wire length 684.95 um
+[INFO CTS-0102]  Path depth 3 - 4
+[INFO CTS-0207]  Dummy loads inserted 113
+[INFO CTS-0033] Balancing latency for clock clk
+[INFO CTS-0036]  inserted 5 delay buffers
+[INFO CTS-0037] Total number of delay buffers: 5
+[INFO] Repairing long wires on clock nets…
+[INFO RSZ-0058] Using max wire length 4688um.
+Setting global connections for newly added cells…
+[INFO] Setting global connections...
+u_eng0.imem.u_mem matched with u_eng0.imem.u_mem
+u_eng0.imem.u_mem matched with u_eng0.imem.u_mem
+u_eng1.imem.u_mem matched with u_eng1.imem.u_mem
+u_eng1.imem.u_mem matched with u_eng1.imem.u_mem
+[INFO ODB-0403] 624 connections made, 0 conflicts skipped.
+Updating metrics…
+Cell type report:                       Count       Area
+  Macro                                     2   98977.00
+  Buffer                                  202    1466.04
+  Clock buffer                            226    6245.16
+  Timing Repair Buffer                   2106   15551.22
+  Inverter                                525    2857.68
+  Clock inverter                           86     787.45
+  Sequential cell                        2002   98075.58
+  Multi-Input combinational cell        12498  131520.41
+  Total                                 17647  355480.54
+Writing OpenROAD database to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.odb'…
+Writing netlist to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.nl.v'…
+Writing powered netlist to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.pnl.v'…
+Writing layout to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.def'…
+Writing timing constraints to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.sdc'…
+[INFO] Legalizing…
++ detailed_placement -max_displacement  500 100 
+Placement Analysis
+---------------------------------
+total displacement       3041.3 u
+average displacement        0.2 u
+max displacement           20.1 u
+original HPWL          893919.2 u
+legalized HPWL         906287.9 u
+delta HPWL                    1 %
+
+[INFO DPL-0020] Mirrored 7755 instances
+[INFO DPL-0021] HPWL before          906287.9 u
+[INFO DPL-0022] HPWL after           895347.5 u
+[INFO DPL-0023] HPWL delta               -1.2 %
+Setting global connections for newly added cells…
+[INFO] Setting global connections...
+u_eng0.imem.u_mem matched with u_eng0.imem.u_mem
+u_eng0.imem.u_mem matched with u_eng0.imem.u_mem
+u_eng1.imem.u_mem matched with u_eng1.imem.u_mem
+u_eng1.imem.u_mem matched with u_eng1.imem.u_mem
+[INFO ODB-0403] 0 connections made, 0 conflicts skipped.
+Updating metrics…
+Cell type report:                       Count       Area
+  Macro                                     2   98977.00
+  Buffer                                  202    1466.04
+  Clock buffer                            226    6245.16
+  Timing Repair Buffer                   2106   15551.22
+  Inverter                                525    2857.68
+  Clock inverter                           86     787.45
+  Sequential cell                        2002   98075.58
+  Multi-Input combinational cell        12498  131520.41
+  Total                                 17647  355480.54
+Writing OpenROAD database to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.odb'…
+Writing netlist to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.nl.v'…
+Writing powered netlist to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.pnl.v'…
+Writing layout to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.def'…
+Writing timing constraints to '/home/rishadd/pe_tt9c/runs/tt9c/38-openroad-cts/tt_um_protocol_emulator.sdc'…
+%OL_CREATE_REPORT cts.rpt
+Total number of Clock Roots: 2.
+Total number of Buffers Inserted: 193.
+Total number of Clock Subnets: 193.
+Total number of Sinks: 2004.
+Cells used:
+  sg13cmos5l_buf_16: 42
+  sg13cmos5l_buf_8: 157
+Dummys used:
+  sg13cmos5l_buf_8: 27
+  sg13cmos5l_inv_1: 22
+  sg13cmos5l_inv_2: 28
+  sg13cmos5l_inv_4: 26
+  sg13cmos5l_inv_8: 10
+%OL_END_REPORT

@@ -1,0 +1,6 @@
+violation type: Short
+	srcs: net:_2253_ net:VGND
+	bbox = (341.4200, 280.1200) - (343.0600, 282.1200) on Layer TopMetal1
+violation type: Short
+	srcs: net:_2253_ net:VPWR
+	bbox = (341.4200, 274.1200) - (343.0600, 276.1200) on Layer TopMetal1

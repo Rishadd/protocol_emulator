@@ -1,0 +1,13 @@
+Tiny Tapeout precheck on run tt2 (TopMetal1 power stripes, LibreLane default multilayer PDN) -- FAILED
+
+| Check | Result |
+|-----------|--------|
+| KLayout pin label overlapping drawing | pass |
+| KLayout SG13CMOS5L DRC | pass |
+| KLayout zero area | pass |
+| KLayout Checks | FAIL: Forbidden layer TopMetal1.drawing found in the GDS |
+| Pin check | FAIL: Unexpected port layer in LEF: VGND is on layer TopMetal1 |
+| Boundary check | pass |
+| Layer check | FAIL: Invalid layers in GDS: {(126, 0), (126, 2), (126, 25), (125, 0)} (TopMetal1, TopVia1) |
+| Cell name check | pass |
+| Analog pin check | pass |

@@ -1,0 +1,12 @@
+MUTANT imem_write_alias: caught by: tb_instr_mem tb_mgmt_frame tb_mgmt_load tb_mgmt_dual tb_mgmt_read tb_fetch_equiv
+MUTANT imem_fetch_6bit: caught by: tb_instr_mem tb_fetch_equiv
+MUTANT jump_addr_6bit: caught by: tb_control_unit tb_fetch_equiv
+MUTANT jp_pin_field_old: caught by: tb_control_unit
+MUTANT mgmt_waddr_6bit: caught by: tb_mgmt_frame tb_mgmt_load tb_mgmt_dual tb_mgmt_read
+MUTANT mgmt_window_alias: caught by: tb_mgmt_frame tb_mgmt_dual
+MUTANT mgmt_ctrl_pc_pos: caught by: NONE (SURVIVED)
+MUTANT pc_7bit: caught by: tb_mgmt_load tb_fetch_equiv
+MUTANT next_pc_to_pc: caught by: tb_mgmt_load tb_mgmt_dual tb_mgmt_read tb_fetch_equiv tb_engine_top
+# mgmt_ctrl_pc_pos survived the first sweep: no test read the CTRL register with a pc >= 64.
+# Added tb_mgmt_read R8b (pc 200 and 129 read back); re-run of that mutant:
+MUTANT mgmt_ctrl_pc_pos (after R8b): caught by: tb_mgmt_read

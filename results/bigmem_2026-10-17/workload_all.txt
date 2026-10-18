@@ -1,0 +1,197 @@
+UART (TX = engine 0 / P0, RX = engine 1 / P1, 115200 at the 434-clock bit used by the UART suite)
+ full duplex (live echo peer), every host behaviour
+  PASS     duplex 256 B, host interleaved                       tx=256 echo=256 rx=256 exact=256 retries=690 frames=1251 aborts=0 noise=0
+  PASS     duplex 256 B, host burst                             tx=256 echo=256 rx=256 exact=256 retries=345 frames=1251 aborts=0 noise=0
+  PASS     duplex 256 B, host aborts/5                          tx=256 echo=256 rx=256 exact=256 retries=579 frames=1137 aborts=227 noise=0
+  PASS     duplex 256 B, host noise/3                           tx=256 echo=256 rx=256 exact=256 retries=391 frames=945 aborts=0 noise=315
+  PASS     duplex 256 B, host slow host 5us                     tx=256 echo=256 rx=256 exact=256 retries=268 frames=819 aborts=0 noise=0
+  PASS     duplex 256 B, host all                               tx=256 echo=256 rx=256 exact=256 retries=49 frames=643 aborts=128 noise=214
+ TX only / RX only
+  PASS     TX only 256 B, interleaved                           tx=256 exact=256 retries=939 frames=1318 aborts=0
+  PASS     TX only 256 B, host all                              tx=256 exact=256 retries=173 frames=679 aborts=135
+  PASS     TX only 64 B, host 100 us per frame (line idles)     tx=64 exact=64 retries=0 frames=100 aborts=0
+  PASS     RX only 256 B back-to-back                           rx=256/256 first_diff=None polls=1065 frames=1349
+  PASS     RX only 256 B, host all                              rx=256/256 first_diff=None polls=409 frames=693
+ RX corner cases (no framing / start-bit validation in the 9-word RX program)
+  ok       RX break (30 bit times low) between bytes            rx=17/17 first_diff=None polls=179 frames=224
+  fails    RX 1 us glitch on an idle line                       rx=17/16 first_diff=8 polls=170 frames=215 got_tail=6f776e20
+  PASS     RX bytes with 0..3 idle bits between                 rx=64/64 first_diff=None polls=384 frames=476
+ peer baud error (full duplex, 128 B)
+  ok       duplex peer -4%                                      tx=128 echo=128 rx=128 exact=128 retries=342 frames=668 aborts=0 noise=0
+  ok       duplex peer -5%                                      tx=128 echo=128 rx=128 exact=128 retries=344 frames=674 aborts=0 noise=0
+  fails    duplex peer -6%                                      tx=128 echo=128 rx=128 exact=128 retries=345 frames=681 aborts=0 noise=0
+  ok       duplex peer +4%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=643 aborts=0 noise=0
+  fails    duplex peer +6%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=643 aborts=0 noise=0
+  fails    duplex peer +8%                                      tx=128 echo=128 rx=128 exact=128 retries=338 frames=643 aborts=0 noise=0
+ management link speed sweep (full duplex 115200, 128 B): half period in clocks
+  ok       duplex mgmt half 8 clk                               tx=128 echo=128 rx=128 exact=128 retries=338 frames=643 aborts=0 noise=0
+  ok       duplex mgmt half 12 clk                              tx=128 echo=128 rx=128 exact=128 retries=146 frames=442 aborts=0 noise=0
+  ok       duplex mgmt half 16 clk                              tx=128 echo=128 rx=128 exact=128 retries=49 frames=340 aborts=0 noise=0
+  ok       duplex mgmt half 20 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=284 aborts=0 noise=0
+  ok       duplex mgmt half 24 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=284 aborts=0 noise=0
+  ok       duplex mgmt half 32 clk                              tx=128 echo=128 rx=128 exact=128 retries=0 frames=284 aborts=0 noise=0
+ negative: host stops servicing for 12 byte-times while the peer keeps sending
+  DETECTED duplex host stall (RX overflow must be detected)     tx=256 echo=256 rx=255 exact=256 retries=671 frames=1326 aborts=0 noise=0
+ baud sweep, full duplex, fastest management link (8 clocks per half period)
+  ok       duplex 230400 baud (bit 217 clk)                     tx=96 echo=96 rx=96 exact=96 retries=34 frames=261 aborts=0 noise=0
+  ok       duplex 460800 baud (bit 109 clk)                     tx=96 echo=96 rx=96 exact=96 retries=0 frames=220 aborts=0 noise=0
+  ok       duplex 921600 baud (bit 54 clk)                      tx=96 echo=96 rx=96 exact=96 retries=0 frames=220 aborts=0 noise=0
+  ok       duplex 1500000 baud (bit 33 clk)                     tx=96 echo=96 rx=96 exact=96 retries=0 frames=220 aborts=0 noise=0
+UART RX open-loop limits (peer streams back-to-back bytes; the host only reads)
+  ok       RX only 128 B, mgmt half 8 clk                       rx=128/128 first_diff=None polls=586 frames=742
+  ok       RX only 128 B, mgmt half 16 clk                      rx=128/128 first_diff=None polls=233 frames=389
+  ok       RX only 128 B, mgmt half 24 clk                      rx=128/128 first_diff=None polls=115 frames=271
+  ok       RX only 128 B, mgmt half 32 clk                      rx=128/128 first_diff=None polls=55 frames=211
+  fails    RX only 128 B, mgmt half 40 clk                      rx=126/128 first_diff=84 polls=23 frames=177 got_tail=73742c20
+  ok       RX only 96 B at 230400 (bit 217 clk), fastest link   rx=96/96 first_diff=None polls=186 frames=310
+  ok       RX only 96 B at 460800 (bit 109 clk), fastest link   rx=96/96 first_diff=None polls=46 frames=170
+  fails    RX only 96 B at 921600 (bit 54 clk), fastest link    rx=60/96 first_diff=8 polls=14 frames=102 got_tail=552a8185
+SPI (master = engine 0, slave = engine 1; slave CS frames 40 us apart unless noted)
+  ok       master mode0 8b, host interleaved              96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host interleaved                    frames=96 retries=0 aborts=0 noise=0 1095 us
+  ok       slave mode3 8b, host interleaved, CS every 40 us 157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host interleaved, CS every 40 us     frames=157 retries=49 aborts=0 noise=0 1809 us
+  ok       master mode0 8b, host burst                    102 mgmt frames (3 TX retries, 3 empty reads), 1163 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host burst                          frames=102 retries=3 aborts=0 noise=0 1163 us
+  ok       slave mode3 8b, host burst, CS every 40 us     157 mgmt frames (25 TX retries, 37 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host burst, CS every 40 us           frames=157 retries=25 aborts=0 noise=0 1809 us
+  ok       master mode0 8b, host aborts/5                 96 mgmt frames (0 TX retries, 0 empty reads), 1207 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host aborts/5                       frames=96 retries=0 aborts=19 noise=0 1207 us
+  ok       slave mode3 8b, host aborts/5, CS every 40 us  145 mgmt frames (39 TX retries, 11 empty reads), 1832 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host aborts/5, CS every 40 us        frames=145 retries=39 aborts=29 noise=0 1832 us
+  ok       master mode0 8b, host noise/3                  96 mgmt frames (0 TX retries, 0 empty reads), 1459 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host noise/3                        frames=96 retries=0 aborts=0 noise=32 1459 us
+  ok       slave mode3 8b, host noise/3, CS every 40 us   123 mgmt frames (20 TX retries, 8 empty reads), 1888 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host noise/3, CS every 40 us         frames=123 retries=20 aborts=0 noise=41 1888 us
+  ok       master mode0 8b, host slow host 5us            96 mgmt frames (0 TX retries, 0 empty reads), 1575 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host slow host 5us                  frames=96 retries=0 aborts=0 noise=0 1575 us
+  ok       slave mode3 8b, host slow host 5us, CS every 100 us 248 mgmt frames (128 TX retries, 25 empty reads), 4144 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host slow host 5us, CS every 100 us  frames=248 retries=128 aborts=0 noise=0 4144 us
+  ok       master mode0 8b, host all                      102 mgmt frames (3 TX retries, 3 empty reads), 2204 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 8b, host all                            frames=102 retries=3 aborts=20 noise=34 2204 us
+  ok       slave mode3 8b, host all, CS every 100 us      195 mgmt frames (41 TX retries, 59 empty reads), 4251 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 8b, host all, CS every 100 us            frames=195 retries=41 aborts=39 noise=65 4251 us
+ all modes and frame formats with the host doing everything at once
+  ok       master mode0 32b LSB, host all                 210 mgmt frames (9 TX retries, 9 empty reads), 4507 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode0 32b LSB, host all                       frames=210 retries=9 aborts=42 noise=70 4507 us
+  ok       slave mode0 16b MSB, host all, CS every 100 us 277 mgmt frames (65 TX retries, 83 empty reads), 6004 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     slave mode0 16b MSB, host all, CS every 100 us       frames=277 retries=65 aborts=55 noise=92 6004 us
+  ok       master mode1 32b LSB, host all                 211 mgmt frames (9 TX retries, 9 empty reads), 4523 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     master mode1 32b LSB, host all                       frames=211 retries=9 aborts=42 noise=70 4523 us
+  ok       slave mode1 16b MSB, host all, CS every 100 us 275 mgmt frames (65 TX retries, 83 empty reads), 5963 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode1 16b MSB, host all, CS every 100 us       frames=275 retries=65 aborts=55 noise=91 5963 us
+  ok       master mode2 32b LSB, host all                 210 mgmt frames (9 TX retries, 9 empty reads), 4507 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode2 32b LSB, host all                       frames=210 retries=9 aborts=42 noise=70 4507 us
+  ok       slave mode2 16b MSB, host all, CS every 100 us 277 mgmt frames (65 TX retries, 83 empty reads), 6004 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     slave mode2 16b MSB, host all, CS every 100 us       frames=277 retries=65 aborts=55 noise=92 6004 us
+  ok       master mode3 32b LSB, host all                 211 mgmt frames (9 TX retries, 9 empty reads), 4523 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     master mode3 32b LSB, host all                       frames=211 retries=9 aborts=42 noise=70 4523 us
+  ok       slave mode3 16b MSB, host all, CS every 100 us 275 mgmt frames (65 TX retries, 83 empty reads), 5963 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     slave mode3 16b MSB, host all, CS every 100 us       frames=275 retries=65 aborts=55 noise=91 5963 us
+  ok       master mode2 512 random bytes, H=1, host all   1160 mgmt frames (56 TX retries, 56 empty reads), 24794 us | cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     master mode2 512 random bytes, H=1, host all         frames=1160 retries=56 aborts=232 noise=386 24794 us
+ slave sustained-rate limit vs host behaviour (CS frame spacing in us, 40 frames)
+  ok       slave mode0 gap 100 us, host interleaved       348 mgmt frames (213 TX retries, 38 empty reads), 4048 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 100 us, host interleaved             frames=348 retries=213 aborts=0 noise=0 4048 us
+  ok       slave mode0 gap 80 us, host interleaved        285 mgmt frames (158 TX retries, 30 empty reads), 3308 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 80 us, host interleaved              frames=285 retries=158 aborts=0 noise=0 3308 us
+  ok       slave mode0 gap 60 us, host interleaved        222 mgmt frames (104 TX retries, 21 empty reads), 2568 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 60 us, host interleaved              frames=222 retries=104 aborts=0 noise=0 2568 us
+  ok       slave mode0 gap 50 us, host interleaved        190 mgmt frames (76 TX retries, 17 empty reads), 2198 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 50 us, host interleaved              frames=190 retries=76 aborts=0 noise=0 2198 us
+  ok       slave mode0 gap 40 us, host interleaved        158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 40 us, host interleaved              frames=158 retries=49 aborts=0 noise=0 1828 us
+  ok       slave mode0 gap 30 us, host interleaved        127 mgmt frames (22 TX retries, 8 empty reads), 1458 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 30 us, host interleaved              frames=127 retries=22 aborts=0 noise=0 1458 us
+  ok       slave mode0 gap 25 us, host interleaved        111 mgmt frames (8 TX retries, 6 empty reads), 1273 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 25 us, host interleaved              frames=111 retries=8 aborts=0 noise=0 1273 us
+  fails    slave mode0 gap 20 us, host interleaved        98 mgmt frames (0 TX retries, 4 empty reads), 1117 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=0 MISO_after_shift_edge=4..10 sample_point_after_edge=1.9..2.9 MISO_release=4..5 first_bit_after_CS=5..150
+           955666: MISO 'z' at sampling edge
+           955866: MISO 'z' at sampling edge
+           977366: MISO 'z' at sampling edge
+  fails    slave mode0 gap 20 us, host interleaved              frames=98 retries=0 aborts=0 noise=0 1117 us
+  ok       slave mode0 gap 100 us, host burst             348 mgmt frames (107 TX retries, 144 empty reads), 4048 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 100 us, host burst                   frames=348 retries=107 aborts=0 noise=0 4048 us
+  ok       slave mode0 gap 80 us, host burst              285 mgmt frames (79 TX retries, 109 empty reads), 3308 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 80 us, host burst                    frames=285 retries=79 aborts=0 noise=0 3308 us
+  ok       slave mode0 gap 60 us, host burst              222 mgmt frames (52 TX retries, 73 empty reads), 2568 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 60 us, host burst                    frames=222 retries=52 aborts=0 noise=0 2568 us
+  ok       slave mode0 gap 50 us, host burst              190 mgmt frames (38 TX retries, 55 empty reads), 2198 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 50 us, host burst                    frames=190 retries=38 aborts=0 noise=0 2198 us
+  ok       slave mode0 gap 40 us, host burst              158 mgmt frames (25 TX retries, 36 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 40 us, host burst                    frames=158 retries=25 aborts=0 noise=0 1828 us
+  ok       slave mode0 gap 30 us, host burst              127 mgmt frames (12 TX retries, 18 empty reads), 1458 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 30 us, host burst                    frames=127 retries=12 aborts=0 noise=0 1458 us
+  ok       slave mode0 gap 25 us, host burst              111 mgmt frames (5 TX retries, 9 empty reads), 1273 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 25 us, host burst                    frames=111 retries=5 aborts=0 noise=0 1273 us
+  fails    slave mode0 gap 20 us, host burst              102 mgmt frames (4 TX retries, 6 empty reads), 1163 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=6 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..6.9 MISO_release=4..1669 first_bit_after_CS=5..16
+           499966: MISO 'z' at sampling edge
+           500166: MISO 'z' at sampling edge
+           500366: MISO 'z' at sampling edge
+  fails    slave mode0 gap 20 us, host burst                    frames=102 retries=4 aborts=0 noise=0 1163 us
+  ok       slave mode0 gap 100 us, host all               196 mgmt frames (41 TX retries, 58 empty reads), 4294 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 100 us, host all                     frames=196 retries=41 aborts=39 noise=65 4294 us
+  ok       slave mode0 gap 80 us, host all                163 mgmt frames (27 TX retries, 39 empty reads), 3554 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 80 us, host all                      frames=163 retries=27 aborts=32 noise=54 3554 us
+  ok       slave mode0 gap 60 us, host all                129 mgmt frames (12 TX retries, 20 empty reads), 2814 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 60 us, host all                      frames=129 retries=12 aborts=25 noise=43 2814 us
+  ok       slave mode0 gap 50 us, host all                112 mgmt frames (6 TX retries, 9 empty reads), 2444 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       slave mode0 gap 50 us, host all                      frames=112 retries=6 aborts=22 noise=37 2444 us
+  fails    slave mode0 gap 40 us, host all                103 mgmt frames (4 TX retries, 6 empty reads), 2221 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4..3357 first_bit_after_CS=5
+           945706: MISO 'z' at sampling edge
+           945906: MISO 'z' at sampling edge
+           946106: MISO 'z' at sampling edge
+  fails    slave mode0 gap 40 us, host all                      frames=103 retries=4 aborts=20 noise=34 2221 us
+ negative: slave frames faster than the host can serve
+  fails    slave mode0 gap 10 us (loss must be detected)  17575 mgmt frames (17506 TX retries, 0 empty reads), 200006 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=2 hold>=2 MISO_after_shift_edge=4..18 sample_point_after_edge=1.9..10.9 MISO_release=4..5 first_bit_after_CS=5..158
+           294666: MISO 'z' at sampling edge
+           294866: MISO 'z' at sampling edge
+           295066: MISO 'z' at sampling edge
+  DETECTED slave mode0 gap 10 us (loss must be detected)        frames=17575 retries=17506 aborts=0 noise=0 200006 us
+I2C master (engine 0 unless noted), 400 kHz unless noted
+  ok       basic set, host interleaved                        152 mgmt frames (0 TX retries), 3464 us | 11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     basic set, host interleaved                          frames=152 retries=0 aborts=0 noise=0 3464 us
+  ok       basic set, host burst                              162 mgmt frames (5 TX retries), 3691 us | 11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     basic set, host burst                                frames=162 retries=5 aborts=0 noise=0 3691 us
+  ok       basic set, host aborts/5                           154 mgmt frames (0 TX retries), 3862 us | 11 tr 49 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     basic set, host aborts/5                             frames=154 retries=0 aborts=30 noise=0 3862 us
+  ok       basic set, host noise/3                            152 mgmt frames (0 TX retries), 4602 us | 11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22720 f<=397kHz
+  PASS     basic set, host noise/3                              frames=152 retries=0 aborts=0 noise=50 4602 us
+  ok       basic set, host slow host 5us                      154 mgmt frames (0 TX retries), 4279 us | 11 tr 49 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=32680 f<=397kHz
+  PASS     basic set, host slow host 5us                        frames=154 retries=0 aborts=0 noise=0 4279 us
+  ok       basic set, host all                                168 mgmt frames (5 TX retries), 6364 us | 11 tr 51 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     basic set, host all                                  frames=168 retries=5 aborts=33 noise=56 6364 us
+ protocol corner cases under host load (host all)
+  ok       1000 kHz eng1, data NACK mid-write, queued words dropped 80 mgmt frames (1 TX retries), 3040 us | 3 tr 11 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1640 f<=980kHz
+  PASS     1000 kHz eng1, data NACK mid-write, queued words dropped frames=80 retries=1 aborts=16 noise=26 3040 us
+  ok       absent address between valid ones                  75 mgmt frames (1 TX retries), 2865 us | 4 tr 8 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3640 f<=397kHz
+  PASS     absent address between valid ones                    frames=75 retries=1 aborts=15 noise=25 2865 us
+  ok       100 kHz, slave stretches every bit 3 us            179 mgmt frames (11 TX retries), 6773 us | 11 tr 48 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     100 kHz, slave stretches every bit 3 us              frames=179 retries=11 aborts=35 noise=59 6773 us
+  ok       two slaves, repeated START chains                  69 mgmt frames (0 TX retries), 2630 us | 3 tr 8 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     two slaves, repeated START chains                    frames=69 retries=0 aborts=13 noise=23 2630 us
+  ok       1000 kHz random stress (405 words), host all       951 mgmt frames (44 TX retries), 35921 us | 79 tr 405 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1520 f<=980kHz
+  PASS     1000 kHz random stress (405 words), host all         frames=951 retries=44 aborts=190 noise=317 35921 us
+ throughput: bytes per second through the link (1000 kHz bus, interleaved host, fastest link)
+  ok       1000 kHz throughput, mgmt half 8 clk               355 mgmt frames (0 TX retries), 6494 us | 28 tr 151 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=27220 f<=980kHz
+  PASS     1000 kHz throughput, mgmt half 8 clk                 frames=355 retries=0 aborts=0 noise=0 6494 us
+SPI master (engine 0, pads 2-5) + I2C master (engine 1, pads 6-7) at the same time
+  PASS     SPI mode0 + I2C 400 kHz, host interleaved            SPI 36 frames + I2C 55 bytes, frames=260 retries=0 aborts=0 5922 us
+  PASS     SPI mode0 + I2C 400 kHz, host burst                  SPI 36 frames + I2C 55 bytes, frames=276 retries=8 aborts=0 6286 us
+  PASS     SPI mode0 + I2C 400 kHz, host aborts/5               SPI 36 frames + I2C 55 bytes, frames=260 retries=0 aborts=52 6568 us
+  PASS     SPI mode0 + I2C 400 kHz, host noise/3                SPI 36 frames + I2C 55 bytes, frames=260 retries=0 aborts=0 7879 us
+  PASS     SPI mode0 + I2C 400 kHz, host slow host 5us          SPI 36 frames + I2C 55 bytes, frames=260 retries=0 aborts=0 7222 us
+  PASS     SPI mode0 + I2C 400 kHz, host all                    SPI 36 frames + I2C 55 bytes, frames=276 retries=8 aborts=55 10439 us
+  PASS     SPI mode3 32b LSB H=1 + I2C 1000 kHz, host all       SPI 84 frames + I2C 54 bytes, frames=383 retries=14 aborts=76 14437 us
+  PASS     SPI mode1 + I2C 100 kHz slave stretching every byte, host all SPI 36 frames + I2C 55 bytes, frames=294 retries=13 aborts=58 11108 us
+
+LIMIT UART RX 115200 (434-clk bit) open loop: slowest mgmt half period: last pass 32 clk, first fail 40 clk
+LIMIT UART RX open loop, fastest link: max baud (bit clocks): last pass 460800 (109 clk), first fail 921600 (54 clk)
+LIMIT SPI slave min CS spacing, host interleaved: last pass 25 us, first fail 20 us
+LIMIT SPI slave min CS spacing, host burst: last pass 25 us, first fail 20 us
+LIMIT SPI slave min CS spacing, host all: last pass 50 us, first fail 40 us
+RESULT workload: PASS (55/55 cases as expected)
+
+real	21m48.045s
+user	0m0.015s
+sys	0m0.000s

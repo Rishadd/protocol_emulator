@@ -1,54 +1,47 @@
-# Challenge Sanity Check and Next Steps (2026-10-12)
+# Challenge check against the rules (state of 2026-10-18)
 
-Checked against [../Challenge_general_instructions.md](../Challenge_general_instructions.md). Status words: **met**,
-**partly**, **not yet**. Evidence is in this repository; nothing here was measured on silicon or on a real flow run.
+Checked against [../Challenge_general_instructions.md](../Challenge_general_instructions.md). Status words: **met**, **partly**, **not yet**.
+Evidence is in this repository ([TEST_RESULTS.md](TEST_RESULTS.md)); nothing was measured on silicon.
 
 ## 1. Rules
 
 | Rule | Status | Where we stand |
 |---|---|---|
-| Process: IHP 130 nm CMOS5L via Tiny Tapeout, start from the CMOS5L Verilog template (RTL to GDS) | **not yet** | Our top `tt_um_protocol_emulator` uses the template's port list, but the template repo, `config.json` and the LibreLane flow are not set up (EXECUTION_PLAN G1). Synthesis only, with Yosys on the real CMOS5L cell library. |
-| `info.yaml` tile size 6x4 | **not yet** | No `info.yaml` in the repo yet (comes with the template fork). |
-| Area: max 6x4 tiles (~0.7 mm^2 nominal, ~1k cells per tile) | **met on synthesis numbers** | Whole chip **150,000 um^2 = 20.8 %** of 720k, about 4.2k standard cells plus 4 SRAM macros (`build/synth/i2c_final.stat.txt`, 2026-10-12). Routing, CTS and macro placement overhead are not measured yet. |
-| SRAM may be used for instruction memory (TT examples) | **partly** | 2 x IHP 1P 64x16 per engine, verified in simulation. **Open blocker A9:** the CMOS5L PDK's SRAM entry is a link to the SG13G2 macros; acceptance on the CMOS5L shuttle must be confirmed with Tiny Tapeout. Fallback costs area (flop memory was 414k um^2 = 57.5 %). |
-| "Run synthesis early ... then run the full place-and-route flow and check timing" | **partly** | Synthesis done and repeated after each RTL change. **No place-and-route, no STA.** 50 MHz is assumed (template default 20 ns), not proven. |
-| Open source | **partly** | Work is in a git repo; **no LICENSE file yet** and the repo's public status is not recorded here. |
-| Deadline January 18, 2027 | on track if the flow starts now | About 14 weeks left. The physical flow is the critical path. |
+| IHP 130 nm CMOS5L through Tiny Tapeout, RTL to GDS from the CMOS5L Verilog template | **met** | the repo has the template layout (`info.yaml`, `src/config.json`, `test/`, `.github/`); the design goes RTL to GDS with the TT flow and passed the TT precheck, LVS and the gate-level cocotb test (design before the ALU / CRC units, run tt5, [TT_FLOW_RESULTS.md](TT_FLOW_RESULTS.md)); the new design's runs are in [TEST_RESULTS.md](TEST_RESULTS.md) section 8 |
+| `info.yaml` tile size 6x4 | **met** | `info.yaml`, die 1289.28 x 710.64 um = 916,214 um^2 |
+| Area: at most 6x4 tiles | **met** | after synthesis 14.5k cells, 223,815 um^2, plus two SRAM macros 98,977 um^2: about 35 % of the die |
+| SRAM may be used for instruction memory | **partly** | 2 x IHP 1P 256x32 macros, powered from Metal4 stripes (the precheck forbids TopMetal1), passes precheck and LVS. **Open (A9):** the shuttle organisers have not confirmed that the SG13G2 macros are accepted on the CMOS5L shuttle |
+| Run synthesis early, then place and route and check timing | **met** | done repeatedly; a root-cause analysis of the failing runs led to configuration, floorplan and RTL fixes (CRC unit pipelined). Final layouts tt9b / tt9c: signoff clock 30 ns with 9.5 / 7.0 ns to spare at the slow corner (48.8 / 43.4 MHz possible), 78 / 70 MHz at the typical corner; 0 DRC, 0 LVS, TT precheck and gate-level test pass ([TEST_RESULTS.md](TEST_RESULTS.md) section 8.4) |
+| Open source | **partly** | Apache-2.0 `LICENSE` is in the repo; the repository is not public yet and the GitHub workflows have not run (their steps were reproduced locally) |
+| Deadline 2027-01-18 | on track | about 13 weeks left |
 
 ## 2. Technical asks
 
 | Ask | Status | Evidence |
 |---|---|---|
-| Programmable protocol emulator, not fixed UART/SPI/I2C blocks; new protocols after fabrication | **met** | 21-opcode engine, protocols are firmware loaded over the management link. Nothing protocol-specific in the engine; open-drain is a per-pad mode of the pin manager. |
-| Start with UART, SPI, I2C | **partly** | **UART** TX/RX/full duplex: simulation + DE0-Nano. **SPI** master and slave, all 4 modes: simulation (engine, full chip, concurrent with I2C). **I2C master** 100/400/1000 kHz: simulation, UM10204 timing checked. **I2C slave: not built** (needs ~64-67 of 64 words; CALL/RET or 128-word memory would fix it, I2C_PLAN §6.4.1). |
-| Stretch: low-speed USB, 10 Mbit Ethernet | **not yet** | Feasibility notes only (architecture doc §6: raw 10BASE-T is not feasible on GPIO at this clock; USB LS needs a separate study). |
-| Others: JTAG, SWD, PS/2, CAN | **not yet** | JTAG shift loop drafted (`instructions.md` §5), not run. `JPO`/`PUSHI`/`JPH`/`JPL` and open-drain pads were added with these in mind. |
-| FPGA testing | **partly** | UART on a DE0-Nano. SPI, I2C, pin manager and the management link have not been on the FPGA (deferred by decision). |
-| Verification techniques (formal, constrained random, AI-assisted) | **partly** | Self-checking directed + random tests, independent protocol decoders and peers, golden-model lockstep (`tb_fetch_equiv`), timing-limit sweeps, mutation testing of RTL and firmware, workload campaign through the host link. **No formal properties yet** (SymbiYosys not set up). |
-| "Show us anything else your architecture makes possible" | **partly** | Two protocols concurrently on one chip through one host link (SPI master + I2C master, `tb_combo_chip`); pin ownership with violation reporting; event words in the data stream (`PUSHI`). Not yet written up as a demo. |
+| Programmable emulator, not fixed protocol blocks; new protocols after fabrication | **met** | 28-opcode engine with registers, ALU and CRC; all protocols are firmware loaded over the management link |
+| Start with UART, SPI, I2C | **met (simulation)** | UART TX / RX / duplex (also on a DE0-Nano); SPI master + slave, 4 modes; I2C master 100 / 400 / 1000 kHz and **I2C slave** |
+| Stretch: low-speed USB, 10 Mbit Ethernet | **not yet** | USB low speed needs 33.3 clocks per bit; the CAN loop cannot go below 35. Raw 10BASE-T is not feasible on GPIO at this clock |
+| Others: JTAG, SWD, PS/2, CAN | **partly** | **JTAG and CAN 2.0A (transmit and receive) done**, plus SMBus PEC, Modbus RTU and 1-Wire; SWD and PS/2 not done; CAN has no arbitration or error frames |
+| FPGA testing | **partly** | UART on a DE0-Nano; the other protocols and the ALU / CRC units were not on the FPGA |
+| Verification techniques (formal, constrained random, mutation) | **partly** | independent models and peers written from the specifications; random differential test (600 programs, 0 mismatches, 74 of 74 coverage points); mutation testing everywhere (66 planted ALU / CRC / engine bugs plus 145 protocol mutants, all caught); **no formal properties yet** |
+| "Show us anything else your architecture makes possible" | **partly** | two protocols at once on one chip through one host link; pin ownership with violation reporting; event words in the data stream; a CRC unit that is any Rocksoft CRC |
 
-## 3. Known functional limits found by testing (details in the results documents)
+## 3. Known limits (found by testing)
 
-- UART RX accepts a glitch as a start bit (no mid-start re-check) and has no stop-bit/framing check; a line break gives one 0x00 byte.
-- SPI slave and UART RX cannot pause their peer: sustained rates are bounded by the management link (one READ frame per
-  received byte or SPI frame: SPI slave one frame per 25 us at a 10-clock half period; UART RX open loop up to a 109-clock
-  bit at the fastest link). I2C master through the link: ~27 kB/s at 1 MHz.
-- UART RX baud tolerance about -5 % ... +4 %.
-- Frames longer than 32 bits per CS are not supported by the SPI programs.
-- No firmware timeouts: a stuck I2C bus or a missing peer leaves the engine waiting until the host toggles RUN.
+- **Clock:** with the pipelined CRC unit the slow corner (1.08 V, 125 C) needs 20.5 ns (flat layout tt9b) or 23.0 ns (symmetric tt9c); the limit is now SRAM read -> decode -> ALU adder, with minimum-size cells the resizer does not upsize at a 30 ns constraint. Next step: constrain the flow at 20 ns.
+- The firmware tables assume a 50 MHz clock; at 33.3 MHz regenerate the firmware with `f_clk = 33.33e6`.
+- UART RX accepts a glitch as a start bit and has no stop-bit check; RX baud tolerance about -4.5 % / +6 %.
+- CAN: no arbitration, error frames, resynchronisation (receiver tolerates about +-0.3 % clock error), extended identifiers or remote frames.
+- SPI slave and UART RX cannot pause their peer; sustained rates are bounded by the management link (one frame per word).
+- No firmware timeouts: a stuck bus leaves the engine waiting until the host toggles RUN.
 - Management frame v1 has no CRC or sequence number.
 
-## 4. Brief to-do (in order)
+## 4. Open items, in order
 
-1. **Physical flow (critical path).** Fork the TT CMOS5L template, add `info.yaml` (6x4), move the RTL flat into the
-   template's `src/`, run LibreLane to GDS, read the timing report at the template clock (50 MHz; 24 MHz fallback).
-2. **A9: SRAM on CMOS5L.** Ask Tiny Tapeout whether the SG13G2 macros are accepted; if not, decide the fallback
-   (latch memory or smaller programs) before the first full flow run.
-3. **Open-source hygiene.** Add a LICENSE (the template ships one), make the repo public, keep README/docs current.
-4. **Close functional gaps.** Optional `CALL`/`RET` (makes the I2C slave fit), UART RX start-bit re-check with `JPH`
-   (about 2 words), a watchdog or firmware timeout pattern, SPI frames longer than 32 bits.
-5. **FPGA bring-up** of the pin manager, SPI and I2C on the DE0-Nano (real EEPROM/sensor and SPI flash).
-6. **Formal properties** with SymbiYosys: open-drain pads never drive high, non-owners never reach a pad, management
-   commits only on complete frames, FIFOs never lose or duplicate words.
-7. **Management frame v2** (CRC-16, sequence number) and packing several bytes per FIFO word to raise link throughput.
-8. **Stretch protocols** as firmware demos: JTAG/SWD first (closest to SPI), then PS/2; USB LS feasibility study.
+1. Confirm with Tiny Tapeout that the SRAM macros are accepted on the CMOS5L shuttle (A9).
+2. Make the repository public and let the GitHub workflows (`gds`, `precheck`, `gl_test`) run; the flow needs the custom steps in `librelane/` (power-stripe bridge, engine fences).
+3. Management frame v2 (CRC-16, sequence number).
+4. FPGA bring-up of SPI, I2C and the new protocols.
+5. Formal properties (open-drain pads never drive high, non-owners never reach a pad, management commits only complete frames, FIFOs never lose words).
+6. 50 MHz at the slow corner (pipeline stage), CAN arbitration, USB low speed with an unrolled loop.

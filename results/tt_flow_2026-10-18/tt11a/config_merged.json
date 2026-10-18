@@ -1,0 +1,157 @@
+{
+  "//": "Overrides for the compact symmetric floorplan (src/floorplan_engines_compact.json): SRAM 0 at x = 60 + 2 x 44.96 = 149.92, SRAM 1 at 149.92 + 12 x 44.96 = 689.44 (whole stripe pitches from the placement that passed the precheck). Use: CFG_EXTRA=\"$(cat librelane/floorplan_compact_cfg.json)\" bash librelane/flow_run_wsl.sh <tag> boxed floorplan_engines_compact.json",
+  "PL_TARGET_DENSITY_PCT": 60,
+  "SYNTH_HIERARCHY_MODE": "deferred_flatten",
+  "SYNTH_STRATEGY": "AREA 0",
+  "FP_MACRO_HORIZONTAL_HALO": 17,
+  "ROUTING_OBSTRUCTIONS": [
+    [
+      "Metal4",
+      148.92,
+      12.78,
+      567.56,
+      133.56
+    ],
+    [
+      "Metal4",
+      688.44,
+      12.78,
+      1107.08,
+      133.56
+    ]
+  ],
+  "RUN_POST_GRT_DESIGN_REPAIR": false,
+  "RUN_POST_GRT_RESIZER_TIMING": false,
+  "PNR_SDC_FILE": "dir::pnr.sdc",
+  "SIGNOFF_SDC_FILE": "dir::pnr.sdc",
+  "PL_TIMING_DRIVEN": true,
+  "CLOCK_PERIOD": 20,
+  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.2,
+  "RUN_LINTER": 1,
+  "LINTER_INCLUDE_PDK_MODELS": 1,
+  "CLOCK_PORT": "clk",
+  "RUN_KLAYOUT_XOR": 0,
+  "RUN_KLAYOUT_DRC": 0,
+  "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 0,
+  "TOP_MARGIN_MULT": 1,
+  "BOTTOM_MARGIN_MULT": 1,
+  "LEFT_MARGIN_MULT": 6,
+  "RIGHT_MARGIN_MULT": 6,
+  "FP_SIZING": "absolute",
+  "GRT_ALLOW_CONGESTION": 1,
+  "FP_IO_HLENGTH": 2,
+  "FP_IO_VLENGTH": 2,
+  "RUN_CTS": 1,
+  "FP_PDN_MULTILAYER": 0,
+  "MAGIC_DEF_LABELS": 0,
+  "MAGIC_WRITE_LEF_PINONLY": 1,
+  "VERILOG_INCLUDE_DIRS": [
+    "dir::."
+  ],
+  "VERILOG_DEFINES": [
+    "SYNTHESIS"
+  ],
+  "meta": {
+    "flow": "Classic",
+    "substituting_steps": {
+      "+OpenROAD.GeneratePDN": "Project.BridgeMacroStripes",
+      "-OpenROAD.GlobalPlacementSkipIO": "Project.ModuleRegions",
+      "+OpenROAD.GlobalPlacement": "Project.RemoveModuleRegions"
+    }
+  },
+  "PDN_CFG": "dir::pdn_cfg.tcl",
+  "FP_PDN_VPITCH": 44.96,
+  "FP_PDN_VWIDTH": 2.1,
+  "FP_PDN_VSPACING": 3.52,
+  "FP_PDN_VOFFSET": 18.16,
+  "FP_PDN_SKIPTRIM": true,
+  "MACROS": {
+    "RM_IHPSG13_1P_256x32_c2_bm_bist": {
+      "instances": {
+        "u_eng0.imem.u_mem": {
+          "location": [
+            149.92,
+            13.78
+          ],
+          "orientation": "FS"
+        },
+        "u_eng1.imem.u_mem": {
+          "location": [
+            689.44,
+            13.78
+          ],
+          "orientation": "FS"
+        }
+      },
+      "gds": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.gds"
+      ],
+      "lef": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.lef"
+      ],
+      "lib": {
+        "*_typ_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"
+        ],
+        "*_fast_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib"
+        ],
+        "*_slow_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib"
+        ]
+      },
+      "nl": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.v"
+      ],
+      "spice": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.cdl"
+      ]
+    }
+  },
+  "PDN_MACRO_CONNECTIONS": [
+    "u_eng0.imem.u_mem VPWR VGND VDD! VSS!",
+    "u_eng0.imem.u_mem VPWR VGND VDDARRAY! VSS!",
+    "u_eng1.imem.u_mem VPWR VGND VDD! VSS!",
+    "u_eng1.imem.u_mem VPWR VGND VDDARRAY! VSS!"
+  ],
+  "ERROR_ON_PDN_VIOLATIONS": false,
+  "RUN_IRDROP_REPORT": false,
+  "ERROR_ON_ILLEGAL_OVERLAPS": false,
+  "MAGIC_MACRO_STD_CELL_SOURCE": "PDK",
+  "ERROR_ON_MAGIC_DRC": false,
+  "MAGIC_EXT_ABSTRACT_CELLS": [
+    "RM_IHPSG13_.*"
+  ],
+  "DESIGN_NAME": "tt_um_protocol_emulator",
+  "VERILOG_FILES": [
+    "dir::alu_unit.v",
+    "dir::control_unit.v",
+    "dir::crc_unit.v",
+    "dir::delay_counter.v",
+    "dir::engine_top.v",
+    "dir::fetch_unit.v",
+    "dir::fifo.v",
+    "dir::instr_mem.v",
+    "dir::loop_counter.v",
+    "dir::mgmt.v",
+    "dir::pin_block.v",
+    "dir::pin_mgr.v",
+    "dir::shift_reg.v",
+    "dir::spi_slave.v",
+    "dir::tt_um_protocol_emulator.v"
+  ],
+  "DIE_AREA": [
+    0.0,
+    0.0,
+    1289.28,
+    710.64
+  ],
+  "FP_DEF_TEMPLATE": "dir::../tt/tech/ihp-sg13cmos5l/def/tt_block_6x4_pgvdd.def",
+  "VDD_PIN": "VPWR",
+  "GND_PIN": "VGND",
+  "RT_MAX_LAYER": "Metal4",
+  "MODULE_BOXES": "dir::floorplan_engines_compact.json",
+  "RUN_MAGIC_DRC": false,
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0
+}

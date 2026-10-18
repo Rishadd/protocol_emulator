@@ -1,0 +1,836 @@
+Netgen 1.5.323 compiled on Fri Jul 24 07:14:03 UTC 2026
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Warning:  A case-insensitive file has been read and so the	verilog file must be treated case-insensitive to match.
+Reading SPICE netlist file '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/spice/sg13cmos5l_stdcell.spice'...
+Call to undefined subcircuit sg13_lv_nmos
+Creating placeholder cell definition.
+Call to undefined subcircuit sg13_lv_pmos
+Creating placeholder cell definition.
+Call to undefined subcircuit dantenna
+Creating placeholder cell definition.
+Call to undefined subcircuit dpantenna
+Creating placeholder cell definition.
+Reading SPICE netlist file '/home/rishadd/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/spice/sg13cmos5l_io.spice'...
+Call to undefined subcircuit ptap1
+Creating placeholder cell definition.
+Call to undefined subcircuit sg13_hv_nmos
+Creating placeholder cell definition.
+Call to undefined subcircuit rppd
+Creating placeholder cell definition.
+Call to undefined subcircuit sg13_hv_pmos
+Creating placeholder cell definition.
+Reading Verilog netlist file '/home/rishadd/pe_tt8b/runs/tt8b/55-openroad-fillinsertion/tt_um_protocol_emulator.pnl.v'...
+Warning:  A case-insensitive file has been read and so the	verilog file must be treated case-insensitive to match.
+Note:  Implicit pin X in instance clkload0 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload1 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload10 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload11 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload12 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload13 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload14 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload15 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload16 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload17 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload18 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload19 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload2 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload20 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload21 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload22 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload23 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload24 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload25 of sg13cmos5l_inv_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload26 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload27 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload28 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload29 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload3 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload30 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload31 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload32 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload33 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload34 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload35 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload36 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload37 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload38 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload39 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload4 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload40 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload41 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload42 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload43 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload44 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload45 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload46 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload47 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload48 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload49 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload5 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload50 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload51 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload52 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload53 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload54 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload55 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload56 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload57 of sg13cmos5l_inv_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload58 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload59 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload6 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload60 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload61 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin X in instance clkload62 of sg13cmos5l_buf_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload63 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload64 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload65 of sg13cmos5l_inv_16 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload66 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload67 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload68 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload69 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload7 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload70 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload71 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload72 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload73 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload74 of sg13cmos5l_inv_8 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload75 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload76 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload77 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload78 of sg13cmos5l_inv_1 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload8 of sg13cmos5l_inv_2 in cell tt_um_protocol_emulator
+Note:  Implicit pin Y in instance clkload9 of sg13cmos5l_inv_4 in cell tt_um_protocol_emulator
+Creating placeholder cell definition for module RM_IHPSG13_1P_256x32_c2_bm_bist.
+Treating empty subcircuits as black-box cells
+Generating JSON file result
+
+Reading setup file /nix/store/dgp9drapanbgxkd31x8vzkp3w37kbvgk-python3-3.13.13-env/lib/python3.13/site-packages/librelane/scripts/netgen/setup.tcl
+
+Model ptap1 pin 1 == 2
+No property w found for device ptap1
+No property l found for device ptap1
+No property l found for device ptap1
+No property w found for device ptap1
+No property l found for device ptap1
+No property w found for device ptap1
+No property b found for device ptap1
+Model rppd pin 1 == 2
+No property b found for device rppd
+Model sg13_hv_nmos pin 1 == 3
+No property trise found for device sg13_hv_nmos
+No property z1 found for device sg13_hv_nmos
+No property z2 found for device sg13_hv_nmos
+No property wmin found for device sg13_hv_nmos
+No property rfmode found for device sg13_hv_nmos
+No property pre_layout found for device sg13_hv_nmos
+Model sg13_hv_pmos pin 1 == 3
+No property trise found for device sg13_hv_pmos
+No property z1 found for device sg13_hv_pmos
+No property z2 found for device sg13_hv_pmos
+No property wmin found for device sg13_hv_pmos
+No property rfmode found for device sg13_hv_pmos
+No property pre_layout found for device sg13_hv_pmos
+Model sg13_lv_nmos pin 1 == 3
+No property trise found for device sg13_lv_nmos
+No property z1 found for device sg13_lv_nmos
+No property z2 found for device sg13_lv_nmos
+No property wmin found for device sg13_lv_nmos
+No property rfmode found for device sg13_lv_nmos
+No property pre_layout found for device sg13_lv_nmos
+Model sg13_lv_pmos pin 1 == 3
+No property trise found for device sg13_lv_pmos
+No property z1 found for device sg13_lv_pmos
+No property z2 found for device sg13_lv_pmos
+No property wmin found for device sg13_lv_pmos
+No property rfmode found for device sg13_lv_pmos
+No property pre_layout found for device sg13_lv_pmos
+No property DEV_A found for device dantenna
+No property DEV_P found for device dantenna
+No property DEV_C found for device dantenna
+No property DEV_A found for device dpantenna
+No property DEV_P found for device dpantenna
+No property DEV_C found for device dpantenna
+Comparison output logged to file /home/rishadd/pe_tt8b/runs/tt8b/66-netgen-lvs/reports/lvs.netgen.rpt
+Logging to file "/home/rishadd/pe_tt8b/runs/tt8b/66-netgen-lvs/reports/lvs.netgen.rpt" enabled
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_decap_8'
+Circuit sg13cmos5l_decap_8 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_decap_8'
+Circuit sg13cmos5l_decap_8 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 2 nets.
+
+Circuit sg13cmos5l_decap_8 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_fill_1'
+Circuit sg13cmos5l_fill_1 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_fill_1'
+Circuit sg13cmos5l_fill_1 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+
+Circuit sg13cmos5l_fill_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_decap_4'
+Circuit sg13cmos5l_decap_4 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_decap_4'
+Circuit sg13cmos5l_decap_4 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 2 nets.
+
+Circuit sg13cmos5l_decap_4 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_fill_2'
+Circuit sg13cmos5l_fill_2 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_fill_2'
+Circuit sg13cmos5l_fill_2 contains 0 device instances.
+Circuit contains 0 nets, and 2 disconnected pins.
+
+Circuit sg13cmos5l_fill_2 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_a21o_1'
+Circuit sg13cmos5l_a21o_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_a21o_1'
+Circuit sg13cmos5l_a21o_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_a21o_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_dfrbpq_1'
+Circuit sg13cmos5l_dfrbpq_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_dfrbpq_1'
+Circuit sg13cmos5l_dfrbpq_1 contains 32 device instances.
+  Class: sg13_lv_pmos          instances:  16
+  Class: sg13_lv_nmos          instances:  16
+Circuit contains 21 nets.
+
+Circuit sg13cmos5l_dfrbpq_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_a21oi_1'
+Circuit sg13cmos5l_a21oi_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_a21oi_1'
+Circuit sg13cmos5l_a21oi_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 8 nets.
+
+Circuit sg13cmos5l_a21oi_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_dlygate4sd3_1'
+Circuit sg13cmos5l_dlygate4sd3_1 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_dlygate4sd3_1'
+Circuit sg13cmos5l_dlygate4sd3_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 7 nets.
+
+Circuit sg13cmos5l_dlygate4sd3_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_mux2_1'
+Circuit sg13cmos5l_mux2_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_mux2_1'
+Circuit sg13cmos5l_mux2_1 contains 12 device instances.
+  Class: sg13_lv_pmos          instances:   6
+  Class: sg13_lv_nmos          instances:   6
+Circuit contains 12 nets.
+
+Circuit sg13cmos5l_mux2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_tiehi'
+Circuit sg13cmos5l_tiehi contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_tiehi'
+Circuit sg13cmos5l_tiehi contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 6 nets.
+
+Circuit sg13cmos5l_tiehi contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_a221oi_1'
+Circuit sg13cmos5l_a221oi_1 contains 0 device instances.
+Circuit contains 0 nets, and 8 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_a221oi_1'
+Circuit sg13cmos5l_a221oi_1 contains 10 device instances.
+  Class: sg13_lv_pmos          instances:   5
+  Class: sg13_lv_nmos          instances:   5
+Circuit contains 12 nets.
+
+Circuit sg13cmos5l_a221oi_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nand3_1'
+Circuit sg13cmos5l_nand3_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nand3_1'
+Circuit sg13cmos5l_nand3_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 8 nets.
+
+Circuit sg13cmos5l_nand3_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_inv_1'
+Circuit sg13cmos5l_inv_1 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_inv_1'
+Circuit sg13cmos5l_inv_1 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 4 nets.
+
+Circuit sg13cmos5l_inv_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_o21ai_1'
+Circuit sg13cmos5l_o21ai_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_o21ai_1'
+Circuit sg13cmos5l_o21ai_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 8 nets.
+
+Circuit sg13cmos5l_o21ai_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nand2_1'
+Circuit sg13cmos5l_nand2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nand2_1'
+Circuit sg13cmos5l_nand2_1 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 6 nets.
+
+Circuit sg13cmos5l_nand2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_mux4_1'
+Circuit sg13cmos5l_mux4_1 contains 0 device instances.
+Circuit contains 0 nets, and 9 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_mux4_1'
+Circuit sg13cmos5l_mux4_1 contains 26 device instances.
+  Class: sg13_lv_pmos          instances:  13
+  Class: sg13_lv_nmos          instances:  13
+Circuit contains 22 nets.
+
+Circuit sg13cmos5l_mux4_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_and3_1'
+Circuit sg13cmos5l_and3_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_and3_1'
+Circuit sg13cmos5l_and3_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_and3_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nand2b_1'
+Circuit sg13cmos5l_nand2b_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nand2b_1'
+Circuit sg13cmos5l_nand2b_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 7 nets.
+
+Circuit sg13cmos5l_nand2b_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_a22oi_1'
+Circuit sg13cmos5l_a22oi_1 contains 0 device instances.
+Circuit contains 0 nets, and 7 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_a22oi_1'
+Circuit sg13cmos5l_a22oi_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 10 nets.
+
+Circuit sg13cmos5l_a22oi_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nor2_1'
+Circuit sg13cmos5l_nor2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nor2_1'
+Circuit sg13cmos5l_nor2_1 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 6 nets.
+
+Circuit sg13cmos5l_nor2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_and2_1'
+Circuit sg13cmos5l_and2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_and2_1'
+Circuit sg13cmos5l_and2_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 7 nets.
+
+Circuit sg13cmos5l_and2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nor3_1'
+Circuit sg13cmos5l_nor3_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nor3_1'
+Circuit sg13cmos5l_nor3_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 8 nets.
+
+Circuit sg13cmos5l_nor3_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nor2b_1'
+Circuit sg13cmos5l_nor2b_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nor2b_1'
+Circuit sg13cmos5l_nor2b_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 7 nets.
+
+Circuit sg13cmos5l_nor2b_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_xnor2_1'
+Circuit sg13cmos5l_xnor2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_xnor2_1'
+Circuit sg13cmos5l_xnor2_1 contains 10 device instances.
+  Class: sg13_lv_pmos          instances:   5
+  Class: sg13_lv_nmos          instances:   5
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_xnor2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_buf_1'
+Circuit sg13cmos5l_buf_1 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_buf_1'
+Circuit sg13cmos5l_buf_1 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 5 nets.
+
+Circuit sg13cmos5l_buf_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_buf_2'
+Circuit sg13cmos5l_buf_2 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_buf_2'
+Circuit sg13cmos5l_buf_2 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 5 nets.
+
+Circuit sg13cmos5l_buf_2 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_tielo'
+Circuit sg13cmos5l_tielo contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_tielo'
+Circuit sg13cmos5l_tielo contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 6 nets.
+
+Circuit sg13cmos5l_tielo contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_xor2_1'
+Circuit sg13cmos5l_xor2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_xor2_1'
+Circuit sg13cmos5l_xor2_1 contains 10 device instances.
+  Class: sg13_lv_pmos          instances:   5
+  Class: sg13_lv_nmos          instances:   5
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_xor2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_or2_1'
+Circuit sg13cmos5l_or2_1 contains 0 device instances.
+Circuit contains 0 nets, and 5 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_or2_1'
+Circuit sg13cmos5l_or2_1 contains 6 device instances.
+  Class: sg13_lv_pmos          instances:   3
+  Class: sg13_lv_nmos          instances:   3
+Circuit contains 7 nets.
+
+Circuit sg13cmos5l_or2_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_buf_8'
+Circuit sg13cmos5l_buf_8 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_buf_8'
+Circuit sg13cmos5l_buf_8 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 5 nets.
+
+Circuit sg13cmos5l_buf_8 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nand4_1'
+Circuit sg13cmos5l_nand4_1 contains 0 device instances.
+Circuit contains 0 nets, and 7 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nand4_1'
+Circuit sg13cmos5l_nand4_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 10 nets.
+
+Circuit sg13cmos5l_nand4_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_buf_16'
+Circuit sg13cmos5l_buf_16 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_buf_16'
+Circuit sg13cmos5l_buf_16 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 5 nets.
+
+Circuit sg13cmos5l_buf_16 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_buf_4'
+Circuit sg13cmos5l_buf_4 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_buf_4'
+Circuit sg13cmos5l_buf_4 contains 4 device instances.
+  Class: sg13_lv_pmos          instances:   2
+  Class: sg13_lv_nmos          instances:   2
+Circuit contains 5 nets.
+
+Circuit sg13cmos5l_buf_4 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nor4_1'
+Circuit sg13cmos5l_nor4_1 contains 0 device instances.
+Circuit contains 0 nets, and 7 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nor4_1'
+Circuit sg13cmos5l_nor4_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 10 nets.
+
+Circuit sg13cmos5l_nor4_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_and4_1'
+Circuit sg13cmos5l_and4_1 contains 0 device instances.
+Circuit contains 0 nets, and 7 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_and4_1'
+Circuit sg13cmos5l_and4_1 contains 10 device instances.
+  Class: sg13_lv_pmos          instances:   5
+  Class: sg13_lv_nmos          instances:   5
+Circuit contains 11 nets.
+
+Circuit sg13cmos5l_and4_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_or3_1'
+Circuit sg13cmos5l_or3_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_or3_1'
+Circuit sg13cmos5l_or3_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_or3_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_antennanp'
+Circuit sg13cmos5l_antennanp contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_antennanp'
+Circuit sg13cmos5l_antennanp contains 2 device instances.
+  Class: dantenna              instances:   1
+  Class: dpantenna             instances:   1
+Circuit contains 3 nets.
+
+Circuit sg13cmos5l_antennanp contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_nand3b_1'
+Circuit sg13cmos5l_nand3b_1 contains 0 device instances.
+Circuit contains 0 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_nand3b_1'
+Circuit sg13cmos5l_nand3b_1 contains 8 device instances.
+  Class: sg13_lv_pmos          instances:   4
+  Class: sg13_lv_nmos          instances:   4
+Circuit contains 9 nets.
+
+Circuit sg13cmos5l_nand3b_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_or4_1'
+Circuit sg13cmos5l_or4_1 contains 0 device instances.
+Circuit contains 0 nets, and 7 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_or4_1'
+Circuit sg13cmos5l_or4_1 contains 10 device instances.
+  Class: sg13_lv_pmos          instances:   5
+  Class: sg13_lv_nmos          instances:   5
+Circuit contains 11 nets.
+
+Circuit sg13cmos5l_or4_1 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_inv_2'
+Circuit sg13cmos5l_inv_2 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_inv_2'
+Circuit sg13cmos5l_inv_2 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 4 nets.
+
+Circuit sg13cmos5l_inv_2 contains no devices.
+
+Contents of circuit 1:  Circuit: 'RM_IHPSG13_1P_256x32_c2_bm_bist'
+Circuit RM_IHPSG13_1P_256x32_c2_bm_bist contains 0 device instances.
+Circuit contains 0 nets, and 189 disconnected pins.
+Contents of circuit 2:  Circuit: 'RM_IHPSG13_1P_256x32_c2_bm_bist'
+Circuit RM_IHPSG13_1P_256x32_c2_bm_bist contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit RM_IHPSG13_1P_256x32_c2_bm_bist contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_inv_4'
+Circuit sg13cmos5l_inv_4 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_inv_4'
+Circuit sg13cmos5l_inv_4 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 4 nets.
+
+Circuit sg13cmos5l_inv_4 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_inv_8'
+Circuit sg13cmos5l_inv_8 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_inv_8'
+Circuit sg13cmos5l_inv_8 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 4 nets.
+
+Circuit sg13cmos5l_inv_8 contains no devices.
+
+Contents of circuit 1:  Circuit: 'sg13cmos5l_inv_16'
+Circuit sg13cmos5l_inv_16 contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+Contents of circuit 2:  Circuit: 'sg13cmos5l_inv_16'
+Circuit sg13cmos5l_inv_16 contains 2 device instances.
+  Class: sg13_lv_pmos          instances:   1
+  Class: sg13_lv_nmos          instances:   1
+Circuit contains 4 nets.
+
+Circuit sg13cmos5l_inv_16 contains no devices.
+
+Contents of circuit 1:  Circuit: 'tt_um_protocol_emulator'
+Circuit tt_um_protocol_emulator contains 67650 device instances.
+  Class: sg13cmos5l_a21oi_1    instances: 1174
+  Class: sg13cmos5l_decap_8    instances: 36759
+  Class: sg13cmos5l_a21o_1     instances: 140
+  Class: sg13cmos5l_xor2_1     instances:  94
+  Class: sg13cmos5l_nor2_1     instances: 1465
+  Class: sg13cmos5l_mux2_1     instances: 1404
+  Class: sg13cmos5l_inv_8      instances:   3
+  Class: RM_IHPSG13_1P_256x32_c2_bm_bist instances:   2
+  Class: sg13cmos5l_buf_1      instances: 1778
+  Class: sg13cmos5l_dfrbpq_1   instances: 1844
+  Class: sg13cmos5l_and2_1     instances: 297
+  Class: sg13cmos5l_or2_1      instances: 227
+  Class: sg13cmos5l_buf_4      instances:  63
+  Class: sg13cmos5l_tielo      instances: 183
+  Class: sg13cmos5l_nor2b_1    instances: 232
+  Class: sg13cmos5l_and3_1     instances:  35
+  Class: sg13cmos5l_buf_16     instances:  42
+  Class: sg13cmos5l_fill_2     instances: 4548
+  Class: sg13cmos5l_a22oi_1    instances: 1122
+  Class: sg13cmos5l_inv_2      instances:  21
+  Class: sg13cmos5l_antennanp  instances:  53
+  Class: sg13cmos5l_and4_1     instances:  44
+  Class: sg13cmos5l_nand2_1    instances: 1132
+  Class: sg13cmos5l_xnor2_1    instances: 703
+  Class: sg13cmos5l_or3_1      instances:  69
+  Class: sg13cmos5l_or4_1      instances:  23
+  Class: sg13cmos5l_decap_4    instances: 3851
+  Class: sg13cmos5l_buf_2      instances:  27
+  Class: sg13cmos5l_fill_1     instances: 4863
+  Class: sg13cmos5l_inv_1      instances: 533
+  Class: sg13cmos5l_o21ai_1    instances: 1239
+  Class: sg13cmos5l_dlygate4sd3_1 instances: 1141
+  Class: sg13cmos5l_nand3_1    instances: 458
+  Class: sg13cmos5l_nand3b_1   instances:  34
+  Class: sg13cmos5l_nor3_1     instances: 254
+  Class: sg13cmos5l_inv_4      instances:  13
+  Class: sg13cmos5l_nand2b_1   instances: 384
+  Class: sg13cmos5l_mux4_1     instances: 158
+  Class: sg13cmos5l_nand4_1    instances: 110
+  Class: sg13cmos5l_buf_8      instances: 150
+  Class: sg13cmos5l_tiehi      instances: 581
+  Class: sg13cmos5l_a221oi_1   instances: 279
+  Class: sg13cmos5l_nor4_1     instances: 117
+  Class: sg13cmos5l_inv_16     instances:   1
+Circuit contains 17653 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'tt_um_protocol_emulator'
+Circuit tt_um_protocol_emulator contains 67650 device instances.
+  Class: sg13cmos5l_a21oi_1    instances: 1174
+  Class: sg13cmos5l_decap_8    instances: 36759
+  Class: sg13cmos5l_a21o_1     instances: 140
+  Class: sg13cmos5l_xor2_1     instances:  94
+  Class: sg13cmos5l_nor2_1     instances: 1465
+  Class: sg13cmos5l_mux2_1     instances: 1404
+  Class: sg13cmos5l_inv_8      instances:   3
+  Class: RM_IHPSG13_1P_256x32_c2_bm_bist instances:   2
+  Class: sg13cmos5l_buf_1      instances: 1778
+  Class: sg13cmos5l_dfrbpq_1   instances: 1844
+  Class: sg13cmos5l_and2_1     instances: 297
+  Class: sg13cmos5l_or2_1      instances: 227
+  Class: sg13cmos5l_buf_4      instances:  63
+  Class: sg13cmos5l_tielo      instances: 183
+  Class: sg13cmos5l_nor2b_1    instances: 232
+  Class: sg13cmos5l_and3_1     instances:  35
+  Class: sg13cmos5l_buf_16     instances:  42
+  Class: sg13cmos5l_fill_2     instances: 4548
+  Class: sg13cmos5l_a22oi_1    instances: 1122
+  Class: sg13cmos5l_inv_2      instances:  21
+  Class: sg13cmos5l_antennanp  instances:  53
+  Class: sg13cmos5l_and4_1     instances:  44
+  Class: sg13cmos5l_nand2_1    instances: 1132
+  Class: sg13cmos5l_xnor2_1    instances: 703
+  Class: sg13cmos5l_or3_1      instances:  69
+  Class: sg13cmos5l_or4_1      instances:  23
+  Class: sg13cmos5l_decap_4    instances: 3851
+  Class: sg13cmos5l_buf_2      instances:  27
+  Class: sg13cmos5l_fill_1     instances: 4863
+  Class: sg13cmos5l_inv_1      instances: 533
+  Class: sg13cmos5l_o21ai_1    instances: 1239
+  Class: sg13cmos5l_dlygate4sd3_1 instances: 1141
+  Class: sg13cmos5l_nand3_1    instances: 458
+  Class: sg13cmos5l_nand3b_1   instances:  34
+  Class: sg13cmos5l_nor3_1     instances: 254
+  Class: sg13cmos5l_inv_4      instances:  13
+  Class: sg13cmos5l_nand2b_1   instances: 384
+  Class: sg13cmos5l_mux4_1     instances: 158
+  Class: sg13cmos5l_nand4_1    instances: 110
+  Class: sg13cmos5l_buf_8      instances: 150
+  Class: sg13cmos5l_tiehi      instances: 581
+  Class: sg13cmos5l_a221oi_1   instances: 279
+  Class: sg13cmos5l_nor4_1     instances: 117
+  Class: sg13cmos5l_inv_16     instances:   1
+Circuit contains 17653 nets, and 6 disconnected pins.
+
+Circuit was modified by parallel/series device merging.
+New circuit summary:
+
+Contents of circuit 1:  Circuit: 'tt_um_protocol_emulator'
+Circuit tt_um_protocol_emulator contains 17633 device instances.
+  Class: sg13cmos5l_a21oi_1    instances: 1174
+  Class: sg13cmos5l_decap_8    instances:   1
+  Class: sg13cmos5l_a21o_1     instances: 140
+  Class: sg13cmos5l_xor2_1     instances:  94
+  Class: sg13cmos5l_nor2_1     instances: 1465
+  Class: sg13cmos5l_mux2_1     instances: 1404
+  Class: sg13cmos5l_inv_8      instances:   3
+  Class: RM_IHPSG13_1P_256x32_c2_bm_bist instances:   2
+  Class: sg13cmos5l_buf_1      instances: 1778
+  Class: sg13cmos5l_dfrbpq_1   instances: 1844
+  Class: sg13cmos5l_and2_1     instances: 297
+  Class: sg13cmos5l_or2_1      instances: 227
+  Class: sg13cmos5l_buf_4      instances:  63
+  Class: sg13cmos5l_tielo      instances: 183
+  Class: sg13cmos5l_nor2b_1    instances: 232
+  Class: sg13cmos5l_and3_1     instances:  35
+  Class: sg13cmos5l_buf_16     instances:  42
+  Class: sg13cmos5l_fill_2     instances:   1
+  Class: sg13cmos5l_a22oi_1    instances: 1122
+  Class: sg13cmos5l_inv_2      instances:  21
+  Class: sg13cmos5l_antennanp  instances:  53
+  Class: sg13cmos5l_and4_1     instances:  44
+  Class: sg13cmos5l_nand2_1    instances: 1132
+  Class: sg13cmos5l_xnor2_1    instances: 703
+  Class: sg13cmos5l_or3_1      instances:  69
+  Class: sg13cmos5l_or4_1      instances:  23
+  Class: sg13cmos5l_decap_4    instances:   1
+  Class: sg13cmos5l_buf_2      instances:  27
+  Class: sg13cmos5l_fill_1     instances:   1
+  Class: sg13cmos5l_inv_1      instances: 533
+  Class: sg13cmos5l_o21ai_1    instances: 1239
+  Class: sg13cmos5l_dlygate4sd3_1 instances: 1141
+  Class: sg13cmos5l_nand3_1    instances: 458
+  Class: sg13cmos5l_nand3b_1   instances:  34
+  Class: sg13cmos5l_nor3_1     instances: 254
+  Class: sg13cmos5l_inv_4      instances:  13
+  Class: sg13cmos5l_nand2b_1   instances: 384
+  Class: sg13cmos5l_mux4_1     instances: 158
+  Class: sg13cmos5l_nand4_1    instances: 110
+  Class: sg13cmos5l_buf_8      instances: 150
+  Class: sg13cmos5l_tiehi      instances: 581
+  Class: sg13cmos5l_a221oi_1   instances: 279
+  Class: sg13cmos5l_nor4_1     instances: 117
+  Class: sg13cmos5l_inv_16     instances:   1
+Circuit contains 17653 nets, and 6 disconnected pins.
+Contents of circuit 2:  Circuit: 'tt_um_protocol_emulator'
+Circuit tt_um_protocol_emulator contains 17633 device instances.
+  Class: sg13cmos5l_a21oi_1    instances: 1174
+  Class: sg13cmos5l_decap_8    instances:   1
+  Class: sg13cmos5l_a21o_1     instances: 140
+  Class: sg13cmos5l_xor2_1     instances:  94
+  Class: sg13cmos5l_nor2_1     instances: 1465
+  Class: sg13cmos5l_mux2_1     instances: 1404
+  Class: sg13cmos5l_inv_8      instances:   3
+  Class: RM_IHPSG13_1P_256x32_c2_bm_bist instances:   2
+  Class: sg13cmos5l_buf_1      instances: 1778
+  Class: sg13cmos5l_dfrbpq_1   instances: 1844
+  Class: sg13cmos5l_and2_1     instances: 297
+  Class: sg13cmos5l_or2_1      instances: 227
+  Class: sg13cmos5l_buf_4      instances:  63
+  Class: sg13cmos5l_tielo      instances: 183
+  Class: sg13cmos5l_nor2b_1    instances: 232
+  Class: sg13cmos5l_and3_1     instances:  35
+  Class: sg13cmos5l_buf_16     instances:  42
+  Class: sg13cmos5l_fill_2     instances:   1
+  Class: sg13cmos5l_a22oi_1    instances: 1122
+  Class: sg13cmos5l_inv_2      instances:  21
+  Class: sg13cmos5l_antennanp  instances:  53
+  Class: sg13cmos5l_and4_1     instances:  44
+  Class: sg13cmos5l_nand2_1    instances: 1132
+  Class: sg13cmos5l_xnor2_1    instances: 703
+  Class: sg13cmos5l_or3_1      instances:  69
+  Class: sg13cmos5l_or4_1      instances:  23
+  Class: sg13cmos5l_decap_4    instances:   1
+  Class: sg13cmos5l_buf_2      instances:  27
+  Class: sg13cmos5l_fill_1     instances:   1
+  Class: sg13cmos5l_inv_1      instances: 533
+  Class: sg13cmos5l_o21ai_1    instances: 1239
+  Class: sg13cmos5l_dlygate4sd3_1 instances: 1141
+  Class: sg13cmos5l_nand3_1    instances: 458
+  Class: sg13cmos5l_nand3b_1   instances:  34
+  Class: sg13cmos5l_nor3_1     instances: 254
+  Class: sg13cmos5l_inv_4      instances:  13
+  Class: sg13cmos5l_nand2b_1   instances: 384
+  Class: sg13cmos5l_mux4_1     instances: 158
+  Class: sg13cmos5l_nand4_1    instances: 110
+  Class: sg13cmos5l_buf_8      instances: 150
+  Class: sg13cmos5l_tiehi      instances: 581
+  Class: sg13cmos5l_a221oi_1   instances: 279
+  Class: sg13cmos5l_nor4_1     instances: 117
+  Class: sg13cmos5l_inv_16     instances:   1
+Circuit contains 17653 nets, and 6 disconnected pins.
+
+Circuit 1 contains 17633 devices, Circuit 2 contains 17633 devices.
+Circuit 1 contains 17653 nets,    Circuit 2 contains 17653 nets.
+
+
+Final result: 
+Circuits match uniquely.
+.
+Logging to file "/home/rishadd/pe_tt8b/runs/tt8b/66-netgen-lvs/reports/lvs.netgen.rpt" disabled
+LVS Done.

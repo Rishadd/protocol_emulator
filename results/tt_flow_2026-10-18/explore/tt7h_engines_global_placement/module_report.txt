@@ -1,0 +1,5 @@
+tt7h: 13546 cells assigned to boxes, 953 unassigned, 2 macros; die 1289 x 711 um
+module          cells  area um^2 inside box  5-95% span um^2 span/area       centroid
+eng0             6773     103116     100.0%           276652       2.7 (  694,  205)
+eng1             6773     103116      96.3%           304157       2.9 (  767,  513)
+overall fence compliance: 98.1 % of the assigned cells have their centre inside their box

@@ -1,0 +1,23 @@
+payload: 1024 bytes, 256 distinct byte values, f_clk=50 MHz, cycle budget/run=25M
+    baud    cpb      D     actual    err% bytes frames byteOK exact rxtol+% rxtol-% Mcycles wall s  status
+    9600   5208   5206     9600.6  +0.006   245    245    245   245    5.25    5.25   19.40  215.6  PASS pc=195 fault=0 rejected=0
+  115200    434    432   115207.4  +0.006  1024   1024   1024  1024    5.25    5.25    6.09   63.0  PASS pc=195 fault=0 rejected=0
+
+--- limit tests ---
+D=0 -> 2 cycles/bit = 25 Mbaud (fastest the loop can go):
+    baud    cpb      D     actual    err% bytes frames byteOK exact rxtol+% rxtol-% Mcycles wall s  status
+25000000.0      2      0 25000000.0  +0.000    64     64     64    64    5.75    5.25    0.00    0.3  PASS pc=195 fault=0 rejected=0
+D=1 -> 3 cycles/bit = 16.67 Mbaud:
+16666666.666666666      3      1 16666666.7  +0.000    64     64     64    64    5.75    5.25    0.00    0.4  PASS pc=195 fault=0 rejected=0
+host ignores tx_full (writes 1 KB back-to-back into a 4-deep FIFO) @115200:
+  115200    434    432   115207.4  +0.006  1024      5      4     4    0.00    0.00    0.03    0.5  FAIL pc=195 fault=0 rejected=1019
+           frame 4: got edges [434, 868, 1302, 1736, 2170, 3472, 3906] want [434, 868, 2170, 3472, 3906] stop_ok=True
+   engine transmitted 5 of 1024 bytes; first 8 kept: 5468652075 (payload starts 5468652071756963); every transmitted frame exact=False
+odd D (bit period 435 cycles) still exact:
+114942.52873563218    435    433   114942.5  +0.000    64     64     64    64    5.25    5.25    0.28    3.0  PASS pc=195 fault=0 rejected=0
+
+2/2 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
+
+real	4m47.789s
+user	0m0.015s
+sys	0m0.000s

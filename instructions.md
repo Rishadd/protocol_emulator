@@ -2,10 +2,10 @@
 
 Companion to the RTL in [src/](src/) and the tests in [tb/](tb/). This is the
 contract the host loader must follow when it writes programs into instruction
-memory. Anything marked **VERIFIED** has passed simulation (`run_tests.ps1` and the management/duplex testbenches);
-UART TX and RX have also run on a DE0-Nano; SPI master and slave (all 4 modes) and the I2C master (100/400/1000 kHz) are
-verified in simulation only. Anything marked **DRAFT** (JTAG) is derived from the same cycle rules but has not been run on
-the RTL yet. Status as of 2026-10-12.
+memory. Anything marked **VERIFIED** has passed simulation (`run_tests.ps1`, the Python suites in `host/`, and the management/duplex
+testbenches); UART TX and RX have also run on a DE0-Nano. SPI master and slave (all 4 modes), the I2C master and slave
+(100/400/1000 kHz), SMBus PEC, Modbus RTU, 1-Wire, JTAG and CAN 2.0A are verified in simulation only, each against a peer model
+written from the specification (see the results documents named in each section). Status as of 2026-10-18.
 
 ---
 
@@ -25,10 +25,10 @@ One operand, one meaning per opcode. No sub-fields except `CFG`.
 |---|---|---|---|---|---|
 | 0 | `00000` | `NOP` | — | nothing | 1 |
 | 1 | `00001` | `WAIT d` | delay | hold PC | d+1 |
-| 2 | `00010` | `JMP a` | addr[5:0] | pc ← a | 1 |
+| 2 | `00010` | `JMP a` | addr[7:0] | pc ← a | 1 |
 | 3 | `00011` | `HALT` | — | halted=1, fault=0 | — |
 | 4 | `00100` | `SETL n` | count[15:0] | loop counter ← n | 1 |
-| 5 | `00101` | `DJNZ a` | addr[5:0] | loop--; jump to a if result ≠ 0 | 1 |
+| 5 | `00101` | `DJNZ a` | addr[7:0] | loop--; jump to a if result ≠ 0 | 1 |
 | 6 | `00110` | `PULL` | — | block until tx_fifo non-empty; OSR ← word | 1 (+wait) |
 | 7 | `00111` | `PUSH` | — | block until rx_fifo not full; rx_fifo ← ISR; ISR ← 0 | 1 (+wait) |
 | 8 | `01000` | `OUT1 d` | delay | pin[out_pin] ← OSR bit; shift OSR | d+1 |
@@ -40,13 +40,21 @@ One operand, one meaning per opcode. No sub-fields except `CFG`.
 | 14 | `01110` | `WAITH p` | pin[2:0] | block until pin_in[p]==1 | 1 (+wait) |
 | 15 | `01111` | `WAITL p` | pin[2:0] | block until pin_in[p]==0 | 1 (+wait) |
 | 16 | `10000` | `CFG v` | see below | shifter / pin routing config | 1 |
-| 17 | `10001` | `JPH p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==1, else advance | 1 |
-| 18 | `10010` | `JPL p,a` | `[8:6]` pin, `[5:0]` addr | jump to a if pin_in[p]==0, else advance | 1 |
-| 19 | `10011` | `JPO a` | addr[5:0] | jump to a if the next OSR bit is 1, else advance; OSR shifts (bit consumed) | 1 |
+| 17 | `10001` | `JPH p,a` | `[10:8]` pin, `[7:0]` addr | jump to a if pin_in[p]==1, else advance | 1 |
+| 18 | `10010` | `JPL p,a` | `[10:8]` pin, `[7:0]` addr | jump to a if pin_in[p]==0, else advance | 1 |
+| 19 | `10011` | `JPO a` | addr[7:0] | jump to a if the next OSR bit is 1, else advance; OSR shifts (bit consumed) | 1 |
 | 20 | `10100` | `PUSHI v` | value[26:0] | block until rx_fifo not full; rx_fifo ← zero-extended v; ISR untouched | 1 (+wait) |
-| 21–31 | | *(reserved)* | | | trap |
+| 21 | `10101` | `LDI rd,imm` | `[26:24]` rd, `[23:0]` imm24 | R[rd] ← imm24 (zero-extended); flags unchanged | 1 |
+| 22 | `10110` | `ALU f,rd,rs/imm` | `[26:23]` f, `[22:20]` rd, `[19:17]` rs, `[16]` use_imm, `[15:0]` imm16 | R[rd] ← R[rd] f src; flags Z N C | 1 |
+| 23 | `10111` | `JCC c,a` | `[10:8]` cond, `[7:0]` addr | jump to a if the condition holds, else advance | 1 |
+| 24 | `11000` | `RGET rd,src` | `[2:0]` rd, `[6:4]` src | R[rd] ← OSR / ISR / loop counter / pins / CRC value / TX FIFO word | 1 (+stall; CRC directly after a `CRC`: 2) |
+| 25 | `11001` | `RPUT dst,rs` | `[2:0]` rs, `[6:4]` dst | OSR / ISR / loop counter / RX FIFO ← R[rs] | 1 (+stall) |
+| 26 | `11010` | `WAITR rs` | `[2:0]` rs | hold PC R[rs][26:0]+1 cycles (WAIT with the delay from a register) | R+1 |
+| 27 | `11011` | `CRC cop,rs` | `[26:24]` cop, `[2:0]` rs | CRC unit: RST, set POLY / INIT / XOROUT / FMT, feed a BIT or a BYTE | 1 |
+| 28–31 | | *(reserved)* | | | trap |
 
-`CFG` operand: `[2:0]` out_pin, `[5:3]` in_pin, `[6]` OSR MSB-first, `[7]` ISR MSB-first.
+`CFG` operand: `[2:0]` out_pin, `[5:3]` in_pin, `[6]` OSR MSB-first, `[7]` ISR MSB-first. Opcodes 21–27 are described in the section
+"Register, ALU and CRC extension" below; opcodes 0–20 are unchanged by it (encodings, timing, behaviour).
 
 **Trap** = `halted=1, fault=1`, PC frozen, no side effects. Only reset clears it.
 
@@ -71,6 +79,42 @@ d = cycles_per_bit − (number of 1-cycle instructions in the bit loop) − 1
 |---|---|---|
 | LSB-first (`CFG[6]/[7]=0`) | host writes byte in `[7:0]`; bit 0 goes out first | after 8× `IN1`, byte sits in `[31:24]` |
 | MSB-first (`CFG[6]/[7]=1`) | host writes byte in `[31:24]`; bit 31 goes out first | after 8× `IN1`, byte sits in `[7:0]` |
+
+### Register, ALU and CRC extension (opcodes 21–27) — **VERIFIED**
+
+Design and test evidence: [docs/ALU_CRC_I2CSLAVE_PLAN.md](docs/ALU_CRC_I2CSLAVE_PLAN.md), [docs/ALU_CRC_RESULTS.md](docs/ALU_CRC_RESULTS.md).
+Per engine: 8 registers R0–R7 (32 bit, reset 0, cleared when the engine is held), flags **Z N C**, and one programmable CRC unit.
+`host/asm.py` is the assembler (labels, `Asm.words()`), `host/isa_model.py` the cycle-exact model used by the differential test.
+
+`ALU f,rd,src` — `src` = `R[rs]`, or the 16-bit immediate when bit 16 is set; `f` (13–15 trap):
+
+| f | Name | Result | Z | N | C |
+|---|---|---|---|---|---|
+| 0 | MOV | src | result==0 | msb | unchanged |
+| 1 | ADD | a + src | result==0 | msb | carry out |
+| 2 | SUB | a − src | result==0 | msb | **1 = no borrow (a ≥ src unsigned)** |
+| 3 / 4 / 5 | AND / OR / XOR | a & src, a \| src, a ^ src | result==0 | msb | unchanged |
+| 6 / 7 | SHL / SHR | a << / >> src[4:0] (logical) | result==0 | msb | last bit shifted out (unchanged for a shift of 0) |
+| 8 | CMP | a − src, **no write** | as SUB | as SUB | as SUB |
+| 9 | TST | a & src, **no write** | result==0 | msb | unchanged |
+| 10 | NOT | ~src | result==0 | msb | unchanged |
+| 11 | PAR | ^src (parity) | result==0 | 0 | unchanged |
+| 12 | REV8 | src[7:0] bit-reversed | result==0 | 0 | unchanged |
+
+`JCC` conditions: 0 Z, 1 NZ, 2 C, 3 NC, 4 N, 5 NN, 6 GTU (C and not Z), 7 LEU (not C or Z). After `CMP a,b`: equal = Z, a ≥ b = C, a < b = NC.
+`RGET` sources (`[6:4]`): 0 OSR, 1 ISR, 2 loop counter, 3 pins (8 bit, 2 clocks old), 4 CRC value (directly after a `CRC` instruction it
+waits 1 clock, see below), 5 TX FIFO word (pops; stalls while empty).
+`RPUT` destinations: 0 OSR, 1 ISR, 2 loop counter (low 16 bits), 3 RX FIFO (stalls while full). A stalled instruction holds the PC with no side effect.
+`CRC` ops (`[26:24]`): 0 RST (register ← init), 1 POLY, 2 INIT, 3 XOROUT, 4 FMT (`[4:0]` width−1, `[5]` refin, `[6]` refout) ← R[rs]; 5 BIT feeds `R[rs][0]`;
+6 BYTE feeds `R[rs][7:0]` (LSB first when refin, MSB first otherwise; 8 bit steps in one cycle); 7 traps. Reset configuration: CRC-32
+(poly 04C11DB7, init and xorout FFFFFFFF, reflected). Any Rocksoft model of width 1–32 can be programmed; `RGET rd,CRC` returns
+`(refout ? reflect(register) : register) ^ xorout` masked to the width. Checked against the published catalogue check values (`host/crc_model.py`).
+**CRC timing:** every `CRC` instruction takes 1 clock, but the CRC unit executes it one clock later (commands are registered, then executed in
+order, one per clock, so `CRC` instructions can follow each other back to back). The only visible effect: `RGET rd,CRC` placed directly after a
+`CRC` instruction waits 1 clock (2 clocks in total) and then reads the updated value; one instruction or more in between, it takes 1 clock.
+`Asm.arrivals` counts this; `Asm.crc_read_waits()` lists such places. None of the protocol firmware has one. This pipeline stage takes the
+instruction fetch, decode and register read out of the path into the 8-step CRC chain (docs/TEST_RESULTS.md section 8.4).
+`WAITR` makes bit times that are not a constant possible (`host/can_prog.py` pads every loop iteration to an exact `cpb` clocks with a per-exit `WAITR`).
 
 ---
 
@@ -218,7 +262,7 @@ Measured slave contract (system clocks; at 50 MHz multiply by 20 ns): SCLK half 
 CS fall to first edge >= 6 (CPHA=0) / 1 (CPHA=1), CS inactive >= 4. Response: samples MOSI 1-3 clocks after the edge,
 updates MISO 3-5 clocks after the shift edge, releases MISO 3 clocks after CS rises.
 
-## 4. I2C master — **VERIFIED** (simulation only, `host/i2c_test.py`); I2C slave deferred
+## 4. I2C master and slave — **VERIFIED** (simulation only, `host/i2c_test.py`, `host/i2c_slave_test.py`)
 
 Design and limits: [docs/I2C_PLAN.md](docs/I2C_PLAN.md); results: [docs/I2C_RESULTS.md](docs/I2C_RESULTS.md).
 Program from `host/i2c_prog.py` (`master(khz, f_clk)`, 46 words, 100 / 400 / 1000 kHz; delays follow the UM10204
@@ -258,32 +302,54 @@ stop=True)`; chain `stop=False` + a second transaction for a repeated START.
 Measured: SCL low `tA+2` clocks, high `tH+3` plus 1-2 clocks of synchronizer after the line is really high. Every
 UM10204 minimum met at 100/400/1000 kHz incl. maximum rise time; max SCL with a zero-delay slave 6.25 MHz.
 
-**I2C slave:** not implemented. The design (host-decided address ACK, stretching at byte boundaries) counts ~64-67
-words against 64 (no CALL/RET, two-path STOP/Sr watch copied three times); see I2C_PLAN §6.4.1.
+**I2C slave** (`i2c_prog.slave()`, 108 words, `host/i2c_slave_test.py`): 7-bit address, same pins and open-drain claims as the master, no timing
+parameters (it follows the bus: START / STOP are detected by polling SDA while SCL is high, SCL is held low at byte boundaries for ACK and FIFO flow control).
+TX FIFO word 0 = own address; then one word per byte the master reads. RX FIFO: write data `0x000–0x0FF`; events `EV|0x100|addr_byte` (address matched),
+`EV|0x200|nack` (a read byte was sent), `EV|1` STOP, `EV|2` repeated START. A non-matching address is not acknowledged and the slave ignores the
+bus until the next START. Verified at 100/400/1000 kHz against a master model written from UM10204, with stretch, repeated START, address mismatches
+of every single address bit, and 16 firmware mutants.
+
+**SMBus PEC** (`i2c_prog.master_pec()`, 88 words, `host/smbus_test.py`): the master word format plus three flags in the low half of the TX word —
+bit 13 CRC_RST (reset the CRC before this byte), bit 15 PEC_SEND (the 8 data bits are replaced by the CRC so far: the PEC byte of a write), bit 14 PEC_CHK
+(after this received byte the CRC over everything including it must be 0, else `EV|0x10` is pushed). CRC-8, poly 0x07, init 0, no reflection, fed with
+every byte of the transaction, address bytes included. Bus timing is that of the plain master; the CRC work runs while SCL is held low.
 
 ---
 
-## 5. JTAG (Shift-IR / Shift-DR) — **DRAFT**
+## 5. JTAG (IEEE 1149.1) — **VERIFIED** (simulation only, `host/jtag_test.py`)
 
-Reuses the SPI pins: `2`=TCK, `3`=TDI, `4`=TDO, `5`=TMS. TMS is driven by `SETH/SETLO`
-between shift loops to walk the TAP state machine; the shift loop itself is the SPI
-loop with TMS held low, LSB-first (`CFG 0x23`: out_pin=3, in_pin=4, both LSB-first).
+The old SPI-loop draft is replaced by a register-based controller (`host/jtag_prog.py`, 87 words). Pins: `3`=TCK, `4`=TMS, `5`=TDI (push-pull), `6`=TDO (input).
+Host TX words (op in `[31:28]`): `1` TMS sequence (`[27:24]` n = 1..15 clocks, `[15:0]` the TMS bits, bit 0 first), `2` SCAN (`[15:0]` bits n = 1..65535,
+bit 16 = raise TMS on the last bit; followed by ceil(n/32) TDI words, bit 0 of word 0 first), `3` IDLE (`[15:0]` clocks with TMS=0). A SCAN returns ceil(n/32)
+RX words with the TDO bits sampled at each rising TCK (a partial last word is right-aligned). TCK period = 2·half+2 clocks (half = 10: about 2 MHz). The
+test drives a Verilog TAP written from the standard (IDCODE, 32/64-bit user registers, BYPASS) and checks the pin stream against a Python TAP model; TCK
+half periods 3 and 40, scans of 1..100 bits, all pause states, four random walks, four firmware mutants.
 
-```
-shift N bits (TMS=0):
- SETL  N
- OUT1  H       TDI <- bit (TCK low)
- SETH  2       TCK rise    (target samples TDI)
- IN1   H       capture TDO (drove on previous TCK fall)
- SETLO 2       TCK fall
- DJNZ  <OUT1>
-```
+---
 
-The last bit of a shift must have TMS=1 to exit Shift-xR: run the loop for N−1,
-then `SETH 5` and one more unrolled bit. Chains longer than 32 bits are streamed by
-the host: `PULL` every 32 bits, `PUSH` every 32 bits — the engine never needs to know
-the chain length. TAP-walk sequences (Test-Logic-Reset → Run-Test/Idle → Select-DR →
-Capture → Shift) are pure `SETH/SETLO 5` + `SETH/SETLO 2` pairs.
+## 5b. Modbus RTU — **VERIFIED** (simulation only, `host/modbus_test.py`)
+
+UART 8N1 with the CRC-16/MODBUS unit and the 3.5-character silences (`host/modbus_prog.py`). `modbus_tx` (42 words): host words `[N, b0 .. bN−1]` per frame; the
+engine sends the payload, the CRC low byte then high byte, then waits 4 characters (44 bit times). `modbus_rx` (engine 1 in the tests): pushes every received
+byte as a plain word and, after 3.5 characters of silence, one event `EV | ok<<8 | byte_count` (ok = at least 4 bytes and the CRC over the frame incl. its CRC is 0).
+Tested at 115200 and 19200 baud, ±2 % sender baud error, 16-bit-time gaps inside a frame, exact 40-bit-time frame gaps, ten firmware mutants.
+
+## 5c. 1-Wire master — **VERIFIED** (simulation only, `host/onewire_test.py`)
+
+Standard speed on pin 2 (open-drain), CRC-8/MAXIM from the CRC unit (`host/onewire_prog.py`, 79 words). TX words `op<<28 | data`: 1 RESET (→ `EV|0x100|presence`),
+2 WRITE byte, 3 READ byte (→ the byte, also fed to the CRC), 4 CRC RESET, 5 CRC CHECK (→ `EV|0x200|ok`). Slot timing is measured on the pad against the
+Maxim windows by the test (reset ≥ 480 µs, write-1 low 1..15 µs, write-0 low 60..120 µs, every slot 60..120 µs) with a device model written from the timing
+rules; Read ROM and Read Scratchpad with a corrupted CRC are detected on chip.
+
+## 5d. CAN 2.0A — **VERIFIED** (simulation only, `host/can_test.py`)
+
+Transmit and receive of 11-bit-identifier data frames on one open-drain pin (pin 0, dominant = 0), `host/can_prog.py` (`can_tx` 112 words, `can_rx` 186 words), any bit
+time (tested at 1 Mbit/s, 500 kbit/s, 200 kbit/s). Every bit-loop iteration is padded to exactly `cpb` clocks (computed by `Asm.arrivals`). The engine does bit
+stuffing and destuffing (ALU), CRC-15 (CRC unit), the ACK slot and EOF/IFS. TX words: `{dlc[15:12], id[10:0]}` then ceil(min(dlc,8)/4) data words (byte 0 in
+`[31:24]`); the result is `EV|ack`. RX pushes `EV|dlc<<12|id`, the data words and a status word `EV|1<<25|err<<4|ok` (err: 1 stuff, 2 CRC, 3 form, 4 remote/extended
+frame, which is not supported) and drives the ACK slot dominant for good frames. Not included: arbitration, error frames, resynchronisation (the receiver tolerates
+about ±0.3 % sender clock error), extended identifiers, remote frames. The test uses a Verilog bus node and a Python bit-level encoder/decoder written from
+the CAN 2.0 rules; frames with stuff bits at every section boundary and behind the CRC are searched for and sent; 20 firmware mutants.
 
 ---
 
@@ -291,10 +357,10 @@ Capture → Shift) are pure `SETH/SETLO 5` + `SETH/SETLO 2` pairs.
 
 | Capability | Used by | Exists in RTL today |
 |---|---|---|
-| Write 64×32 instruction memory while engine held | all | **yes** — `imem_we/waddr/wdata`, accepted only while `run`=0; over SPI at `base+0x100+4i` (simulation) |
+| Write 256×32 instruction memory while engine held | all | **yes** — `imem_we/waddr/wdata`, accepted only while `run`=0; over SPI at `base+0x400+4i`, i = 0..255 (simulation; was 64 words at `base+0x100` before the 256x32 macro, see docs/BIGMEM_RESULTS.md) |
 | Start/stop an engine without resetting FIFOs or memory | all | **yes** — `run` input; SPI `base+0x000` bit 0 |
 | Write `tx_fifo` (32-bit words) | all | yes (`tx_wr_en/tx_wr_data/tx_full`); SPI `base+0x200` |
-| Read `rx_fifo` | SPI, I2C ACK, JTAG | yes (`rx_rd_en/rx_rd_data/rx_empty`); SPI `base+0x204` |
+| Read `rx_fifo` | SPI, I2C, JTAG, Modbus, 1-Wire, CAN | yes (`rx_rd_en/rx_rd_data/rx_empty`); SPI `base+0x204` |
 | Assert/release reset | all | yes |
 | Read `pc`, `halted`, `fault` | debug | yes; SPI `base+0x000` read |
 | Read back instruction memory | verify after load | **no** (flop memory has no read port for the host; becomes possible with SRAM) |

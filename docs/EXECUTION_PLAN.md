@@ -1,7 +1,20 @@
 # Protocol Emulator ASIC — Execution Plan
 
 Companion to [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md) | 2026-09-27, revised 2026-10-11 |
-Status (2026-10-12): **two engines, SRAM instruction memory, pin manager and SPI management link done in simulation; UART TX/RX/duplex proven on the DE0-Nano; SPI master+slave and I2C master verified in simulation (engine, full chip, concurrent); chip 150k um^2 (20.8 %) after synthesis; GDS flow not started**
+Status (2026-10-12, superseded by the table below): **two engines, SRAM instruction memory, pin manager and SPI management link done in simulation; UART TX/RX/duplex proven on the DE0-Nano; SPI master+slave and I2C master verified in simulation (engine, full chip, concurrent); chip 150k um^2 (20.8 %) after synthesis; GDS flow not started**
+
+## Status 2026-10-18 (current; everything below this section is the 2026-10-11 snapshot, kept as the record of earlier decisions)
+
+| Item | State | Where |
+|---|---|---|
+| Instruction set | 28 opcodes: the 21 old ones plus `LDI`, `ALU`, `JCC`, `RGET`, `RPUT`, `WAITR`, `CRC` | [../instructions.md](../instructions.md) |
+| ALU (8 x 32-bit registers, 13 functions, flags) and programmable CRC unit | done; random differential test 0 mismatches, 66 of 66 planted bugs caught | [TEST_RESULTS.md](TEST_RESULTS.md) sections 2-3 |
+| Instruction memory | IHP SRAM macro, 256 x 32 per engine | [BIGMEM_RESULTS.md](BIGMEM_RESULTS.md) |
+| Protocols as firmware | UART, SPI (4 modes), I2C master + slave, SMBus PEC, Modbus RTU, 1-Wire, JTAG, CAN 2.0A, all against peer models; USB low speed dropped | [TEST_RESULTS.md](TEST_RESULTS.md) section 4 |
+| Regression | 26 of 26 suites pass (`python host/regress.py`) | [TEST_RESULTS.md](TEST_RESULTS.md) |
+| Tiny Tapeout flow | design before the ALU / CRC units: precheck, LVS, gate-level pass (tt5). With the units: routing clean, signoff clock 30 ns (33 MHz; typical corner meets 50 MHz) | [TEST_RESULTS.md](TEST_RESULTS.md) section 8, [ALU_CRC_RESULTS.md](ALU_CRC_RESULTS.md) |
+| Floorplan | flat against bounding boxes compared; engine boxes requested | [TEST_RESULTS.md](TEST_RESULTS.md) section 8.3 |
+| Open | management frame v2 (CRC, sequence number); shuttle acceptance of the SRAM macro on CMOS5L (A9); FPGA bring-up of SPI / I2C / new protocols; formal properties; repository public and GitHub workflows run; 50 MHz at the slow corner (needs a pipeline stage for `CRC BYTE`) | [CHALLENGE_CHECK.md](CHALLENGE_CHECK.md) |
 
 Challenge deadline: **2027-01-18** (about 14 weeks from this revision). Target shuttle: March 2027 CMOS5L.
 

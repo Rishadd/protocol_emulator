@@ -1,0 +1,11 @@
+{
+  "note": "Floorplan v3: like v2 (only ALU, CRC and the management block are boxed) but the arithmetic boxes are sized for about 40 % utilisation instead of 60 %: the flat placement spreads these dense XOR/mux blocks over more area, and boxes at 60 % left the router no room (floorplan v1/v2 global-routing overflow 1291 / 1076 against 225 for the flat run). SRAM 0 at (60,120)-(476.6,238.8), SRAM 1 at (60,470)-(476.6,588.8).",
+  "version": 3,
+  "boxes": [
+    {"name": "e0_alu",  "match": ["u_eng0.alu."],  "box": [500, 10, 814, 324]},
+    {"name": "e0_crc",  "match": ["u_eng0.crc."],  "box": [828, 10, 1096, 278]},
+    {"name": "e1_alu",  "match": ["u_eng1.alu."],  "box": [500, 385, 814, 699]},
+    {"name": "e1_crc",  "match": ["u_eng1.crc."],  "box": [828, 385, 1096, 653]},
+    {"name": "mgmt",    "match": ["u_mgmt.", "u_spi.", "u_pins."], "box": [20, 598, 340, 702]}
+  ]
+}

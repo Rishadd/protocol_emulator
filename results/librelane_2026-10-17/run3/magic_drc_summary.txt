@@ -1,0 +1,4 @@
+files: ['/home/rishadd/pe_run/librelane/runs/run3/62-magic-drc/reports/drc.magic.rpt']
+total 116612 inside macros 116612 outside macros 0
+outside by rule: []
+top rules: [('Metal2 minimum area < 5760 (M2.d)', 61440), ("Can't overlap those layers", 52190), ("This layer can't abut or partially overlap between subcells", 1376), ('Extension of tie diffusion beyond tie contact < 6.0um (LU.d, LU.d1)', 1300), ('N-Diffusion spacing to N-well in SRAM < 54 (NW.d exception)', 234)]
