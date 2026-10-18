@@ -1,5 +1,6 @@
 // 8 GPIO pins: per-pin output data + output enable registers, 2-stage input sync.
 // Reset releases every pin (oe=0), so the chip never drives before firmware says so.
+// pin_in_sync_next = sync0 = what pin_in_sync will be after the coming edge (the fetch stage resolves JPH / JPL one clock early).
 module pin_block (
     input  wire       clk,
     input  wire       rst_n,
@@ -12,10 +13,12 @@ module pin_block (
     input  wire [7:0] pin_in,
     output reg  [7:0] pin_out,
     output reg  [7:0] pin_oe,
-    output wire [7:0] pin_in_sync
+    output wire [7:0] pin_in_sync,
+    output wire [7:0] pin_in_sync_next
 );
     reg [7:0] sync0, sync1;
     assign pin_in_sync = sync1;
+    assign pin_in_sync_next = sync0;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

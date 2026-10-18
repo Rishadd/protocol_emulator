@@ -1,0 +1,82 @@
+--- M1 write all 256 words, read back
+--- M1b storage inside the macro holds the full 32-bit word at the same index
+--- M1c peek helper sees the same storage
+--- M2 we=0 does not write
+--- M3 single overwrite disturbs no other word
+--- M4 read latency is exactly one clock
+--- M4b high addresses: bit 6 and bit 7 of the address are decoded (no aliasing)
+--- M5 write then read the same address in the next cycle sees the new word
+--- M6 back-to-back writes, one per cycle
+--- M7 INIT_FILE image readable, then overwritable
+--- M8 poke/load_hex helpers
+RESULT tb_instr_mem: PASS
+RESULT tb_delay_counter: PASS
+RESULT tb_loop_counter: PASS
+RESULT tb_fifo: PASS
+RESULT tb_shift_reg: PASS
+RESULT tb_alu_unit: PASS
+RESULT tb_crc_unit: PASS
+RESULT tb_engine_alu: PASS
+RESULT tb_pin_block: PASS
+RESULT tb_control_unit: PASS
+--- B1 pc flow
+--- B2 delay stall
+--- B3 DJNZ loop
+--- B4 PULL blocking
+--- B5 reserved opcode trap
+--- B6 UART 115200 @50MHz (BIT=434, D=432)
+--- B7 UART 9600 @50MHz (BIT=5208, D=5206)
+--- B8 reset mid-frame
+RESULT tb_engine_top: PASS
+RESULT tb_rx_led_sink: PASS
+--- F1 reset state: engine held, pins released, nothing executes
+--- F2 explicit halt (CTRL=0), then single instruction writes
+--- F3 RUN executes the written word: HALT
+--- F4 instruction write while running is rejected
+--- F5 overwrite word 0 with a reserved opcode -> fault proves new word executes
+--- F6 RUN released the pins it drove (word 0 = DIRO 4, word 1 = HALT)
+--- F7 rejected frames
+--- F8 SCLK sweep (half period 8.7, 13.3, 50, 8 clocks) and back-to-back frames
+--- F9 reset mid-frame leaves no residue
+RESULT tb_mgmt_frame: PASS
+--- L1 pin-pattern program (19 words, every non-FIFO opcode), HALT fill
+--- L2 reload while running is refused; after RUN=0 a new image runs
+--- L3 256-word program that executes every word (jump back from word 255)
+--- L4 UART TX image (src/fpga/uart_tx_prog.hex) loaded over SPI
+--- L5 UART RX image (src/fpga/uart_rx_prog.hex) loaded over SPI
+RESULT tb_mgmt_load: PASS
+--- D1 only engine 0 loaded and run; engine 1 never written, stays held
+--- D2 only engine 1 loaded and run; engine 0 held, its memory kept
+--- D3 both loaded word-interleaved, both run (P0..P2 and P4..P6)
+--- D4 engine 0 = UART TX image, engine 1 = UART RX image
+--- D5 swapped: engine 0 = RX, engine 1 = TX
+--- D6 load engine 1 while engine 0 runs; engine 0 writes refused, never disturbed
+--- D7 stop engine 1 alone, engine 0 continues; restart engine 1 from PC 0
+--- D8 pin conflict: both engines drive P0, owned by engine 0 (pin manager)
+--- D9 rejected addresses
+--- D10 distinct data in all 256 words of both engines (no aliasing on any of the 8 address bits)
+RESULT tb_mgmt_dual: PASS
+--- R1 after reset: STATUS = alive only, CTRL reads 0, MISO low while idle
+--- R2 engine 1 = UART RX image, RUN; CTRL read shows RUN, PC parked at WAITL
+--- R3 one UART byte -> STATUS rx bit -> READ pops it
+--- R4 four bytes (FIFO full) read back in order; then empty read
+--- R5 aborted READ (CS_N up after 5 bytes) pops nothing
+--- R6 byte arriving mid-READ: frame said empty -> returns 0, pops nothing
+--- R7 both engines run the RX image on the same line; FIFOs read independently
+--- R8 CTRL read reflects halted and fault
+--- R8b CTRL read shows an 8-bit pc (words above 63)
+--- R9 unreadable addresses: data 0 and err
+--- R10 read path over the SCLK sweep (half period 8, 8.7, 13.3, 50 clocks)
+RESULT tb_mgmt_read: PASS
+--- T1 engine 0 = UART TX image, one byte over SPI -> P0
+--- T2 64-byte stream, SPI ~4.5x faster than UART: STATUS flow control
+--- T3 preload while held: 4 accepted, 5th dropped (STATUS full), then RUN sends 4
+--- T4 aborted TX write frame pushes nothing
+--- T5 engine 1 = UART TX image (engine 0 held); writes to engine 1 only
+--- T6 SCLK sweep on the write path (half period 8.7 and 50 clocks)
+--- T7 near-miss TX addresses push nothing and set err
+RESULT tb_mgmt_tx: PASS
+RESULT tb_fetch_equiv: PASS
+RESULT tb_engine_ops: PASS
+RESULT tb_pin_mgr: PASS
+RESULT tb_mgmt_pins: PASS

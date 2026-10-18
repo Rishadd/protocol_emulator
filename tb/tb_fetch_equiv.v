@@ -149,7 +149,7 @@ module tb_fetch_equiv;
             run = 0; tick; tick;
             for (k = 0; k < 256; k = k + 1) host_write(k, rand_instr(k));
             if (t % 25 == 0) begin rst_n = 0; tick; tick; rst_n = 1; tick; end   // also reset between trials
-            tick;
+            tick; tick;    // run 2 clocks after the last write: the fetch stage primes (reads word 0, then its successor)
             run = 1;
             len = 250 + rnd(500);
             for (c = 0; c < len; c = c + 1) begin
@@ -160,7 +160,7 @@ module tb_fetch_equiv;
                     tick; tick;
                     for (k = rnd(4); k >= 0; k = k - 1) begin ra = rnd(256); host_write(ra, rand_instr(ra)); rewrites = rewrites + 1; end
                     host_write(0, rand_instr(0)); rewrites = rewrites + 1;   // word 0 is what the engine reads first
-                    tick;
+                    tick; tick;
                     run = 1;
                 end
                 tick;

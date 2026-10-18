@@ -166,6 +166,8 @@ def run_rtl(tests, tag, srcs=None):
                        capture_output=True, text=True, timeout=1800)
     if "DONE" not in r.stdout:
         return None, "NO RESULT " + r.stdout[-300:]
+    if "FETCH MISMATCH" in r.stdout:      # the fetch stage and the control unit disagreed about a branch (engine_top checker)
+        return None, "FETCH MISMATCH " + r.stdout[r.stdout.index("FETCH MISMATCH"):][:300]
     return open(out).read().split("\n")[:-1], ""
 
 
@@ -234,6 +236,18 @@ ENGINE_MUTANTS = [
     ("control_unit.v", "RGET CRC does not wait for the CRC unit",
      "(opcode == `OP_RGET && rg_src == `RG_CRC) ? crc_busy :", "(opcode == `OP_RGET && rg_src == `RG_CRC) ? 1'b0 :"),
     ("engine_top.v", "CRC busy not connected", ".crc_busy      (crc_busy),", ".crc_busy      (1'b0),"),
+    # fetch stage: a branch is resolved one clock early from the next-state values; using the current values (or not holding
+    # the fetch while the executing instruction stalls) must show up as wrong program flow
+    ("fetch_unit.v", "DJNZ resolved with the current loop counter", "wire [15:0] l  = use_next ? lc_next      : lc;", "wire [15:0] l  = lc;"),
+    ("fetch_unit.v", "JCC resolved with the current Z flag", "wire        z  = use_next ? flag_z_next  : flag_z;", "wire        z  = flag_z;"),
+    ("fetch_unit.v", "JCC resolved with the current C flag", "wire        c  = use_next ? flag_c_next  : flag_c;", "wire        c  = flag_c;"),
+    ("fetch_unit.v", "JPO resolved with the current OSR bit", "wire        ob = use_next ? osr_bit_next : osr_bit;", "wire        ob = osr_bit;"),
+    ("fetch_unit.v", "JPH/JPL resolved with the current pins", "wire [7:0]  pv = use_next ? pins_next    : pins;", "wire [7:0]  pv = pins;"),
+    ("fetch_unit.v", "fetch does not wait for a stalled instruction", "assign addr = running ? (x_done ? succ : fetch_pc) :",
+     "assign addr = running ? succ :"),
+    ("engine_top.v", "JPO bit order from the current CFG", "cfg_osr_msb_next ? osr_data_next[31]", "cfg_osr_msb ? osr_data_next[31]"),
+    ("fetch_unit.v", "fetch: JCC GTU is the LEU condition", "`CC_GTU: cc = c & ~z;", "`CC_GTU: cc = ~c | z;"),
+    ("fetch_unit.v", "fetch: JCC C and NC swapped", "`CC_C:   cc = c;", "`CC_C:   cc = ~c;"),
     ("control_unit.v", "RPUT RXF does not stall when full",
      "(opcode == `OP_RPUT && rp_dst == `RP_RXF) ? rx_full :", "(opcode == `OP_RPUT && rp_dst == `RP_RXF) ? 1'b0 :"),
     ("control_unit.v", "JCC GTU is the LEU condition", "`CC_GTU: cc_true = flag_c & ~flag_z;", "`CC_GTU: cc_true = ~flag_c | flag_z;"),

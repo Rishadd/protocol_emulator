@@ -1,10 +1,12 @@
-// Single protocol engine: instr_mem + pc_reg + delay_counter + loop_counter
+// Single protocol engine: instr_mem + fetch_unit + delay_counter + loop_counter
 // + control_unit + tx/rx fifo + OSR/ISR shift registers + 8-pin block.
-// Fetch: instr_mem (256 x 32, one SRAM macro) has a synchronous read and is addressed with pc_reg.next_pc,
-// so instr always holds the word for the current pc. In a testbench use <inst>.imem.poke(a,w) /
-// .load_hex("program.hex") (not a hierarchical array write).
+// Fetch: instr_mem (256 x 32, one SRAM macro, synchronous read) feeds fetch_unit, which registers the word in the instruction
+// register (instr below) and resolves branches one clock early from the next-state values of the state they test, so instruction
+// timing is unchanged (fetch_unit.v). In a testbench use <inst>.imem.poke(a,w) / .load_hex("program.hex") (not a hierarchical
+// array write); a poke while the engine is held primes the fetch stage again.
 // run=0 holds the execution core (PC, control, counters, shifters, pins) in reset:
-// PC=0, pins released. FIFOs and instruction memory keep their contents.
+// PC=0, pins released. FIFOs and instruction memory keep their contents. The core also stays held until the fetch stage is primed
+// (2 clocks after reset, after a memory write or after run fell), so run should rise 2 or more clocks after the last write.
 // run must come from a flop (it gates an asynchronous reset).
 `include "isa.vh"
 module engine_top #(
@@ -34,14 +36,18 @@ module engine_top #(
     output wire        fault,
     output wire [7:0]  pc
 );
-    wire        core_rst_n = rst_n & run;
-    wire [31:0] instr;
+    wire        fetch_ready;
+    wire        core_rst_n = rst_n & run & fetch_ready;
+    wire [31:0] instr, sram_dout;
     wire        pc_advance, pc_jump;
-    wire [7:0]  jump_addr, next_pc;
+    wire [7:0]  jump_addr, fetch_addr, ir_pc;
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value_cu, dc_load_value;
     wire        lc_load, lc_dec;
-    wire [15:0] lc_load_value_cu, lc_load_value, lc_count;
+    wire [15:0] lc_load_value_cu, lc_load_value, lc_count, lc_count_next;
+    wire        flag_z_next, flag_n_next, flag_c_next, cfg_osr_msb_next;
+    wire [31:0] osr_data_next;
+    wire [7:0]  pin_in_sync_next;
     wire        tx_empty, tx_rd_en;
     wire [31:0] tx_rd_data;
     wire        rx_full, rx_wr_en, push_imm, push_reg;
@@ -59,29 +65,53 @@ module engine_top #(
     wire [2:0]  cfg_out_pin, cfg_in_pin;
     wire        cfg_osr_msb, cfg_isr_msb;
 
-    // Held engine (core_rst_n=0): pc is already 0 but, with the synchronous instruction read, instr
-    // still shows the previous pc's word for one more clock (the macro re-reads word 0 on the next
-    // edge), and control_unit decodes whatever instr holds. tx_rd_en / rx_wr_en are the only
-    // control_unit outputs that reach state outside the reset core (the FIFOs), so they are
-    // masked with core_rst_n; everything else sits behind core_rst_n's asynchronous reset.
+    // Held engine (core_rst_n=0): control_unit decodes whatever the instruction register holds. tx_rd_en / rx_wr_en are the only
+    // control_unit outputs that reach state outside the reset core (the FIFOs), so they are masked with core_rst_n; everything
+    // else sits behind core_rst_n's asynchronous reset.
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .clk   (clk),
-        .addr  (next_pc),
-        .instr (instr),
+        .addr  (fetch_addr),
+        .instr (sram_dout),
         .we    (imem_we),
         .waddr (imem_waddr),
         .wdata (imem_wdata)
     );
 
-    pc_reg pc_i (
-        .clk       (clk),
-        .rst_n     (core_rst_n),
-        .advance   (pc_advance),
-        .jump      (pc_jump),
-        .jump_addr (jump_addr),
-        .pc        (pc),
-        .next_pc   (next_pc)
+    fetch_unit fe (
+        .clk          (clk),
+        .rst_n        (rst_n),
+        .run          (run),
+        .imem_we      (imem_we),
+        .dout         (sram_dout),
+        .addr         (fetch_addr),
+        .ir           (instr),
+        .ir_pc        (ir_pc),
+        .ready        (fetch_ready),
+        .x_done       (pc_advance | pc_jump),
+        .lc           (lc_count),    .lc_next      (lc_count_next),
+        .flag_z       (flag_z),      .flag_z_next  (flag_z_next),
+        .flag_n       (flag_n),      .flag_n_next  (flag_n_next),
+        .flag_c       (flag_c),      .flag_c_next  (flag_c_next),
+        .osr_bit      (osr_bit),     .osr_bit_next (cfg_osr_msb_next ? osr_data_next[31] : osr_data_next[0]),
+        .pins         (pin_in_sync), .pins_next    (pin_in_sync_next)
     );
+    assign pc = core_rst_n ? ir_pc : 8'd0;
+
+`ifndef SYNTHESIS
+    // The fetch stage resolved every branch one clock early; it must agree with the control unit's own decision for the same
+    // instruction (pc_jump / pc_advance). fetch_mismatches counts disagreements (testbenches may check it; it also prints).
+    integer fetch_mismatches = 0;
+    always @(posedge clk) begin
+        if (core_rst_n && (pc_advance || pc_jump) && fe.fetch_pc !== (pc_jump ? jump_addr : ir_pc + 8'd1)) begin
+            fetch_mismatches = fetch_mismatches + 1;
+            if (fetch_mismatches <= 5)
+                $display("FETCH MISMATCH %m t=%0t: pc %0d fetched %0d, control unit goes to %0d", $time, ir_pc, fe.fetch_pc,
+                         pc_jump ? jump_addr : ir_pc + 8'd1);
+        end
+    end
+    // a testbench poke while the engine is held: prime again from word 0 (real writes come through imem_we)
+    always @(imem.poke_count) if (!(run && fetch_ready)) fe.phase = 2'd0;
+`endif
 
     // register-sourced values for the counters / shifters (RPUT, WAITR) instead of the instruction operand / TX FIFO word
     assign dc_load_value  = dc_from_reg ? rs_val[26:0] : dc_load_value_cu;
@@ -105,7 +135,10 @@ module engine_top #(
         .rs_zero   (rs_zero),
         .flag_z    (flag_z),
         .flag_n    (flag_n),
-        .flag_c    (flag_c)
+        .flag_c    (flag_c),
+        .flag_z_next (flag_z_next),
+        .flag_n_next (flag_n_next),
+        .flag_c_next (flag_c_next)
     );
 
     crc_unit crc (
@@ -139,7 +172,8 @@ module engine_top #(
         .load       (lc_load),
         .load_value (lc_load_value),
         .dec        (lc_dec),
-        .count      (lc_count)
+        .count      (lc_count),
+        .count_next (lc_count_next)
     );
 
     fifo tx_fifo (
@@ -175,6 +209,7 @@ module engine_top #(
         .shift_in   (1'b0),
         .in_bit     (1'b0),
         .data       (osr_data),
+        .data_next  (osr_data_next),
         .out_bit    (osr_bit)
     );
 
@@ -189,6 +224,7 @@ module engine_top #(
         .shift_in   (isr_shift),
         .in_bit     (pin_in_sync[cfg_in_pin]),
         .data       (isr_data),
+        .data_next  (),
         .out_bit    ()
     );
 
@@ -204,7 +240,8 @@ module engine_top #(
         .pin_in      (pin_in),
         .pin_out     (pin_out),
         .pin_oe      (pin_oe),
-        .pin_in_sync (pin_in_sync)
+        .pin_in_sync (pin_in_sync),
+        .pin_in_sync_next (pin_in_sync_next)
     );
 
     control_unit cu (
@@ -246,6 +283,7 @@ module engine_top #(
         .crc_feed_bit  (crc_feed_bit),
         .crc_feed_byte (crc_feed_byte),
         .crc_busy      (crc_busy),
+        .cfg_osr_msb_next (cfg_osr_msb_next),
         .osr_load      (osr_load),
         .osr_shift     (osr_shift),
         .osr_bit       (osr_bit),

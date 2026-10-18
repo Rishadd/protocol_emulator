@@ -24,7 +24,11 @@ module alu_unit (
     output wire        rs_zero,
     output reg         flag_z,
     output reg         flag_n,
-    output reg         flag_c
+    output reg         flag_c,
+    // the flags after the coming edge (the fetch stage resolves a JCC one clock early with them)
+    output wire        flag_z_next,
+    output wire        flag_n_next,
+    output wire        flag_c_next
 );
     reg [31:0] r [0:7];
 
@@ -85,17 +89,21 @@ module alu_unit (
     wire        c_upd = is_as | c_upd_oth;
     wire        wr    = (func != 4'd8) && (func != 4'd9);   // CMP and TST only set flags
 
+    assign flag_z_next = do_alu ? (res == 32'd0) : flag_z;
+    assign flag_n_next = do_alu ? res[31] : flag_n;
+    assign flag_c_next = (do_alu && c_upd) ? c_new : flag_c;
+
     integer i;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             for (i = 0; i < 8; i = i + 1) r[i] <= 32'd0;
             flag_z <= 1'b0; flag_n <= 1'b0; flag_c <= 1'b0;
         end else begin
+            flag_z <= flag_z_next;
+            flag_n <= flag_n_next;
+            flag_c <= flag_c_next;
             if (do_alu) begin
                 if (wr) r[alu_rd] <= res;
-                flag_z <= (res == 32'd0);
-                flag_n <= res[31];
-                if (c_upd) flag_c <= c_new;
             end else if (do_ldi) begin
                 r[operand[26:24]] <= {8'd0, operand[23:0]};
             end else if (do_rget) begin

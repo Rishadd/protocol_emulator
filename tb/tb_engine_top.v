@@ -30,7 +30,9 @@ module tb_engine_top;
     always #5 clk = ~clk;
     always @(posedge clk) cycle = cycle + 1;
     task tick; begin @(posedge clk); #1; end endtask
-    task do_reset; begin rst_n = 0; tick; tick; rst_n = 1; end endtask
+    // run is tied to 1 here: after reset the fetch stage primes for 2 clocks (reads word 0, then its successor) before the core
+    // runs, so the reset sequence ends when the engine is ready; the checks count clocks from there
+    task do_reset; begin rst_n = 0; tick; tick; rst_n = 1; tick; tick; end endtask
 
     function [31:0] I(input [4:0] op, input [26:0] opnd);
         I = {op, opnd};

@@ -40,9 +40,11 @@ module instr_mem #(
         $finish;
     end
 
+    integer poke_count = 0;     // engine_top primes its fetch stage again after a poke (a poke bypasses the write port)
     task poke(input integer a, input [31:0] w);
         begin
             u_mem.i_SRAM_1P_behavioral_bm_bist.memory[a] = w;
+            poke_count = poke_count + 1;
         end
     endtask
     function [31:0] peek(input integer a);

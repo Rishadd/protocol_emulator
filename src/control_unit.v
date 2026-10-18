@@ -47,6 +47,7 @@ module control_unit (
     output reg         crc_feed_bit,
     output reg         crc_feed_byte,
     input  wire        crc_busy,        // a CRC command issued in the previous clock is still executing (RGET CRC waits)
+    output wire        cfg_osr_msb_next, // OSR bit order after the coming edge (the fetch stage resolves a JPO one clock early)
     // shift registers
     output reg         osr_load,        // signal to load the output shift register
     output reg         osr_shift,       // signal to shift the output shift register
@@ -123,6 +124,9 @@ module control_unit (
                  (opcode == `OP_RGET && rg_src == `RG_CRC) ? crc_busy :   // RGET CRC directly after a CRC instruction: 1 clock
                  (opcode == `OP_RPUT && rp_dst == `RP_RXF) ? rx_full :    // RPUT RXF needs RX FIFO space
                                           1'b0;              // all other opcodes never stall
+
+    assign cfg_osr_msb_next = (!halted && state == S_EXEC && legal && opcode != `OP_HALT && !stall && opcode == `OP_CFG) ?
+                              operand[6] : cfg_osr_msb;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
