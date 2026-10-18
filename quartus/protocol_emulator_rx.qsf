@@ -26,6 +26,8 @@ set_global_assignment -name VERILOG_FILE ../src/fifo.v
 set_global_assignment -name VERILOG_FILE ../src/engine_top.v
 set_global_assignment -name VERILOG_FILE ../src/delay_counter.v
 set_global_assignment -name VERILOG_FILE ../src/control_unit.v
+set_global_assignment -name VERILOG_FILE ../src/alu_unit.v
+set_global_assignment -name VERILOG_FILE ../src/crc_unit.v
 set_global_assignment -name VERILOG_FILE ../src/rx_led_sink.v
 set_global_assignment -name VERILOG_FILE ../src/fpga/de0_nano_rx_top.v
 
