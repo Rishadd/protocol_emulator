@@ -26,3 +26,6 @@ results/tt_flow_2026-10-18/*_images/
 !results/tt_flow_2026-10-18/tt10c_images/
 # fetch-stage experiment results live on branch exp/fetch-stage
 
+# GitHub Actions artifacts downloaded for inspection
+GDS_logs*.zip
+

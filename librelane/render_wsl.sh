@@ -6,7 +6,7 @@ OUT=$2
 TITLE=${3:-$TAG}
 WORK=${4:-$HOME/pe_$TAG}
 RUN=$WORK/runs/$TAG
-PDK=$HOME/IHP-Open-PDK/ihp-sg13cmos5l
+PDK=${TT_PDK_ROOT:-$HOME/pdk_tt}/ihp-sg13cmos5l
 SCRIPT=/mnt/c/Data/protocol_emulator/librelane/render_stages.py
 MLEF=$WORK/macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.lef
 mkdir -p "$OUT"

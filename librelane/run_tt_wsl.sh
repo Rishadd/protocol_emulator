@@ -2,7 +2,8 @@
 # Tiny Tapeout CMOS5L flow for tt_um_protocol_emulator, run inside WSL in LibreLane's Nix shell.
 # Same steps as `tt_tool.py --create-user-config` + `--harden --no-docker` (tt-support-tools, branch ihp-sg13cmos5l),
 # but without tt_tool's Python dependencies: the user config is written here exactly as tt_tool does it.
-# Needs (once): ~/librelane-dev, ~/IHP-Open-PDK (dev), ~/tt-support-tools (branch ihp-sg13cmos5l).
+# Needs (once): ~/librelane-dev, ~/pdk_tt (the IHP-Open-PDK revision Tiny Tapeout's gds action uses: librelane/install_tt_pdk_wsl.sh;
+# TT_PDK_ROOT=<dir> selects another PDK checkout), ~/tt-support-tools (branch ihp-sg13cmos5l).
 # Usage: RUN_TAG=tt1 bash librelane/run_tt_wsl.sh      (results: $WORK/runs/$RUN_TAG)
 set -e
 SRC=${SRC:-/mnt/c/Data/protocol_emulator}
@@ -45,4 +46,4 @@ mkdir -p "$WORK/runs/$TAG"
 cd "${LLDIR:-$HOME/librelane-dev}"
 # RESUME=1: continue the last run in $WORK/runs (e.g. RESUME=1 bash run_tt_wsl.sh --from Netgen.LVS) instead of starting $TAG
 if [ -n "$RESUME" ]; then RUNARGS="--last-run"; else RUNARGS="--run-tag $TAG --force-run-dir runs/$TAG"; fi
-nix-shell --pure --run "cd $WORK && python3 -m librelane --pdk ihp-sg13cmos5l --manual-pdk --pdk-root $HOME/IHP-Open-PDK $RUNARGS src/config_merged.json $*"
+nix-shell --pure --run "cd $WORK && python3 -m librelane --pdk ihp-sg13cmos5l --manual-pdk --pdk-root ${TT_PDK_ROOT:-$HOME/pdk_tt} $RUNARGS src/config_merged.json $*"

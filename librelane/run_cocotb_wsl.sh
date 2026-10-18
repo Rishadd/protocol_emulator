@@ -11,7 +11,7 @@ rsync -a --delete "$SRC/sim/" "$W/sim/"
 rsync -a --delete --exclude sim_build --exclude results.xml --exclude '*.fst' "$SRC/test/" "$W/test/"
 [ -f "$HOME/ttvenv/bin/activate" ] && . "$HOME/ttvenv/bin/activate"
 [ -d "$HOME/iverilog13/bin" ] && [ "$GATES" = "yes" ] && export PATH="$HOME/iverilog13/bin:$PATH"
-export PDK_ROOT=${PDK_ROOT:-$HOME/IHP-Open-PDK}
+export PDK_ROOT=${PDK_ROOT:-${TT_PDK_ROOT:-$HOME/pdk_tt}}
 cd "$W/test"
 if [ "$GATES" = "yes" ]; then
   cp "$NETLIST" gate_level_netlist.v

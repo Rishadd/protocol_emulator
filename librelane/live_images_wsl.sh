@@ -6,7 +6,7 @@
 # Stops when every listed run has finished and its last images are made.
 P=/mnt/c/Data/protocol_emulator
 RES=${RES:-$P/results/tt_flow_2026-10-18}
-PDK=$HOME/IHP-Open-PDK/ihp-sg13cmos5l
+PDK=${TT_PDK_ROOT:-$HOME/pdk_tt}/ihp-sg13cmos5l
 declare -A TITLE SEEN DONE
 TAGS=()
 for a in "$@"; do t=${a%%=*}; TAGS+=("$t"); TITLE[$t]=${a#*=}; done
