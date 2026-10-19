@@ -179,3 +179,14 @@ floorplan with the 2P macro at (509.6, 13.78) FS, macro placement, tap cells, po
 - the worktree's flow shell scripts must have LF line endings (autocrlf checkout gave CRLF).
 The grid reports PSM-0069 and unconnected macro power pins, exactly as tt13b / tt14b do with the 1P macros (those runs ended with clean DRC and LVS).
 Next: a full run for DRC, LVS, timing, and congestion with the 685 um macro.
+
+## 12. Layout experiments (2026-10-19)
+
+| Run | Variant | Fences | Global routing | Outcome |
+|---|---|---|---|---|
+| sh1 | `shared` | L-shaped engines (wing beside the macro + band above) | not run (smoke test to the power grid) | config, synthesis, floorplan and PDN work; same PSM warnings as the 1P runs |
+| sh2 | `shared` | L-shaped engines, common logic top centre | demand 319,970 tracks (54 %), overflow 5,726 (Metal3 4,955) | detailed routing 42,461 -> 31,709 -> 30,768 violations, slow: congested, stopped. Cause: each engine stretched over a long thin L, so its ALU, control and FIFOs sat far apart (see the module map) |
+| sh3 | `shared3` | each engine in a compact 475 um column (like tt14b), macro bottom centre x 509.6, common logic above the macro, free channel y 244..300 | demand 192,438 tracks (32 %), overflow 0 (tt14b 198,509 / 0) | detailed routing in progress |
+
+Lesson: the shared macro costs no extra routing as long as each engine stays compact. Use `PE=/mnt/c/Data/protocol_emulator_shmem bash librelane/flow_variant_wsl.sh <tag> shared3`;
+pictures with `librelane/live_images_shared_wsl.sh` (loads the 2P macro's LEF; the standard script hard-codes the 1P one, which left the macro undrawn). `module_map.py` labels the macro "SHARED SRAM (both engines)".
