@@ -96,7 +96,7 @@ def rnd_word(rnd, L):
     if n == "RGET":     # CRC source favoured: RGET CRC right after a CRC instruction (the 1-clock wait) must come up often
         if LINE_FOCUS:
             return A.enc_rget(rnd.randrange(8), 6 if rnd.random() < 0.8 else rnd.randrange(8))
-        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.55 else 6 if rnd.random() < 0.2 else rnd.randrange(8))
+        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.50 else 5 if rnd.random() < 0.25 else 6 if rnd.random() < 0.2 else rnd.randrange(8))   # CRC (wait coverage), TX FIFO (needs its own share), LINE
     if n == "RPUT":
         return A.enc_rput(rnd.randrange(4), rnd.randrange(8))
     if n == "WAITR":
@@ -373,7 +373,7 @@ def mutants_phase(seed, n):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("phases", nargs="*", default=["run", "mutants"])
-    ap.add_argument("--tests", type=int, default=900)    # 600 left rget TXF at 28 of the 30 required: margin on every coverage count
+    ap.add_argument("--tests", type=int, default=600)
     ap.add_argument("--seed", type=int, default=1)
     a = ap.parse_args()
     rc = 0
