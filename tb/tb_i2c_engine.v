@@ -20,10 +20,13 @@ module tb_i2c_engine;
     wire [7:0]  pin_out, pin_oe, pad_oe, pad_out, od;
     wire [15:0] owner, viol;
     wire [7:0]  pc;
-    reg  [2:0]  cfg_pad = 0;
+    reg  [5:0]  cfg_pad = 0;               // pin manager register index (PAD p = p)
     reg         cfg_we = 0;
     reg  [2:0]  padcfg = 3'b101;           // engine 0, open-drain (+PUSHPULL=1: 3'b001)
     wire        cfg_ok;
+    wire [7:0]  in0_unused, in1_unused;
+    wire [6:0]  uo_unused;
+    wire [31:0] pm_rd;
 
     // ---- bus
     reg  m_sda_low = 0, m_scl_low = 0;
@@ -39,9 +42,12 @@ module tb_i2c_engine;
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in({scl, sda, 6'd0}), .pin_out(pin_out), .pin_oe(pin_oe),
         .halted(halted), .fault(fault), .pc(pc));
-    pin_mgr pm (.clk(clk), .rst_n(rst_n), .run({1'b0, run}), .cfg_pad(cfg_pad), .cfg_data(padcfg),
-        .cfg_ok(cfg_ok), .cfg_we(cfg_we), .viol_clr(16'd0), .oe0(pin_oe), .out0(pin_out), .oe1(8'd0),
-        .out1(8'd0), .pad_oe(pad_oe), .pad_out(pad_out), .owner(owner), .od(od), .viol(viol));
+    pin_mgr pm (.clk(clk), .rst_n(rst_n), .run({1'b0, run}), .w_addr(cfg_pad), .w_data({29'd0, padcfg}),
+        .w_hit(), .w_ok(cfg_ok), .we(cfg_we), .r_addr(6'd0), .r_data(pm_rd), .oe0(pin_oe), .out0(pin_out), .oe1(8'd0),
+        .out1(8'd0), .in0(in0_unused), .in1(in1_unused), .uio_in(8'd0), .ui_hi(5'd0), .uio_oe(pad_oe), .uio_out(pad_out),
+        .uo_hi(uo_unused), .view(6'd0), .irq_src(7'd0), .hold(), .trig_en(), .view_sel(), .irq(),
+        .owner(owner), .od(od), .remap(), .oowner(), .oremap(), .isel0_r(), .isel1_r(), .viol(viol),
+        .misc(), .vsel(), .mask(), .irq_st());
     i2c_slave_model #(7'h50) s1 (.sda(sda), .scl(scl), .sda_low(s1_sda), .scl_low(s1_scl));
     i2c_slave_model #(7'h23) s2 (.sda(sda), .scl(scl), .sda_low(s2_sda), .scl_low(s2_scl));
 

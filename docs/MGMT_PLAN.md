@@ -33,7 +33,7 @@ STATUS (sampled while CS_N is high, so it is always the state at the start of th
 |---|---|---|
 | base+0x000 | W | CTRL bit 0 RUN. RUN=0 holds PC/control/counters/shifters/pins in reset (pins released) but keeps FIFOs and memory. Reset value 0. Other bits must be 0 |
 | base+0x000 | R | `{pc[13:8], fault[2], halted[1], RUN[0]}` |
-| base+0x100+4i | W | instruction word i, **only while RUN=0** (otherwise rejected, sets err) |
+| base+0x400+4i | W | instruction word i (the plan said 0x100; the built chip uses 0x400), **only while RUN=0** (otherwise rejected, sets err) |
 | base+0x200 | W | TX FIFO push, also while RUN=0 (preload). Accepted only if this frame's STATUS showed TX not full; otherwise dropped silently and the host resends |
 | base+0x204 | R | RX FIFO pop. Pops only if this frame's STATUS showed data; otherwise returns 0 and pops nothing. The byte is in bits [31:24] (LSB-first receive) |
 | 0x0200+4p | W | pin manager, pad p: `data[1:0]` owner (0 none, 1 engine 0, 2 engine 1), `data[2]` open-drain. Refused (err) while the pad's owner runs, for owner 3 or nonzero `data[31:3]`. Reset: no owner = pad not driven (added 2026-10-11) |

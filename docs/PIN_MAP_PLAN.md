@@ -1,6 +1,6 @@
 # Pin mapping, spare-pin defaults and bring-up debug: plan (week 2, 2026-10-26 .. 11-01)
 
-Status: **planned** (2026-10-18). Part of the plan to 2026-12-30 ([EXECUTION_PLAN.md](EXECUTION_PLAN.md)). Built before USB LS and the
+Status: **step 1 (RTL) built and verified in simulation and formally** (2026-10-18; see memory.md for the differences from this text: the hold pin is `ui_in[3]` active high "HOLD" instead of SAFE_N, remap is `logical = remap XOR pin index`, MISC/IRQ/INPUTS layouts as in HOST_INTERFACE.md). Remaining: flow run, self-test (view 4), firmware tests through remapped pins. Part of the plan to 2026-12-30 ([EXECUTION_PLAN.md](EXECUTION_PLAN.md)). Built before USB LS and the
 logic analyser because both use it (the USB D+/D- pair, the capture inputs).
 
 ## 1. Goals

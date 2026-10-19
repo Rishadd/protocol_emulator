@@ -1,9 +1,13 @@
-// Tiny Tapeout top (template ports). Pin use per architecture doc §5:
-//   ui_in[0] SCLK, ui_in[1] MOSI, ui_in[2] CS_N  (management SPI, mode 0)
-//   uo_out[0] MISO
-//   uio[7:0]  protocol pins P0..P7, shared by both engines through pin_mgr: a pad is driven only by
-//             the engine the host assigned it to (management window 0x0200), optionally open-drain.
-//             Both engines always read every pad.
+// Tiny Tapeout top (template ports). Pin use (docs/PIN_MAP_PLAN.md):
+//   fixed:    ui_in[0] SCLK, ui_in[1] MOSI, ui_in[2] CS_N (management SPI, mode 0), uo_out[0] MISO
+//   remappable through pin_mgr (management window 0x0200), defaults after reset:
+//     uio[7:0]     protocol pads, logical pin i = uio[i] for both engines, not driven until claimed
+//     ui_in[3]     HOLD (high = both engines held, engine-driven pins released)
+//     ui_in[4]     TRIG_IN (logic analyser, later)
+//     ui_in[7:5]   DBG_SEL, picks the debug view on uo_out[7:2] (dbg_view.v)
+//     uo_out[1]    IRQ
+//   A pin owned by an engine carries one of its 8 logical pins; each engine's 8 logical inputs select
+//   any of uio[7:0], ui_in[7:3].
 module tt_um_protocol_emulator (
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
@@ -27,12 +31,14 @@ module tt_um_protocol_emulator (
     wire [7:0]  imem_waddr;
     wire [31:0] imem_wdata, tx_wr_data;
     wire        mgmt_err;
-    wire [2:0]  pad_sel, pad_data;
-    wire        pad_ok, pad_we;
-    wire [15:0] viol_clr, pad_owner, pad_viol;
-    wire [7:0]  pad_od;
+    wire [5:0]  pin_wa, pin_ra;
+    wire [31:0] pin_wd, pin_rd;
+    wire        pin_hit, pin_ok, pin_we, hold, trig_en, irq;
+    wire [2:0]  view_sel;
+    wire [5:0]  view;
+    wire [6:0]  uo_hi;
 
-    wire [7:0]  out0, oe0, out1, oe1;
+    wire [7:0]  out0, oe0, out1, oe1, in0, in1;
     wire [7:0]  pc0, pc1;
     wire [31:0] rx_data0, rx_data1;
     wire [1:0]  halted, fault, tx_full, rx_empty;
@@ -53,23 +59,31 @@ module tt_um_protocol_emulator (
         .tx_full(tx_full), .rx_empty(rx_empty),
         .rx_data0(rx_data0), .rx_data1(rx_data1), .rx_rd_en(rx_rd_en),
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data),
-        .pad_sel(pad_sel), .pad_data(pad_data), .pad_ok(pad_ok), .pad_we(pad_we), .viol_clr(viol_clr),
-        .pad_owner(pad_owner), .pad_od(pad_od), .pad_viol(pad_viol),
+        .pin_wa(pin_wa), .pin_wd(pin_wd), .pin_hit(pin_hit), .pin_ok(pin_ok), .pin_we(pin_we),
+        .pin_ra(pin_ra), .pin_rd(pin_rd), .hold(hold),
         .err(mgmt_err));
 
     pin_mgr u_pins (
         .clk(clk), .rst_n(srst_n), .run(eng_run),
-        .cfg_pad(pad_sel), .cfg_data(pad_data), .cfg_ok(pad_ok), .cfg_we(pad_we), .viol_clr(viol_clr),
-        .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1),
-        .pad_oe(uio_oe), .pad_out(uio_out),
-        .owner(pad_owner), .od(pad_od), .viol(pad_viol));
+        .w_addr(pin_wa), .w_data(pin_wd), .w_hit(pin_hit), .w_ok(pin_ok), .we(pin_we),
+        .r_addr(pin_ra), .r_data(pin_rd),
+        .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
+        .uio_in(uio_in), .ui_hi(ui_in[7:3]), .uio_oe(uio_oe), .uio_out(uio_out), .uo_hi(uo_hi), .view(view),
+        .irq_src({mgmt_err, fault, halted, ~rx_empty}),
+        .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
+        .owner(), .od(), .remap(), .oowner(), .oremap(), .isel0_r(), .isel1_r(), .viol(), .misc(), .vsel(), .mask(), .irq_st());
+
+    dbg_view u_dbg (
+        .clk(clk), .rst_n(srst_n), .sel(view_sel), .err(mgmt_err), .run(eng_run), .halted(halted), .fault(fault),
+        .rx_byte(rx_byte), .byte_valid(byte_valid), .frame_end(frame_end), .frame_clean(frame_clean),
+        .active(spi_active), .ui_hi(ui_in[7:3]), .uio_in(uio_in), .view(view));
 
     engine_top u_eng0 (
         .clk(clk), .rst_n(srst_n), .run(eng_run[0]),
         .imem_we(imem_we[0]), .imem_waddr(imem_waddr), .imem_wdata(imem_wdata),
         .tx_wr_en(tx_wr_en[0]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[0]),
         .rx_rd_en(rx_rd_en[0]), .rx_rd_data(rx_data0), .rx_empty(rx_empty[0]),
-        .pin_in(uio_in), .pin_out(out0), .pin_oe(oe0),
+        .pin_in(in0), .pin_out(out0), .pin_oe(oe0),
         .halted(halted[0]), .fault(fault[0]), .pc(pc0));
 
     engine_top u_eng1 (
@@ -77,10 +91,10 @@ module tt_um_protocol_emulator (
         .imem_we(imem_we[1]), .imem_waddr(imem_waddr), .imem_wdata(imem_wdata),
         .tx_wr_en(tx_wr_en[1]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[1]),
         .rx_rd_en(rx_rd_en[1]), .rx_rd_data(rx_data1), .rx_empty(rx_empty[1]),
-        .pin_in(uio_in), .pin_out(out1), .pin_oe(oe1),
+        .pin_in(in1), .pin_out(out1), .pin_oe(oe1),
         .halted(halted[1]), .fault(fault[1]), .pc(pc1));
 
-    assign uo_out = {7'd0, miso};   // uo_out[7:1] status outputs come later
+    assign uo_out = {uo_hi, miso};
 
-    wire _unused = &{ena, ui_in[7:3], mgmt_err, 1'b0};
+    wire _unused = &{ena, trig_en, 1'b0};
 endmodule

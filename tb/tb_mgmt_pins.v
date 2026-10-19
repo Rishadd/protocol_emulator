@@ -16,7 +16,8 @@ module tb_mgmt_pins;
     reg [15:0] mid;
     reg [31:0] rd;
 
-    tt_um_protocol_emulator dut (.ui_in({5'd0, cs_n, mosi, sclk}), .uo_out(uo_out),
+    reg  [4:0] ui_hi = 0;                    // ui_in[7:3]
+    tt_um_protocol_emulator dut (.ui_in({ui_hi, cs_n, mosi, sclk}), .uo_out(uo_out),
         .uio_in(pin_in), .uio_out(uio_out), .uio_oe(uio_oe), .ena(1'b1), .clk(clk), .rst_n(rst_n));
 
     `include "spi_master.vh"
@@ -50,7 +51,7 @@ module tb_mgmt_pins;
         // ---- refusals, each from a fresh reset because err is sticky
         chip_reset; frame(OP_WR, 16'h0200, 32'd3); frame(OP_RD, 16'h0200, 0);
         `CHECK(st[6] == 1 && rd == 0, "owner 3 refused: err, no change")
-        chip_reset; frame(OP_WR, 16'h0200, 32'h9);  frame(OP_RD, 16'h0200, 0);
+        chip_reset; frame(OP_WR, 16'h0200, 32'h41); frame(OP_RD, 16'h0200, 0);
         `CHECK(st[6] == 1 && rd == 0, "reserved data bit refused")
         chip_reset; frame(OP_WR, 16'h0224, 32'd1); frame(OP_RD, 16'h1000, 0);
         `CHECK(st[6] == 1, "unmapped 0x0224 sets err")
@@ -88,6 +89,64 @@ module tb_mgmt_pins;
         `CHECK(rd == 0, "W1C clears once the engine stopped")
         frame(OP_WR, 16'h0208, 32'd2); frame(OP_RD, 16'h0208, 0);
         `CHECK(rd == 32'd2 && st[6] == 0, "pad of a held engine can be handed to engine 1")
+
+        // ---- remapping, uo_out, input select, HOLD, IRQ and debug views (docs/PIN_MAP_PLAN.md)
+        chip_reset;
+        // engine 0: logical pin 0 = output high (-> pad 5 via remap, and uo_out[4]), logical pin 1 = input read into the RX FIFO
+        prog[0] = I(`OP_DIRO, 0);  prog[1] = I(`OP_SETH, 0);  prog[2] = I(`OP_HALT, 0);
+        load0(3);
+        frame(OP_WR, 16'h0214, {26'd0, 3'd5, 1'b0, 2'd1});            // pad 5 <- engine 0 logical pin 5 ^ 5 = 0
+        frame(OP_RD, 16'h0214, 0);
+        `CHECK(rd == {26'd0, 3'd5, 1'b0, 2'd1}, "PAD readback with remap")
+        frame(OP_WR, 16'h0250, {26'd0, 3'd4, 1'b0, 2'd1});            // ... now logical pin 0
+        frame(OP_RD, 16'h0250, 0);
+        `CHECK(rd == {26'd0, 3'd4, 1'b0, 2'd1}, "OPAD readback")
+        frame(OP_WR, 16'h1000, 32'd1); repeat (30) @(posedge clk);
+        `CHECK(uio_oe[5] == 1 && uio_out[5] == 1 && uio_oe[0] == 0, "remap: pad 5 carries logical pin 0")
+        `CHECK(uo_out[4] == 1, "uo_out[4] carries logical pin 0")
+        frame(OP_RD, 16'h0220, 0);
+        `CHECK(rd == 0, "no violation: logical pin 0 is carried")
+        frame(OP_WR, 16'h1000, 32'd0); repeat (4) @(posedge clk);
+        `CHECK(uio_oe == 0, "held engine drives nothing")
+        // IRQ: engine 0 halted becomes a status bit, unmasked it drives uo_out[1]
+        frame(OP_RD, 16'h02C4, 0);
+        `CHECK(rd[7:0] == 8'h04, "IRQ status readable (halted e0 once the engine halted)")
+        frame(OP_WR, 16'h02C4, 32'hFF); frame(OP_WR, 16'h02C0, 32'h0004_0007);
+        `CHECK(uo_out[1] == 0, "IRQ low when the status is clear")
+        frame(OP_WR, 16'h1000, 32'd1); repeat (30) @(posedge clk);
+        `CHECK(uo_out[1] == 1, "IRQ high once the engine halted")
+        frame(OP_WR, 16'h1000, 32'd0); frame(OP_WR, 16'h02C4, 32'h04); repeat (4) @(posedge clk);
+        `CHECK(uo_out[1] == 0, "W1C of the IRQ status clears the pin")
+        // input select: logical input 2 of engine 0 reads ui_in[7] (isel 12) instead of uio[2]
+        frame(OP_WR, 16'h0288, 32'd12);
+        ui_hi = 5'b10000; pin_in = 0; frame(OP_RD, 16'h02C8, 0);
+        `CHECK(rd[12:8] == 5'b10000, "INPUTS register shows ui_in[7:3]")
+        // HOLD: ui_in[3] high stops the engines and releases the pins; RUN cannot be set while it is high
+        frame(OP_WR, 16'h0200, 32'd1); frame(OP_WR, 16'h1000, 32'd1);
+        ui_hi = 5'b00001; repeat (8) @(posedge clk);
+        frame(OP_RD, 16'h1000, 0);
+        `CHECK(rd[0] == 0 && uio_oe == 0, "HOLD: RUN cleared, pins released")
+        frame(OP_WR, 16'h1000, 32'd1); frame(OP_RD, 16'h1000, 0);
+        `CHECK(rd[0] == 0 && st[6] == 1, "HOLD: RUN write refused (err)")
+        frame(OP_WR, 16'h02C4, 32'h40); frame(OP_RD, 16'h1000, 0); frame(OP_RD, 16'h1000, 0);
+        `CHECK(st[6] == 0, "IRQ bit 6 write-one-to-clear also clears err")
+        ui_hi = 0;
+        frame(OP_WR, 16'h0250, 32'd0);                           // release uo_out[4] to its default function
+        // debug views: view 3 mirrors ui_in[7:3] and uio[0]; view 2 shows the last SPI byte
+        frame(OP_WR, 16'h02C0, 32'h0000_0003);                      // dbg_en = 0, view 0
+        frame(OP_WR, 16'h02C0, 32'h0000_0033);                      // view 3
+        ui_hi = 5'b10110; pin_in = 8'h01; repeat (4) @(posedge clk);
+        `CHECK(uo_out[7:2] == 6'b110110, "view 3: uio[0] and ui_in[7:3]")
+        pin_in = 0; ui_hi = 0;
+        frame(OP_WR, 16'h02C0, 32'h0000_0023);                      // view 2 (dbg_en = 0)
+        frame(OP_RD, 16'h0200, 0);
+        repeat (4) @(posedge clk);
+        `CHECK(uo_out[5:2] == 4'h0, "view 2: last byte (0x00) bits [7:4]")
+        frame(OP_WR, 16'h0200, 32'd0);
+        frame(OP_WR, 16'h02C0, 32'h0000_0013);                      // view 1: last byte bits [3:0] (data LSB byte)
+        frame(OP_WR, 16'h0200, 32'h5);
+        repeat (4) @(posedge clk);
+        `CHECK(uo_out[5:2] == 4'h5, "view 1: last byte [3:0]")
 
         `REPORT("tb_mgmt_pins")
         $finish;

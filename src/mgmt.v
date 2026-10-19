@@ -18,11 +18,10 @@
 //   base+0x204       RX_DATA  R: head of the engine's RX FIFO, popped by this read.
 //                             Pops only if this frame's STATUS showed data for that engine;
 //                             otherwise returns 0 and pops nothing (not an error).
-// Pin manager (pin_mgr), p = pad 0..7:
-//   0x0200+4*p       PAD      W: data[1:0] owner (0 none, 1 eng0, 2 eng1), data[2] open-drain. Refused
-//                             (err) while the pad's owner runs, for owner 3 or nonzero data[31:3].
-//                             R: {od, owner[1:0]}
-//   0x0220           VIOL     R: {viol1[7:0], viol0[7:0]}  W: data[15:0] = bits to clear (W1C)
+// Pin manager window 0x0200..0x02FF (PAD, VIOL, OPAD, ISEL, MISC, IRQ, INPUTS; register map in pin_mgr.v): a READ of
+//   a register pin_mgr knows returns it; a WRITE is applied only if pin_mgr accepts it (pin_ok), otherwise err.
+//   Writing 1 to IRQ bit 6 (0x02C4) also clears err.
+// HOLD (pin_mgr: ui_in[3] high while enabled): both RUN bits are cleared and a RUN = 1 write is refused (err).
 // Anything else (wrong length, unknown op, unmapped or misaligned address, nonzero
 // reserved CTRL bits, instruction write to a running engine) changes nothing and sets err.
 module mgmt (
@@ -52,17 +51,17 @@ module mgmt (
     output reg  [1:0]  rx_rd_en,
     output reg  [1:0]  tx_wr_en,
     output wire [31:0] tx_wr_data,
-    // pin manager
-    output wire [2:0]  pad_sel,
-    output wire [2:0]  pad_data,
-    input  wire        pad_ok,
-    output reg         pad_we,
-    output reg  [15:0] viol_clr,
-    input  wire [15:0] pad_owner,
-    input  wire [7:0]  pad_od,
-    input  wire [15:0] pad_viol,
+    // pin manager register window
+    output wire [5:0]  pin_wa,
+    output wire [31:0] pin_wd,
+    input  wire        pin_hit,
+    input  wire        pin_ok,
+    output reg         pin_we,
+    output wire [5:0]  pin_ra,
+    input  wire [31:0] pin_rd,
+    input  wire        hold,
     // status
-    output reg         err          // sticky, cleared by reset
+    output reg         err          // sticky, cleared by reset or IRQ bit 6 write-one-to-clear
 );
     reg [55:0] frame;
     reg [3:0]  nbytes;              // saturates at 8 = "too many"
@@ -84,8 +83,7 @@ module mgmt (
     wire hit_imem = eng_ok && (addr[11:10] == 2'b01) && (addr[1:0] == 2'b00);   // 0x400..0x7FC
     wire hit_rx   = eng_ok && (addr[11:0] == 12'h204);
     wire hit_tx   = eng_ok && (addr[11:0] == 12'h200);
-    wire hit_pad  = (addr[15:5] == 11'h010) && (addr[1:0] == 2'b00);   // 0x0200..0x021C
-    wire hit_viol = (addr == 16'h0220);
+    wire hit_pin  = (addr[15:8] == 8'h02) && (addr[1:0] == 2'b00) && pin_hit;   // 0x0200..0x02FC
 
     wire [7:0] status = {1'b1, err, eng_run[1], eng_run[0], tx_full[1], tx_full[0],
                          ~rx_empty[1], ~rx_empty[0]};
@@ -98,11 +96,8 @@ module mgmt (
     wire        c_eng    = c_addr[13];
     wire [7:0]  pc_e     = c_eng ? pc1 : pc0;
     wire [31:0] rx_e     = c_eng ? rx_data1 : rx_data0;
-    wire [2:0]  c_pad    = c_addr[4:2];
     wire [31:0] rd_mux   = (c_op != 8'h02) ? 32'd0 :
-                           (c_addr[15:5] == 11'h010 && c_addr[1:0] == 2'b00) ?
-                               {29'd0, pad_od[c_pad], pad_owner[2*c_pad +: 2]} :
-                           (c_addr == 16'h0220) ? {16'd0, pad_viol} :
+                           (c_addr[15:8] == 8'h02 && c_addr[1:0] == 2'b00) ? pin_rd :
                            !c_eng_ok ? 32'd0 :
                            (c_addr[11:0] == 12'h000) ? {16'd0, pc_e, 5'd0, fault[c_eng], halted[c_eng], eng_run[c_eng]} :
                            (c_addr[11:0] == 12'h204) ? (status_snap[c_eng] ? rx_e : 32'd0) :
@@ -120,8 +115,9 @@ module mgmt (
     assign imem_waddr = addr[9:2];
     assign imem_wdata = data;
     assign tx_wr_data = data;
-    assign pad_sel    = addr[4:2];
-    assign pad_data   = data[2:0];
+    assign pin_wa     = addr[7:2];
+    assign pin_wd     = data;
+    assign pin_ra     = c_addr[7:2];
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -134,21 +130,20 @@ module mgmt (
             imem_we     <= 2'b00;
             rx_rd_en    <= 2'b00;
             tx_wr_en    <= 2'b00;
-            pad_we      <= 1'b0;
-            viol_clr    <= 16'd0;
+            pin_we      <= 1'b0;
             err         <= 1'b0;
         end else begin
             imem_we  <= 2'b00;
             rx_rd_en <= 2'b00;
             tx_wr_en <= 2'b00;
-            pad_we   <= 1'b0;
-            viol_clr <= 16'd0;
+            pin_we   <= 1'b0;
             cap      <= byte_valid && (nbytes == 4'd2);
             if (!active) status_snap <= status;     // same edges spi_slave loads byte 0 on
             if (cap) rd_word <= rd_mux;
+            if (hold) eng_run <= 2'b00;
             if (frame_end) begin
                 nbytes <= 4'd0;
-                if (len_ok && is_write && hit_ctrl)
+                if (len_ok && is_write && hit_ctrl && !(hold && data[0]))
                     eng_run[eng] <= data[0];
                 else if (len_ok && is_write && hit_imem && !eng_run[eng])
                     imem_we[eng] <= 1'b1;
@@ -156,11 +151,11 @@ module mgmt (
                     rx_rd_en[eng] <= status_snap[eng];
                 else if (len_ok && is_write && hit_tx)
                     tx_wr_en[eng] <= ~status_snap[2 + eng];
-                else if (len_ok && is_write && hit_pad && pad_ok && data[31:3] == 29'd0)
-                    pad_we <= 1'b1;
-                else if (len_ok && is_write && hit_viol && data[31:16] == 16'd0)
-                    viol_clr <= data[15:0];
-                else if (len_ok && is_read && (at_ctrl || hit_pad || hit_viol))
+                else if (len_ok && is_write && hit_pin && pin_ok) begin
+                    pin_we <= 1'b1;
+                    if (addr[7:0] == 8'hC4 && data[6]) err <= 1'b0;
+                end
+                else if (len_ok && is_read && (at_ctrl || hit_pin))
                     ;                                   // plain register read, no side effect
                 else if (nbytes != 4'd0)                // an empty CS_N pulse is not an error
                     err <= 1'b1;
