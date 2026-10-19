@@ -168,3 +168,14 @@ These refine the design above; the RTL follows them.
 - **Flow ready, not run:** `PE=/mnt/c/Data/protocol_emulator_shmem bash librelane/flow_variant_wsl.sh <tag> shared` (8x4, macro at
   x = 509.6, L-shaped engine fences in `src/floorplan_engines_shared.json`). Open: power-stripe alignment over the 685 um macro and timing.
 - **Not yet:** differential RTL-vs-model test in shared mode, `REGION` read / instruction readback, formal proofs.
+
+## 11. Flow smoke test (2026-10-19, run sh1, to the power grid)
+
+`PE=/mnt/c/Data/protocol_emulator_shmem TO=OpenROAD.GeneratePDN bash librelane/flow_variant_wsl.sh sh1 shared` completes: lint, synthesis,
+floorplan with the 2P macro at (509.6, 13.78) FS, macro placement, tap cells, power grid. Problems it found and fixed:
+- the PDK's macro `.v` has a `specify` block Yosys cannot parse: `macro/RM_IHPSG13_2P_512x32_c2_bm_bist/*.v` is a ports-only blackbox, like the 1P one;
+- a program counter that resets to a register value needs an asynchronous-load flop that the library does not have: in shared mode `pc_reg`
+  loads START through a synchronous reset (default build keeps its asynchronous reset to 0);
+- the worktree's flow shell scripts must have LF line endings (autocrlf checkout gave CRLF).
+The grid reports PSM-0069 and unconnected macro power pins, exactly as tt13b / tt14b do with the 1P macros (those runs ended with clean DRC and LVS).
+Next: a full run for DRC, LVS, timing, and congestion with the 685 um macro.
