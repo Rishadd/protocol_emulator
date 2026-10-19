@@ -1,0 +1,64 @@
+{
+  "//": "Overrides for the three-column floorplan on 8x4 tiles (src/floorplan_engines_tri.json): SRAM 0 at x = 149.92, SRAM 1 at 149.92 + 24 x 44.96 = 1228.96 (whole stripe pitches), the middle column (x 640-1155) holds management / SPI / pin manager / debug now and the logic analyser's SRAM at x = 689.44 later. Use: bash librelane/flow_variant_wsl.sh <tag> tri",
+  "ROUTING_OBSTRUCTIONS": [
+    [
+      "Metal4",
+      148.92,
+      12.78,
+      567.56,
+      133.56
+    ],
+    [
+      "Metal4",
+      1227.96,
+      12.78,
+      1646.6,
+      133.56
+    ]
+  ],
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "MACROS": {
+    "RM_IHPSG13_1P_256x32_c2_bm_bist": {
+      "instances": {
+        "u_eng0.imem.u_mem": {
+          "location": [
+            149.92,
+            13.78
+          ],
+          "orientation": "FS"
+        },
+        "u_eng1.imem.u_mem": {
+          "location": [
+            1228.96,
+            13.78
+          ],
+          "orientation": "FS"
+        }
+      },
+      "gds": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.gds"
+      ],
+      "lef": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.lef"
+      ],
+      "lib": {
+        "*_typ_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_typ_1p20V_25C.lib"
+        ],
+        "*_fast_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_fast_1p32V_m55C.lib"
+        ],
+        "*_slow_*": [
+          "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist_slow_1p08V_125C.lib"
+        ]
+      },
+      "nl": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.v"
+      ],
+      "spice": [
+        "dir::../macro/RM_IHPSG13_1P_256x32_c2_bm_bist/RM_IHPSG13_1P_256x32_c2_bm_bist.cdl"
+      ]
+    }
+  },
+  "TILES": "8x4"
+}

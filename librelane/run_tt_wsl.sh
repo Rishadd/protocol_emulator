@@ -19,7 +19,7 @@ python3 - "$WORK" <<'EOF'
 import json, os, re, sys, yaml
 w = sys.argv[1]
 info = yaml.safe_load(open(f"{w}/info.yaml"))["project"]
-tiles = info["tiles"]
+tiles = os.environ.get("TILES") or info["tiles"]            # TILES=8x4 overrides info.yaml for an experiment
 sizes = yaml.safe_load(open(f"{w}/tt/tech/ihp-sg13cmos5l/tile_sizes.yaml"))
 die = [float(x) for x in sizes[tiles].split()]
 user = {
