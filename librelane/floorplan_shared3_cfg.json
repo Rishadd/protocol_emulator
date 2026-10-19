@@ -3,6 +3,10 @@
   "TILES": "8x4",
   "VERILOG_DEFINES": ["SYNTHESIS", "SHARED_IMEM"],
   "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "//": "Power grid matched to the 2P macro: its Metal4 power columns are 4.42 um wide on a 17.68 um pitch, VDD! / VSS! centres 8.84 um apart (the 1P macro: 2.81 um on 11.24 um). Stripe pitch 3 x 17.68 = 53.04, centre distance VPWR to VGND 8.84 (width 2.1 + spacing 6.74), first VPWR stripe centre at core left 2.88 + offset = 21.425. The middle of the macro (x 813-886 um) has narrower columns (2.81 um on 5.15 um, nets irregular), so the offset was found by scanning all pitches/offsets for no wrong-net overlap (window 20.575-22.275 at 53.04; 35.36 has none). The old 44.96 grid put VGND stripes on VDD! columns and VPWR stripes on VSS! columns (sh3: LVS, VPWR and VGND shorted)",
+  "FP_PDN_VPITCH": 53.04,
+  "FP_PDN_VSPACING": 6.74,
+  "FP_PDN_VOFFSET": 18.545,
   "ROUTING_OBSTRUCTIONS": [
     ["Metal4", 508.6, 12.78, 1196.09, 234.55]
   ],
