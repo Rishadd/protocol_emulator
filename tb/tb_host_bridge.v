@@ -1,0 +1,69 @@
+`timescale 1ns/1ps
+// Software SPI host bridge: the full chip (tt_um_protocol_emulator) driven line by line from stdin, so a Python program
+// (host/chip_host.py) can talk to the RTL like a microcontroller would talk to the real chip. Run with vvp -n.
+// One command per line, one reply line per command (stdout is flushed after every reply):
+//   F <14 hex>        one 7-byte SPI frame (MSB first, mode 0): replies  F <14 hex>  with the 7 bytes seen on MISO
+//   I <hex> <hex>     set the pins   ui_in[7:3] (5 bits), uio_in (8 bits)                     replies  OK
+//   W <dec>           advance the system clock by that many cycles                              replies  OK
+//   G                 sample the pins                          replies  G <uo_out> <uio_out> <uio_oe> <time ns>
+//   R                 chip reset (rst_n low for 3 clocks, then 4 clocks of settling)             replies  OK
+//   T <dec> <dec>     SPI timing in ns: SCLK half period, CS_N setup/hold                        replies  OK
+//   Q                 end of the simulation                                                      replies  OK
+// System clock 50 MHz (20 ns). Default SPI timing: SCLK half period 200 ns (10 clocks), CS_N 100 ns (5 clocks), within the
+// contract of docs/PROTOCOL_EMULATOR_ARCHITECTURE.md section 6 (>= 8 clocks per SCLK phase, >= 4 clocks CS_N setup / hold).
+module tb_host_bridge;
+    reg        clk = 0, rst_n = 0;
+    reg        sclk = 0, mosi = 0, cs_n = 1;
+    real       spi_half_ns = 200.0, spi_cs_ns = 100.0;
+    reg  [4:0] ui_hi = 0;
+    reg  [7:0] uio_in = 0;
+    wire [7:0] uo_out, uio_out, uio_oe;
+    wire       miso = uo_out[0];
+
+    tt_um_protocol_emulator dut (.ui_in({ui_hi, cs_n, mosi, sclk}), .uo_out(uo_out),
+        .uio_in(uio_in), .uio_out(uio_out), .uio_oe(uio_oe), .ena(1'b1), .clk(clk), .rst_n(rst_n));
+
+    `include "spi_master.vh"
+    always #10 clk = ~clk;
+
+    integer     stdin = 32'h8000_0000;
+    integer     r, a, b;
+    reg [8*8-1:0] cmd;
+    reg [55:0]  w;
+
+    initial begin
+        repeat (3) @(posedge clk); #1 rst_n = 1; repeat (4) @(posedge clk);
+        forever begin
+            r = $fscanf(stdin, "%s", cmd);
+            if (r != 1) $finish;
+            if (cmd == "F") begin
+                r = $fscanf(stdin, "%h", w);
+                spi_begin; spi_bits({72'd0, w}, 56); spi_end;
+                $display("F %014h", spi_rx[55:0]);
+            end else if (cmd == "I") begin
+                r = $fscanf(stdin, "%h %h", a, b);
+                ui_hi = a[4:0]; uio_in = b[7:0];
+                $display("OK");
+            end else if (cmd == "W") begin
+                r = $fscanf(stdin, "%d", a);
+                repeat (a) @(posedge clk);
+                $display("OK");
+            end else if (cmd == "G") begin
+                $display("G %02h %02h %02h %0d", uo_out, uio_out, uio_oe, $time);
+            end else if (cmd == "R") begin
+                rst_n = 0; repeat (3) @(posedge clk); #1 rst_n = 1; repeat (4) @(posedge clk);
+                $display("OK");
+            end else if (cmd == "T") begin
+                r = $fscanf(stdin, "%d %d", a, b);
+                spi_half_ns = a; spi_cs_ns = b;
+                $display("OK");
+            end else if (cmd == "Q") begin
+                $display("OK");
+                $finish;
+            end else begin
+                $display("ERR unknown command");
+            end
+            $fflush;
+        end
+    end
+endmodule
