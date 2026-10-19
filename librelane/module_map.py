@@ -178,7 +178,11 @@ def main():
                     bbox=dict(fc=ENGINE_COL[eng] if on_dark else "white", ec="black", lw=1.5, pad=3))
         for name, x, y, w, h in macros:
             eng = name.split(".")[0].replace("u_eng", "")
-            ax.text(x + w / 2, y + h / 2, f"SRAM engine {eng}\n(256 x 32 program memory)", ha="center", va="center", fontsize=10,
+            if name.startswith("u_imem"):       # the shared memory: one 2-port macro for both engines (docs/SHARED_IMEM_PLAN.md)
+                label = "SHARED SRAM (both engines)\n2-port 512 x 32 program memory"
+            else:                               # one private macro per engine
+                label = f"SRAM engine {eng}\n(256 x 32 program memory)"
+            ax.text(x + w / 2, y + h / 2, label, ha="center", va="center", fontsize=10,
                     fontweight="bold", color="black", bbox=dict(fc="#dddddd", ec="black", lw=1, pad=3, alpha=0.9))
 
     def legend(ax):
