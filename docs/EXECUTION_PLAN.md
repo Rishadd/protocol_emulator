@@ -29,7 +29,14 @@ documentation and the submission package). Target shuttle: March 2027 CMOS5L.
 | Software SPI host | `host/chip_host.py`, `chip_host_demo.py`, [HOST_INTERFACE.md](HOST_INTERFACE.md) |
 | USB line coder (weeks 2-3) | built and verified ([LINE_CODER.md](LINE_CODER.md)) |
 | USB device (weeks 3-4) | packet-shuttle firmware (209 words) + host software enumerates a HID keyboard on the model and on the RTL against an independent host peer model ([USB_LS_PLAN.md](USB_LS_PLAN.md)); firmware mutants and flow run pending |
-| Open | timing with the CI tools: tt13b (phi 1.03, release LibreLane) has -0.45 ns in the slow corner at 20 ns; to close on the frozen RTL |
+| 8x4 floorplan (run tt14b) | the new RTL does not route on 6x4 (tt14a, GRT-0228); the **three-column 8x4 layout routes**: 0 DRC, LVS clean, slow-corner setup **+1.69 ns** at 20 ns (hold +0.10 ns, no violations in the three corners), 24,867 std cells (356k um2, 32 % of the die); Tiny Tapeout precheck **passes**; on `main` (`info.yaml` 8x4, `src/config.json`) |
+| GitHub workflows | `main` pushed at `8795248` (2026-10-19): `test` and `docs` pass; `gds` was building at the time of writing (results below when it ends); the `viewer` job needs GitHub Pages set to "GitHub Actions" |
+| Formal | all four proofs pass on `main` and on the frame v2 branch (pin_mgr, fifo, mgmt, engine); 34/34 planted bugs caught on `main` ([formal/README.md](../formal/README.md)) |
+| Management frame v2 | built on branch `feat/frame-v2` (CRC-16, sequence numbers, retry that returns the older result); 4/4 proofs pass; 20/20 RTL mutants caught before the last simplification (the redundant `last_seq` register was removed; rerun in progress); not merged |
+| Shared 512-word instruction memory | branch `feat/shared-imem` (see SHARED_IMEM_PLAN.md there): one 2P 512x32 macro, physical PC, per-engine window set by firmware (`OP_REGION`, once per run), START register; chip-level test passes on the RTL; first layout (L-shaped engines, run sh2) congested (54 % routing demand, 5,726 overflow); compact-column layout (run sh3) has the same routing demand as tt14b (32 %, zero overflow), detailed routing in progress; not merged |
+| Differential test | RTL and model agree on every program (0 mismatches, 33/33 mutants caught); a coverage count (RGET from the TX FIFO, 28 of 30) was short after a generator change, so the default is now 900 programs |
+| Environment | real Python 3.12 installed on Windows; all regression suites run there; WSL is used for the flows and the proofs; each flow runs in its own window; the WSL VM stops when idle and kills its jobs |
+| Open | regression 2026-10-19c (full, Windows) in progress; the `gds` / `precheck` / `gl_test` results on GitHub; timing is no longer open on the 8x4 layout (tt14b +1.69 ns) |
 
 ## Plan to 2026-12-30 (agreed 2026-10-18)
 

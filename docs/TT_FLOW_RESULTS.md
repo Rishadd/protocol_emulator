@@ -88,3 +88,16 @@ wsl -d Ubuntu -- bash -lc 'bash /mnt/c/Data/protocol_emulator/librelane/collect_
 
 `PDN_VOFFSET` in `src/config.json` is derived from the macro x position (60 um) and the core left edge (2.88 um); change one and
 recompute the other (the generator logic is in the comment block of `src/pdn_cfg.tcl`).
+
+## tt14b: the three-column 8x4 floorplan (2026-10-19)
+
+The 6x4 die no longer routes the current RTL (tt14a, GRT-0228). On 8x4 (die 1724.16 x 710.64 um, core 2.9..1721.3 x 3.8..706.9 um) the engines get their own columns:
+engine 0 x 20..583 um, common logic 640..1155, engine 1 1212..1663, SRAMs at x = 149.92 and 1228.96 (whole stripe pitches of 44.96 um), y = 13.78, flipped (FS).
+Run `bash librelane/flow_variant_wsl.sh <tag> tri` (overrides in `librelane/floorplan_tri_cfg.json`); the same settings are now the default in `src/config.json` and `info.yaml`.
+
+Result: global routing demand 198,509 tracks (32 %), no overflow; detailed routing reached 0 violations; LVS circuits match uniquely; slow-corner setup +1.69 ns at 20 ns,
+hold +0.10 ns, no violations in the three corners; 92,012 instances incl. fillers, 24,867 std cells (356k um2); 9.3 mW. Tiny Tapeout precheck passes (needs `info.yaml` at 8x4
+in the work folder: the pin check compares the layout with the template of the tiles named there).
+Routing uses Metal2-Metal4 only (`RT_MIN_LAYER` Metal2, `RT_MAX_LAYER` Metal4): Metal1 holds the cell wiring and the power rails, and the SRAMs block Metal1-4 over their whole area.
+
+Running several flows: each flow is one `openroad` process (one core); two together fit the 7.8 GB WSL VM. The WSL VM stops when it is idle and kills its jobs: keep a WSL window open.

@@ -203,3 +203,50 @@ Images of every stage, the module maps (where each engine and module sits) and t
 - Magic DRC was skipped in the new flow runs (it reports about 116k errors that come from the SRAM macros' own layout); the foundry DRC of the Tiny Tapeout precheck is the check.
 - CAN arbitration and error frames, USB, Ethernet.
 - Power: only the liberty-based estimate of the flow, no measurement.
+
+## 11. Update 2026-10-19: the 8x4 layout, formal, GitHub, shared memory
+
+### 11.1 Physical design runs of the current RTL (release LibreLane 3.1.0.dev3, Tiny Tapeout PDK)
+
+| Run | Die | What | Result |
+|---|---|---|---|
+| tt13b | 6x4 | previous RTL, `PL_MAX_PHI_COEFFICIENT 1.03` | 0 DRC, LVS clean, hold ok, slow-corner setup -0.45 ns at 20 ns |
+| tt14a | 6x4 | + pin mapping, line coder, RGET FIFO (16,040 -> 20,334 cells, std-cell area 246k -> 308k um2) | **failed in global routing** (GRT-0228): management, SPI and pin manager sat in an 89 um gap between the engine fences |
+| **tt14b** | **8x4** | three columns: engine 0 / common logic / engine 1 (`src/floorplan_engines_tri.json`) | **routes**: routing DRC 0 (detailed routing went 23,753 -> 0 violations), LVS circuits match uniquely, slow-corner setup **+1.69 ns** at 20 ns, hold +0.10 ns (fast corner), 0 setup / hold violations in all three corners, 24,867 std cells = 356k um2 (32 % of the die) + 2 SRAM macros 99.0k um2, 9.3 mW; 1 antenna violation (1 net / 1 pin), 50 max-slew and 12 max-cap violations left |
+| tt14b precheck | 8x4 | Tiny Tapeout precheck on the final GDS | **passes** (foundry KLayout DRC, zero area, pin labels, layers, boundary, cell names, analog pins); the first attempt failed only the pin check because the work folder still had `info.yaml` at 6x4 |
+
+`main` uses this layout since commit `e3846c3`; the merged configuration was compared key by key with the one tt14b ran (no differences).
+
+### 11.2 Formal proofs (SymbiYosys, `abc pdr`, unbounded)
+
+| Tree | Proofs | Planted bugs caught |
+|---|---|---|
+| `main` | pin_mgr, fifo, mgmt (frame v1), engine: all four PASS | 34/34 |
+| `feat/frame-v2` | pin_mgr, fifo, mgmt (frame v2: CRC, sequence rules), engine: all four PASS | v2 mutant run in progress |
+
+### 11.3 RTL against the model (`host/isa_diff_test.py`)
+
+Random programs, every clock compared on pc, pins, status, FIFO head, shifters, loop counter, CRC value, flags and R0..R7: **0 mismatching programs**
+(batches of 150 x 600 clocks, 97k-99k committed instructions per run), 33/33 planted bugs caught. Two coverage counts fell just short after generator
+changes (RGET CRC wait 17 of 20; RGET from the TX FIFO 28 of 30); the generator now weights the CRC wait and the default is 900 programs.
+
+### 11.4 GitHub workflows
+
+Before this push nothing had run since 2026-10-18; `main` was red (`gds` failed at "Build GDS": the placement divergence GPL-0307), `ci/gpl-phi` had
+gds, precheck, gl_test, test and docs green and only `viewer` failing (GitHub Pages not enabled). After the push of `8795248` (the placement fix and the
+8x4 layout): `test` and `docs` pass; `gds` was running.
+
+### 11.5 Shared 512-word instruction memory (branch `feat/shared-imem`)
+
+| Check | Result |
+|---|---|
+| `tb/tb_imem_shared.v` | 18/18 |
+| `host/isa_model.py`, `host/shmem_test.py` | pass (windows, lock, trap, START, bit-8 jump targets, layout rules) |
+| `host/shmem_chip_test.py` on the full chip RTL | pass: two images on two engines (origin 0 and 300), faults, lock, host write rules |
+| Default 256-word build | unchanged: unit testbenches, chip demo (574 frames), assembler output identical |
+| Layout `shared` (run sh2, L-shaped engines) | global routing demand 319,970 tracks (54 %), overflow 5,726; detailed routing 42,461 -> 31,709 -> 30,768 violations: congested, stopped |
+| Layout `shared3` (run sh3, compact 475 um engine columns, macro bottom centre) | global routing demand 192,438 tracks (32 %), overflow 0 (tt14b: 198,509, 0); detailed routing in progress |
+
+Bugs the chip-level test found in the shared-memory RTL: `OP_REGION` had no case in the control unit (PC never advanced); a `?:` mux made the window trap
+X for ever in 4-state simulation; the host's address stayed on a held engine's port; a program counter reset to a register value needs an asynchronous-load flop
+the library does not have (now a synchronous load of START in shared mode); the PDK's macro Verilog has a `specify` block Yosys cannot parse (a ports-only blackbox is used).
