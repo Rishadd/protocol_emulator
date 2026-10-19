@@ -61,7 +61,10 @@ must catch (a mutant that is not caught is a hole in the test). A suite passes o
 | **1-Wire** (new) | 79 words | 18 incl. mutants | 8 | slot timing measured against the Maxim windows, ROM and scratchpad CRC-8 on chip, corrupted CRC, no device |
 | **JTAG** (new) | 87 words | 21 incl. mutants | 4 | Verilog TAP from IEEE 1149.1, scans of 1..100 bits, pause states, TCK half periods 3 and 40, random walks vs a Python TAP |
 | **CAN 2.0A** (new) | 112 TX / 186 RX words | 47 incl. mutants | 20 | 1 Mbit/s, 500 kbit/s, 200 kbit/s; bit stuffing at every field boundary and behind the CRC, ACK slot, bad CRC, stuff / form errors, remote and extended frames, +-0.15 % clock error with ACK, +-0.3 % data only; engine 0 to engine 1 |
-| USB low speed | - | not attempted | - | the CAN loop cannot go below 35 clocks per bit; USB low speed needs 33.3 |
+| **USB low speed** (new) | 203 words + line coder | 45 checks (model and RTL, host rate 0 / +-1.5 %) + 18 planted firmware bugs | 4 | line coder in hardware ([LINE_CODER.md](LINE_CODER.md)); firmware is a packet shuttle, descriptors and requests in host software ([USB_LS_PLAN.md](USB_LS_PLAN.md)); PC-style enumeration of a HID keyboard against an independent host peer model, key reports with DATA toggling, retransmission, NAK, ignored tokens, STALL, bus reset, 2 to 7.5 bit-time turnaround |
+| **WS2812** (new) | 25 words | 15 incl. 5 mutants | 3 | every pulse inside the datasheet windows (T0H 0.40, T1H 0.80, T0L 0.85, T1L 0.45 +-0.15 us), 800 kHz, GRB order MSB first, 50 us latch, strips of 1 to 60 LEDs |
+| **PS/2 device** (new) | 89 words | 28 incl. 8 mutants | 3 | link layer; reactive host model: 11-bit frames with odd parity, clock 30..50 us low and high, data setup / hold, inhibit and resend, host-to-device bytes with acknowledge and parity / framing flags, a software keyboard (reset, ID, LEDs, scan codes); device-to-host also on the RTL |
+| **SWD host** (new) | 161 words | 11 incl. 4 mutants | 3 | line reset, JTAG-to-SWD switch, request / turnaround / ACK / data / parity against a reactive ADIv5 target (DP, MEM-AP, memory): IDCODE, power-up handshake, word and 16-word block transfers with posted reads, WAIT retry, FAULT + ABORT, read parity error |
 
 ## 5. Full chip, host only through the management SPI link
 

@@ -284,3 +284,20 @@ Full numbers: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) section 8.4. Runs and
   A PC tolerates seconds of NAKs on control transfers, so SPI latency is fine; the chip then emulates *any* low-speed USB device the host describes.
   New hardware needed for it: RGET source 7 = FIFO occupancy {rx_count[5:3], tx_count[2:0]} (non-blocking "is a whole 4-word item there?");
   TXW was designed and dropped. Test bench: tb_host_bridge.v has a USB bus model (U/B/N commands), host/usb_host.py is the reactive host model.
+- 2026-10-19 **tt14a (main config 6x4 + pin mapping + line coder + RGET FIFO, release tools): FAILED in global routing** (GRT-0228, horizontal edge usage
+  over the limit). Cells 16,040 -> 20,334 (+27 %), std-cell area 246k -> 308k um2. Generic-gate sizes per module (yosys): pin_mgr ~2,960 (200 flops; the
+  biggest new block: remap muxes, violation tracking, 2x16 input selects, read mux), line_coder ~780 each, dbg_view 144, mgmt 551 (before v2).
+  Suspected cause: management + SPI + pin manager (~4k cells) sit in the unfenced 89 um gap between the engine fences of the 6x4 floorplan.
+  Response: 8x4 tiles with a **three-column floorplan** (engine 0 | common logic | engine 1; librelane/floorplan_tri_cfg.json, src/floorplan_engines_tri.json,
+  flow_variant_wsl.sh tag tri, TILES=8x4 override in run_tt_wsl.sh); the middle column also holds the logic analyser's SRAM later. tt14b is that run.
+  The user approved 8x4 if needed ("assume 8x is allowed"). Candidate pin_mgr trims (later): drop violation tracking or restrict remap.
+- 2026-10-19 **management frame v2 built** on branch feat/frame-v2 (worktree ../protocol_emulator_v2): 12-byte frames, CRC-16/CCITT-FALSE both ways, sequence
+  numbers (in order: new command = last + 1), pipelined results, retry returns the older result again (exactly once), NOP changes nothing, result codes,
+  ID / VERSION / CAPABILITY / SCRATCH / ERRCNT registers; v1 frames unchanged (selected by op bit 7). mgmt_v2_test: 135 checks on the RTL incl. random
+  bit-flip frames never executing, 22 unit testbenches pass. Bugs found by the test on the way: payload/reserved byte positions, is_v2 cleared too early.
+- 2026-10-19 **three more protocols as firmware, all verified on the cycle-exact engine model against independent reactive peers**: WS2812 (25 words,
+  every pulse inside the datasheet windows, 15 cases / 5 mutants), PS/2 device link layer (89 words; reactive host model with Chapweske timing
+  windows, inhibit + resend, host->device with ACK and parity / framing flags, software keyboard; device->host also on the RTL; 28 cases / 8 mutants),
+  SWD host (161 words; reactive ADIv5 target with DP, MEM-AP, memory; IDCODE, power-up, word / block transfers, WAIT retry, FAULT + ABORT, parity;
+  11 cases / 4 mutants). New helpers: host/bus_model.py (wired-AND bus around the engine model). Protocol count: UART, SPI, I2C master + slave, SMBus,
+  Modbus, 1-Wire, JTAG, CAN, USB LS, WS2812, PS/2, SWD = 13 verified (the plan's target for week 5, reached in week 1).

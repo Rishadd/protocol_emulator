@@ -39,11 +39,14 @@ A = [
     ("uart_rx_workload", [PY, "host/uart_rx_workload.py"], {}, dict(final=r"ALL PASS", ignore_bad=True)),
     ("mgmt_duplex_stress", [PY, "host/mgmt_duplex_stress.py"], {}, dict(final=r"PASS", ignore_bad=True)),
     ("chip_host_demo", [PY, "host/chip_host_demo.py", "--quiet"], {}, dict(final=r"all checks passed")),
+    ("ws2812_test", [PY, "host/ws2812_test.py"], {}),
+    ("ps2_test", [PY, "host/ps2_test.py", "run", "mutants", "rtl"], {}),
+    ("swd_test", [PY, "host/swd_test.py"], {}),
     ("line_coder_test", [PY, "host/line_coder_test.py"], {}),
-    ("line_coder_mutants", [PY, "host/line_coder_test.py", "mutants"], {}, dict(final=r"mutants caught: (d+)/")),
+    ("line_coder_mutants", [PY, "host/line_coder_test.py", "mutants"], {}, dict(final=r"mutants caught: (\d+)/\1\b")),
     ("usb_test_model", [PY, "host/usb_test.py", "rate"], {}),
     ("usb_test_rtl", [PY, "host/usb_test.py", "rtl", "rate"], {}),
-    ("usb_mutants", [PY, "host/usb_mutants.py"], {}, dict(final=r"mutants caught: (d+)/")),
+    ("usb_mutants", [PY, "host/usb_mutants.py"], {}, dict(final=r"mutants caught: (\d+)/\1\b")),
     ("workload", [PY, "host/workload.py"], {}, dict(final=r"PASS", ignore_bad=True)),
 ]
 B = [

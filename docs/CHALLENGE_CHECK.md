@@ -21,8 +21,8 @@ Evidence is in this repository ([TEST_RESULTS.md](TEST_RESULTS.md)); nothing was
 |---|---|---|
 | Programmable emulator, not fixed protocol blocks; new protocols after fabrication | **met** | 28-opcode engine with registers, ALU and CRC; all protocols are firmware loaded over the management link |
 | Start with UART, SPI, I2C | **met (simulation)** | UART TX / RX / duplex (also on a DE0-Nano); SPI master + slave, 4 modes; I2C master 100 / 400 / 1000 kHz and **I2C slave** |
-| Stretch: low-speed USB, 10 Mbit Ethernet | **not yet** | USB low speed needs 33.3 clocks per bit; the CAN loop cannot go below 35. Raw 10BASE-T is not feasible on GPIO at this clock |
-| Others: JTAG, SWD, PS/2, CAN | **partly** | **JTAG and CAN 2.0A (transmit and receive) done**, plus SMBus PEC, Modbus RTU and 1-Wire; SWD and PS/2 not done; CAN has no arbitration or error frames |
+| Stretch: low-speed USB, 10 Mbit Ethernet | **USB LS met (simulation)**, Ethernet no | a line coder (NRZI, stuffing, SE0 EOP, edge-tracking receiver) in every engine and device firmware enumerate a HID keyboard against an independent host model, on the RTL ([USB_LS_PLAN.md](USB_LS_PLAN.md)); raw 10BASE-T is not feasible on GPIO at this clock |
+| Others: JTAG, SWD, PS/2, CAN | **met (simulation)** | JTAG, SWD (host), PS/2 (device) and CAN 2.0A (transmit and receive) done, plus SMBus PEC, Modbus RTU, 1-Wire and WS2812; CAN has no arbitration or error frames |
 | FPGA testing | **partly** | UART on a DE0-Nano; the other protocols and the ALU / CRC units were not on the FPGA |
 | Verification techniques (formal, constrained random, mutation) | **partly** | independent models and peers written from the specifications; random differential test (600 programs, 0 mismatches, 74 of 74 coverage points); mutation testing everywhere (66 planted ALU / CRC / engine bugs plus 145 protocol mutants, all caught); **no formal properties yet** |
 | "Show us anything else your architecture makes possible" | **partly** | two protocols at once on one chip through one host link; pin ownership with violation reporting; event words in the data stream; a CRC unit that is any Rocksoft CRC |
