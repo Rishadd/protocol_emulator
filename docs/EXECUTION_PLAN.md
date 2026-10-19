@@ -20,6 +20,17 @@ Status (2026-10-12, superseded by the table below): **two engines, SRAM instruct
 Challenge deadline: **2027-01-18**. **Working deadline: 2026-12-30** (design, verification and signoff GDS finished; January only for
 documentation and the submission package). Target shuttle: March 2027 CMOS5L.
 
+## Progress 2026-10-19 (weeks 1-4 of the plan below are ahead of schedule)
+
+| Item | State |
+|---|---|
+| GitHub `gds` placement fix | `PL_MAX_PHI_COEFFICIENT 1.03` (branch `ci/gpl-phi`: gds, precheck, gl_test, test, docs pass; only the `viewer` job fails, GitHub Pages setting); on `main` |
+| Pin mapping (week 2) | built: remap of 15 output pins, input select, HOLD, IRQ, debug views 0-3 and 5; 22/22 testbenches, formal 18+7 properties, 34/34 planted bugs caught; remapped-pin protocol suites (phase D) pass |
+| Software SPI host | `host/chip_host.py`, `chip_host_demo.py`, [HOST_INTERFACE.md](HOST_INTERFACE.md) |
+| USB line coder (weeks 2-3) | built and verified ([LINE_CODER.md](LINE_CODER.md)) |
+| USB device (weeks 3-4) | packet-shuttle firmware (209 words) + host software enumerates a HID keyboard on the model and on the RTL against an independent host peer model ([USB_LS_PLAN.md](USB_LS_PLAN.md)); firmware mutants and flow run pending |
+| Open | timing with the CI tools: tt13b (phi 1.03, release LibreLane) has -0.45 ns in the slow corner at 20 ns; to close on the frozen RTL |
+
 ## Plan to 2026-12-30 (agreed 2026-10-18)
 
 New features: **USB low speed** ([USB_LS_PLAN.md](USB_LS_PLAN.md)) and the **logic analyser, protocol sniffer and engine debug**

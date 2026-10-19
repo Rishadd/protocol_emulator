@@ -21,7 +21,7 @@ Where to read next: [docs/README.md](docs/README.md) is the map of all documents
 |---|---|
 | `src/` | RTL. `tt_um_protocol_emulator.v` is the chip top; `engine_top.v` the engine (`control_unit`, `alu_unit`, `crc_unit`, `pc_reg`, FIFOs, shifters, `pin_block`); `isa.vh` the opcode table; `mgmt.v`, `spi_slave.v`, `pin_mgr.v` the management side. `config.json`, `pdn_cfg.tcl`, `floorplan_boxes.json` are the flow configuration. `src/fpga/` holds the DE0-Nano tops and UART images. |
 | `tb/` | self-checking Icarus testbenches (unit tests, engine, management link, protocol benches `tb_proto.v` and `tb_chip_proto.v`) and the peer models `peer_*.v`. |
-| `host/` | Python: assembler (`asm.py`), ISA model and differential test, CRC model, firmware generators `*_prog.py`, suites `*_test.py`, `regress.py` (runs everything). |
+| `host/` | Python: assembler (`asm.py`), ISA model and differential test, CRC model, firmware generators `*_prog.py`, suites `*_test.py`, `regress.py` (runs everything). `chip_host.py` + `chip_host_demo.py`: the software SPI host (library and guided tour, see docs/HOST_INTERFACE.md). USB low speed: `usb_ls.py` (signalling from the spec), `usb_host.py` (host peer model), `usb_prog.py` (device firmware), `usb_device_host.py` (descriptors and requests in host software), `usb_test.py`; line coder: `line_model.py`, `line_coder_test.py`. |
 | `test/` | cocotb tests for the Tiny Tapeout flow (RTL and gate level). |
 | `librelane/` | flow scripts for WSL (`run_tt_wsl.sh`, `flow_run_wsl.sh`, precheck, gate-level test, images), the custom flow steps (power-stripe bridge, engine fences) and analysis tools. |
 | `macro/`, `sim/ihp_sram/` | the SRAM macro views and its functional simulation models. |

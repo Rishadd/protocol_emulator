@@ -38,6 +38,12 @@ A = [
     ("uart_workload", [PY, "host/uart_workload.py", "--bauds", "9600", "115200"], {}, dict(final=r"fully PASS", ignore_bad=True)),
     ("uart_rx_workload", [PY, "host/uart_rx_workload.py"], {}, dict(final=r"ALL PASS", ignore_bad=True)),
     ("mgmt_duplex_stress", [PY, "host/mgmt_duplex_stress.py"], {}, dict(final=r"PASS", ignore_bad=True)),
+    ("chip_host_demo", [PY, "host/chip_host_demo.py", "--quiet"], {}, dict(final=r"all checks passed")),
+    ("line_coder_test", [PY, "host/line_coder_test.py"], {}),
+    ("line_coder_mutants", [PY, "host/line_coder_test.py", "mutants"], {}, dict(final=r"mutants caught: (d+)/")),
+    ("usb_test_model", [PY, "host/usb_test.py", "rate"], {}),
+    ("usb_test_rtl", [PY, "host/usb_test.py", "rtl", "rate"], {}),
+    ("usb_mutants", [PY, "host/usb_mutants.py"], {}, dict(final=r"mutants caught: (d+)/")),
     ("workload", [PY, "host/workload.py"], {}, dict(final=r"PASS", ignore_bad=True)),
 ]
 B = [
@@ -55,6 +61,15 @@ C = [
     ("org192_modbus_test", [PY, "host/modbus_test.py", "tx", "rx", "loop"], {"FW_ORG": "192"}),
     ("org64_onewire_test", [PY, "host/onewire_test.py", "run"], {"FW_ORG": "64"}),
 ]
+# D: the chip-level protocol suites again with the pins of every logical pin placed at random (output remap on uio and uo_out, input
+# select including ui_in): the same firmware must still behave identically (decoders see the logical pin bus).
+# PROTO_REMAP_UO = logical pins that are output-only push-pull and may sit on uo_out (JTAG TCK/TMS/TDI).
+D = [(f"remap{s}_{n}", [PY, "host/" + script, *args], {"PROTO_CHIP": "1", "PROTO_REMAP": str(s), **extra})
+     for s in (1, 2, 3)
+     for n, script, args, extra in (("can_test", "can_test.py", ["run"], {}),
+                                    ("jtag_test", "jtag_test.py", ["run"], {"PROTO_REMAP_UO": "0x38"}),
+                                    ("onewire_test", "onewire_test.py", ["run"], {}),
+                                    ("modbus_test", "modbus_test.py", ["tx", "rx", "loop"], {}))]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 
 
@@ -98,7 +113,7 @@ def main():
     for chip in (False, True):                                   # compile the shared protocol benches once, before anything runs in parallel
         pl.compile_tb(chip=chip)
     rows = []
-    for label, phase in (("A", A), ("B", B), ("C", C)):
+    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D)):
         items = [i for i in phase if (not only or i[0] in only) and i[0] not in skip]
         if not items:
             continue

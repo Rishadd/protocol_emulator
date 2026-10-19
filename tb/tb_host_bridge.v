@@ -9,6 +9,12 @@
 //   R                 chip reset (rst_n low for 3 clocks, then 4 clocks of settling)             replies  OK
 //   T <dec> <dec>     SPI timing in ns: SCLK half period, CS_N setup/hold                        replies  OK
 //   Q                 end of the simulation                                                      replies  OK
+// USB low-speed bus (for host/usb_host.py): with U 1 the chip's uio[0] = D+ and uio[1] = D- are wired to a bus model: the device drives
+// them when uio_oe is set, otherwise the host driver (B) does, otherwise the bus idles as J (D+ low by the host's pull-down, D- high by the
+// device's 1.5 kOhm pull-up).
+//   U <0|1>           bus model off / on (off: the I command's uio_in goes to the chip)               replies  OK
+//   B <dp> <dm> <oe>  host driver levels and enable (no time passes)                                replies  OK
+//   N <max>           run until the bus changes or <max> clocks passed         replies  N <clocks run> <dp><dm> <both driving: 0/1>
 // System clock 50 MHz (20 ns). Default SPI timing: SCLK half period 200 ns (10 clocks), CS_N 100 ns (5 clocks), within the
 // contract of docs/PROTOCOL_EMULATOR_ARCHITECTURE.md section 6 (>= 8 clocks per SCLK phase, >= 4 clocks CS_N setup / hold).
 module tb_host_bridge;
@@ -17,17 +23,23 @@ module tb_host_bridge;
     real       spi_half_ns = 200.0, spi_cs_ns = 100.0;
     reg  [4:0] ui_hi = 0;
     reg  [7:0] uio_in = 0;
+    reg        usb_en = 0, h_oe = 0, h_dp = 0, h_dm = 1;
+    integer    contend = 0;
     wire [7:0] uo_out, uio_out, uio_oe;
     wire       miso = uo_out[0];
+    wire       bus_dp = uio_oe[0] ? uio_out[0] : h_oe ? h_dp : 1'b0;
+    wire       bus_dm = uio_oe[1] ? uio_out[1] : h_oe ? h_dm : 1'b1;
+    wire       both = usb_en && h_oe && (uio_oe[0] || uio_oe[1]);
 
     tt_um_protocol_emulator dut (.ui_in({ui_hi, cs_n, mosi, sclk}), .uo_out(uo_out),
-        .uio_in(uio_in), .uio_out(uio_out), .uio_oe(uio_oe), .ena(1'b1), .clk(clk), .rst_n(rst_n));
+        .uio_in(usb_en ? {uio_in[7:2], bus_dm, bus_dp} : uio_in), .uio_out(uio_out), .uio_oe(uio_oe), .ena(1'b1), .clk(clk), .rst_n(rst_n));
 
     `include "spi_master.vh"
     always #10 clk = ~clk;
 
     integer     stdin = 32'h8000_0000;
-    integer     r, a, b;
+    integer     r, a, b, k;
+    reg [1:0]   lvl;
     reg [8*8-1:0] cmd;
     reg [55:0]  w;
 
@@ -57,6 +69,19 @@ module tb_host_bridge;
                 r = $fscanf(stdin, "%d %d", a, b);
                 spi_half_ns = a; spi_cs_ns = b;
                 $display("OK");
+            end else if (cmd == "U") begin
+                r = $fscanf(stdin, "%d", a);
+                usb_en = a[0];
+                $display("OK");
+            end else if (cmd == "B") begin
+                r = $fscanf(stdin, "%d %d %d", a, b, k);
+                h_dp = a[0]; h_dm = b[0]; h_oe = k[0];
+                $display("OK");
+            end else if (cmd == "N") begin
+                r = $fscanf(stdin, "%d", a);
+                k = 0; lvl = {bus_dp, bus_dm};
+                while (k < a && {bus_dp, bus_dm} === lvl) begin @(posedge clk); #1; k = k + 1; end
+                $display("N %0d %b%b %0d", k, bus_dp, bus_dm, both);
             end else if (cmd == "Q") begin
                 $display("OK");
                 $finish;

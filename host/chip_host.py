@@ -347,6 +347,18 @@ class SimLink:
     def reset(self):
         self._cmd("R")
 
+    # ---- USB low-speed bus model (tb/tb_host_bridge.v): uio[0] = D+, uio[1] = D-, J = idle
+    def usb(self, on=True):
+        self._cmd(f"U {int(on)}")
+
+    def host_drive(self, dp, dm, oe=1):
+        self._cmd(f"B {dp} {dm} {int(oe)}")
+
+    def run_until_change(self, max_clocks):
+        """Advance until D+/D- change or max_clocks pass. Returns (clocks run, (dp, dm) now, contention flag)."""
+        _, ran, lv, both = self._cmd(f"N {int(max_clocks)}").split()
+        return int(ran), (int(lv[0]), int(lv[1])), int(both)
+
     def close(self):
         try:
             self._cmd("Q")

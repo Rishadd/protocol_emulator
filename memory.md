@@ -250,3 +250,37 @@ Full numbers: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) section 8.4. Runs and
   signoff Dec 14-27. Specs: docs/PIN_MAP_PLAN.md, docs/USB_LS_PLAN.md, docs/DEBUG_LA_PLAN.md.
 - 2026-10-18 **working deadline 2026-12-30** (set by the user): design, verification and signoff GDS finished by then; January
   2027 only for documentation and the submission package (challenge deadline 2027-01-18).
+- 2026-10-18 **pin mapping step 1 built** (RTL, docs/PIN_MAP_PLAN.md as amended): `src/pin_mgr.v` rewritten (15 output pins uio[7:0] +
+  uo_out[7:1] with owner / remap / od, per-engine input select over 13 inputs, MISC, IRQ status + mask, INPUTS), new `src/dbg_view.v`
+  (views 0-3, 5; 4 and 6 reserved), `mgmt.v` window 0x0200..0x02FF with write-consent from pin_mgr. Changes from the plan: the
+  hold pin is **ui_in[3] active high** ("HOLD", so an undriven pin lets the chip run) not SAFE_N; remap is `logical = remap XOR pin
+  index` (0 = identity, old register values unchanged); err can be cleared by writing 1 to IRQ bit 6. Results: tb_pin_mgr (new,
+  768 mux combinations + remap / isel / HOLD / IRQ / views), tb_mgmt_pins extended through the SPI link, 22/22 RTL testbenches PASS;
+  formal pin_mgr / mgmt / engine / fifo all PASS, 34/34 planted bugs caught (18 new for the mapping). Full regression: see results/
+  regression_2026-10-18_pinmap. Flow run on the new RTL: not yet.
+- 2026-10-18 **software SPI host**: `host/chip_host.py` (ChipHost API + SimLink to the RTL via `tb/tb_host_bridge.v`, stdin/stdout
+  line protocol) and `host/chip_host_demo.py` (9 scenarios, 574 frames, all checks pass); docs/HOST_INTERFACE.md explains every
+  host-chip exchange (frame, STATUS, address map, flow control, errors). Existing drivers (cocotb frame(), spi_master.vh tasks)
+  were test-only; this is the first general host API. Also fixed: MGMT_PLAN IMEM address (0x400, not 0x100).
+- 2026-10-19 **placement fix chosen: PL_MAX_PHI_COEFFICIENT 1.03** (committed 3416ad3). GitHub `ci/gpl-phi` (run 39144709276): gds, precheck, gl_test,
+  test, docs all pass; only the `viewer` job fails (not seen on main before because gds failed first; probably GitHub Pages not enabled in the
+  repository settings - the user has to check Settings > Pages > Source: GitHub Actions). `ci/gpl-noroute` was cancelled. Local tt13b (release
+  LibreLane + TT PDK + phi 1.03): 0 DRC, 0 LVS, 67k instances, hold OK, but **setup -0.45 ns in the slow corner at 20 ns (2 violations)**; the
+  newer local tools gave +0.67 ns (tt12a). The CI tools synthesise worse; timing closure with the release tools is open (clock period or
+  synthesis settings), to be done on the frozen RTL.
+- 2026-10-19 **remapped-pin firmware tests**: tb_chip_proto.v takes +OLOC/+ILOC (physical output / input pin of each logical pin; uo_out
+  placements for output-only pins, ui_in[7:3] inputs, bidirectional pads wired to a second input pin); proto_lib.pin_map(seed) generates the
+  maps; regress phase D = CAN, JTAG (TCK/TMS/TDI on uo_out), 1-Wire, Modbus on the full chip with seeds 1-3. Mutants of the remap formula and
+  of the input select are caught (isa jtag run with seeds 2, 3, 5).
+- 2026-10-19 **line coder built** (USB prerequisite): src/line_coder.v + LINE opcode 28 + RGET source 6 (docs/LINE_CODER.md). host/usb_ls.py = USB
+  2.0 LS signalling written from the spec (CRC5/CRC16, SYNC, NRZI, stuffing, EOP, decoder); host/line_coder_test.py = 1175 checks (TX decoded by
+  usb_ls, RX at +-1.5 % rate and jitter, shortened SYNC, stuff error, partial byte, false start, random sweeps); host/line_model.py = clock-exact
+  model embedded in isa_model; isa_diff_test: 0 mismatches in 600 programs x 600 clocks incl. line-focused programs. Formal engine proof still PASS.
+  Idea for code size (descriptors ~160 bytes of constant packets): LINE TXW = queue 3 bytes from a 24-bit LDI value (2 words per 3 bytes instead of 6).
+- 2026-10-19 **USB device design decision** (docs/USB_LS_PLAN.md updated below): standalone descriptors do not fit 256 words (~160 bytes of constant
+  packets + protocol layer ~ 320 words even with a 3-byte TXW command). The firmware is a **packet shuttle**: on-chip = bus level (SYNC/PID/tokens,
+  handshakes, retransmission of the pending packet until ACK, address filter, bus-reset detection, SETUP data CRC16 check); the host software composes
+  descriptor / HID-report packets (PID+data+CRC) and pushes them as 4-word items through the TX FIFO, receives SETUP/ACK/RESET events through the RX FIFO.
+  A PC tolerates seconds of NAKs on control transfers, so SPI latency is fine; the chip then emulates *any* low-speed USB device the host describes.
+  New hardware needed for it: RGET source 7 = FIFO occupancy {rx_count[5:3], tx_count[2:0]} (non-blocking "is a whole 4-word item there?");
+  TXW was designed and dropped. Test bench: tb_host_bridge.v has a USB bus model (U/B/N commands), host/usb_host.py is the reactive host model.

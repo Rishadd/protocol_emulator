@@ -10,6 +10,7 @@ Read in this order if you are new to the project. "Decisions" documents say what
 | 4 | [TEST_RESULTS.md](TEST_RESULTS.md) | **all test and flow results in tables** |
 | 5 | [EXECUTION_PLAN.md](EXECUTION_PLAN.md) | project plan and status |
 | 6 | [CHALLENGE_CHECK.md](CHALLENGE_CHECK.md) | the challenge rules against what exists |
+| 7 | [HOST_INTERFACE.md](HOST_INTERFACE.md) | **every host-chip exchange**: SPI frame, STATUS, address map, flow control; Python host `host/chip_host.py` |
 
 ## Decisions and plans (why things are the way they are)
 
@@ -18,7 +19,8 @@ Read in this order if you are new to the project. "Decisions" documents say what
 | [ALU_CRC_I2CSLAVE_PLAN.md](ALU_CRC_I2CSLAVE_PLAN.md) | ALU + CRC units, I2C slave, protocol suite, bounding-box experiment; section 13 lists where the plan changed |
 | [ALU_CRC_RESULTS.md](ALU_CRC_RESULTS.md) | what came out of that plan, the flow problems that had to be solved, the final layout |
 | [PIN_MAP_PLAN.md](PIN_MAP_PLAN.md) | plan (week 2): every pin except the management link remappable; spare-pin defaults (SAFE_N, IRQ, debug views); bring-up without SPI |
-| [USB_LS_PLAN.md](USB_LS_PLAN.md) | plan (weeks 2-4): USB low-speed device in firmware with a generic line coder (NRZI, stuffing, EOP) |
+| [USB_LS_PLAN.md](USB_LS_PLAN.md) | USB low-speed device: line coder, packet-shuttle firmware, host software, verification, what changed from the first plan |
+| [LINE_CODER.md](LINE_CODER.md) | the `LINE` opcode and RGET sources 6 and 7: transmitter, receiver, status word, verification |
 | [DEBUG_LA_PLAN.md](DEBUG_LA_PLAN.md) | plan (weeks 5-7): logic analyser, protocol sniffer with protocol triggers, engine debug over SPI |
 | [FETCH_STAGE.md](https://github.com/Rishadd/protocol_emulator/blob/exp/fetch-stage/docs/FETCH_STAGE.md) (on branch `exp/fetch-stage`) | experiment: instruction register with early branch resolution, verified, no timing gain, not merged |
 | [MGMT_PLAN.md](MGMT_PLAN.md) | the SPI management link (frame format, address map) |
