@@ -14,5 +14,5 @@ else
 fi
 # CFG_EXTRA='{"PL_RESIZER_HOLD_SLACK_MARGIN": 0.3}' merges more settings into the run configuration
 if [ -n "$CFG_EXTRA" ]; then EXTRA_CFG=$(python3 -c "import json,os; a=json.loads(os.environ['EXTRA_CFG']); a.update(json.loads(os.environ['CFG_EXTRA'])); print(json.dumps(a))"); export EXTRA_CFG; fi
-bash /mnt/c/Data/protocol_emulator/librelane/run_tt_wsl.sh ${TO:+--to $TO} > $HOME/flow_$TAG.log 2>&1
+bash ${PE:-/mnt/c/Data/protocol_emulator}/librelane/run_tt_wsl.sh ${TO:+--to $TO} > $HOME/flow_$TAG.log 2>&1
 echo "exit code $?" >> $HOME/flow_$TAG.log

@@ -297,9 +297,12 @@ class SimLink:
     10 system clocks, CS_N 100 ns)."""
 
     SRCS = ["sim/ihp_sram/RM_IHPSG13_1P_core_behavioral_bm_bist.v", "sim/ihp_sram/RM_IHPSG13_1P_256x32_c2_bm_bist.v"]
+    SRCS_SHARED = ["sim/ihp_sram/RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v", "sim/ihp_sram/RM_IHPSG13_2P_512x32_c2_bm_bist.v"]
 
-    def __init__(self, half_ns=200, cs_ns=100, rebuild=None):
-        self.vvp = os.path.join(ROOT, "build", "host", "bridge.vvp")
+    def __init__(self, half_ns=200, cs_ns=100, rebuild=None, shared=False):
+        """shared=True: the chip with the shared 512-word instruction memory (-DSHARED_IMEM, docs/SHARED_IMEM_PLAN.md)."""
+        self.shared = shared
+        self.vvp = os.path.join(ROOT, "build", "host", "bridge_shared.vvp" if shared else "bridge.vvp")
         self._build(rebuild)
         self.p = subprocess.Popen(["vvp", "-n", self.vvp], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1,
                                   cwd=ROOT)
@@ -314,10 +317,12 @@ class SimLink:
             os.makedirs(os.path.dirname(self.vvp), exist_ok=True)
             if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
                 os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
-            r = subprocess.run(["iverilog", "-g2012", "-Wno-timescale", "-DFUNCTIONAL", "-I", os.path.join(ROOT, "src"), "-I",
+            r = subprocess.run(["iverilog", "-g2012", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if self.shared else []) +
+                               ["-I", os.path.join(ROOT, "src"), "-I",
                                 os.path.join(ROOT, "tb"), "-o", self.vvp, os.path.join(ROOT, "tb", "tb_host_bridge.v")] +
                                [d for d in deps if d.endswith(".v") and "tb_host_bridge" not in d] +
-                               [os.path.join(ROOT, s) for s in self.SRCS], capture_output=True, text=True)
+                               [os.path.join(ROOT, s) for s in (self.SRCS_SHARED if self.shared else self.SRCS)],
+                               capture_output=True, text=True)
             if r.returncode:
                 raise HostError("iverilog failed:\n" + r.stderr)
 

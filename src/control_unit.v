@@ -10,7 +10,12 @@ module control_unit (
     // program counter
     output reg         pc_advance,      // normal increment
     output reg         pc_jump,         // jump to given address
-    output wire [7:0]  jump_addr,       // jump target address
+    output wire [8:0]  jump_addr,       // jump target: {operand[11], operand[7:0]} (bit 11 is target bit 8, 512-word programs)
+`ifdef SHARED_IMEM
+    // OP_REGION (shared memory): executes once per run; the window is operand [8:0] base, [18:9] limit
+    input  wire        region_locked,   // this engine already set its window in this run
+    output wire        region_go,       // one clock: the window takes effect
+`endif
     // delay counter
     output reg         dc_load,         // signal to load the delay counter
     output wire [26:0] dc_load_value,   // value to load into the delay counter
@@ -82,7 +87,7 @@ module control_unit (
     wire [26:0] operand = instr[26:0];
     wire [2:0]  pin_sel = operand[2:0];
 
-    assign jump_addr     = operand[7:0];
+    assign jump_addr     = {operand[11], operand[7:0]};
     assign dc_load_value = operand;
     assign lc_load_value = operand[15:0];
 
@@ -97,7 +102,14 @@ module control_unit (
                   (opcode == `OP_RPUT) ? (rp_dst   <= `RP_RXF) :
                   (opcode == `OP_CRC)  ? (crc_cop  <= `CRC_BYTE) :
                   (opcode == `OP_LINE) ? (line_lop <= `LN_RESET) : 1'b1;
+`ifdef SHARED_IMEM
+    // OP_REGION is legal once per run, with a non-empty window inside the 512-word memory
+    wire rg_legal = (opcode != `OP_REGION) ||
+                    (!region_locked && ({1'b0, operand[8:0]} < operand[18:9]) && (operand[18:9] <= 10'd512));
+    wire legal    = ((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_REGION)) && sub_ok && rg_legal;
+`else
     wire legal      = (opcode <= `OP_LAST_LEGAL) && sub_ok;   // opcodes above OP_LAST_LEGAL, or a reserved sub-field, trap
+`endif
     wire jp_taken   = (pin_in[operand[10:8]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [10:8], addr in [7:0]
     wire timed      = (opcode == `OP_WAIT) || (opcode == `OP_OUT1) || (opcode == `OP_IN1);  // instructions that require holding for a condition
     wire needs_hold = (timed && (operand != 27'd0)) ||            // indicates if the instruction requires holding based on the operand
@@ -130,6 +142,9 @@ module control_unit (
                  (opcode == `OP_LINE && (line_lop == `LN_TXB || line_lop == `LN_TXE)) ? line_full :   // transmit queue full
                  (opcode == `OP_RPUT && rp_dst == `RP_RXF) ? rx_full :    // RPUT RXF needs RX FIFO space
                                           1'b0;              // all other opcodes never stall
+`ifdef SHARED_IMEM
+    assign region_go = (state == S_EXEC) && !halted && legal && !stall && (opcode == `OP_REGION);
+`endif
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -316,6 +331,7 @@ module control_unit (
                             line_go    = 1'b1;
                             pc_advance = 1'b1;
                         end
+                        `OP_REGION: pc_advance = 1'b1;     // only reachable when legal (SHARED_IMEM, once per run); the window is set by region_go
                         default: ;
                     endcase
                 end

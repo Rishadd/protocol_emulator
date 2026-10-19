@@ -13,10 +13,21 @@ module engine_top #(
     input  wire        clk,
     input  wire        rst_n,
     input  wire        run,
-    // host -> instruction memory (management write port)
+    // host -> instruction memory (management write port); unused with SHARED_IMEM (imem_shared owns the writes)
     input  wire        imem_we,
     input  wire [7:0]  imem_waddr,
     input  wire [31:0] imem_wdata,
+`ifdef SHARED_IMEM
+    // fetch port of the shared instruction memory: im_addr = next_pc (region relative), im_instr arrives one clock later
+    output wire [8:0]  im_addr,
+    input  wire [31:0] im_instr,
+    // OP_REGION: window request to imem_shared and the window's lock
+    output wire        rg_go,
+    output wire [18:0] rg_val,
+    input  wire        rg_locked,
+    // START: the program counter's reset value (host register, written while held; mgmt.v)
+    input  wire [8:0]  start_pc,
+`endif
     // host -> engine data
     input  wire        tx_wr_en,
     input  wire [31:0] tx_wr_data,
@@ -32,12 +43,18 @@ module engine_top #(
     // status
     output wire        halted,
     output wire        fault,
-    output wire [7:0]  pc
+    output wire [8:0]  pc               // bit 8 is 0 unless SHARED_IMEM
 );
+`ifdef SHARED_IMEM
+    localparam PC_W = 9;
+`else
+    localparam PC_W = 8;
+`endif
     wire        core_rst_n = rst_n & run;
     wire [31:0] instr;
     wire        pc_advance, pc_jump;
-    wire [7:0]  jump_addr, next_pc;
+    wire [8:0]  jump_addr;
+    wire [PC_W-1:0] next_pc, pc_r;
     wire        dc_load, dc_last;
     wire [26:0] dc_load_value_cu, dc_load_value;
     wire        lc_load, lc_dec;
@@ -69,6 +86,12 @@ module engine_top #(
     // edge), and control_unit decodes whatever instr holds. tx_rd_en / rx_wr_en are the only
     // control_unit outputs that reach state outside the reset core (the FIFOs), so they are
     // masked with core_rst_n; everything else sits behind core_rst_n's asynchronous reset.
+`ifdef SHARED_IMEM
+    assign instr   = im_instr;
+    assign im_addr = next_pc;
+    assign rg_val  = instr[18:0];           // OP_REGION operand (valid only with rg_go)
+    wire _unused_imem = &{imem_we, imem_waddr, imem_wdata, INIT_FILE != "", 1'b0};
+`else
     instr_mem #(.INIT_FILE(INIT_FILE)) imem (
         .clk   (clk),
         .addr  (next_pc),
@@ -77,16 +100,22 @@ module engine_top #(
         .waddr (imem_waddr),
         .wdata (imem_wdata)
     );
+`endif
 
-    pc_reg pc_i (
+`ifndef SHARED_IMEM
+    wire [PC_W-1:0] start_pc = {PC_W{1'b0}};       // the default build always starts at 0
+`endif
+    pc_reg #(.WIDTH(PC_W)) pc_i (
         .clk       (clk),
         .rst_n     (core_rst_n),
         .advance   (pc_advance),
         .jump      (pc_jump),
-        .jump_addr (jump_addr),
-        .pc        (pc),
+        .jump_addr (jump_addr[PC_W-1:0]),
+        .start     (start_pc[PC_W-1:0]),
+        .pc        (pc_r),
         .next_pc   (next_pc)
     );
+    assign pc = pc_r;                   // zero-extended when PC_W = 8
 
     // register-sourced values for the counters / shifters (RPUT, WAITR) instead of the instruction operand / TX FIFO word
     assign dc_load_value  = dc_from_reg ? rs_val[26:0] : dc_load_value_cu;
@@ -251,6 +280,10 @@ module engine_top #(
         .pc_advance    (pc_advance),
         .pc_jump       (pc_jump),
         .jump_addr     (jump_addr),
+`ifdef SHARED_IMEM
+        .region_locked (rg_locked),
+        .region_go     (rg_go),
+`endif
         .dc_load       (dc_load),
         .dc_load_value (dc_load_value_cu),
         .dc_last       (dc_last),

@@ -1,11 +1,13 @@
 // Instruction word: [31:27] opcode, [26:0] operand (flat, one meaning per opcode).
 // A timed instruction with operand d occupies exactly d+1 cycles (d=0 -> 1 cycle).
+// Jump targets (JMP DJNZ JPH JPL JPO JCC): bits [7:0] of the operand plus bit 8 of the target in operand bit 11 (0 in every program of 256 words
+// or less, so the old encodings are unchanged). The program counter is 9 bits wide only with SHARED_IMEM (docs/SHARED_IMEM_PLAN.md).
 `ifndef ISA_VH
 `define ISA_VH
 
 `define OP_NOP    5'd0   // -
 `define OP_WAIT   5'd1   // d      : hold d+1 cycles
-`define OP_JMP    5'd2   // [7:0] addr : pc <= addr (256-word program memory)
+`define OP_JMP    5'd2   // [7:0] addr (+ [11] = addr bit 8) : pc <= addr
 `define OP_HALT   5'd3   // -
 `define OP_SETL   5'd4   // n      : loop counter <= n
 `define OP_DJNZ   5'd5   // [7:0] addr : loop--, jump if result != 0
@@ -34,6 +36,7 @@
 `define OP_CRC    5'd27  // [26:24] cop, [2:0] rs : CRC unit operation (see CRC_* below)
 `define OP_LINE   5'd28  // [26:24] lop, [2:0] rs : line coder operation (see LN_* below, docs/LINE_CODER.md)
 // All others trap.
+`define OP_REGION 5'd29  // [8:0] base, [18:9] limit : shared memory window, once per run (SHARED_IMEM only; traps otherwise)
 `define OP_LAST_LEGAL 5'd28
 
 // ALU functions (OP_ALU [26:23]); 13..15 trap

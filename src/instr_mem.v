@@ -1,3 +1,4 @@
+`ifndef SHARED_IMEM
 // Instruction memory, 256 words x 32 bits: one IHP SG13 1P 256x32 SRAM macro (bit-mask + BIST variant).
 //
 //   fetch : SYNCHRONOUS read: instr = mem[addr] one clock after the edge that sampled addr.
@@ -60,3 +61,4 @@ module instr_mem #(
     initial if (INIT_FILE != "") load_hex(INIT_FILE);
 `endif
 endmodule
+`endif

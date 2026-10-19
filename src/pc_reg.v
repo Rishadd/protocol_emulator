@@ -10,17 +10,18 @@ module pc_reg #(
     input  wire             advance,
     input  wire             jump,
     input  wire [WIDTH-1:0] jump_addr,
+    input  wire [WIDTH-1:0] start,      // reset value: 0 in the default build, the host's START address in shared mode
     output reg  [WIDTH-1:0] pc,
     output wire [WIDTH-1:0] next_pc
 );
     //jump given more priority than advance
-    assign next_pc = !rst_n ? {WIDTH{1'b0}} :
+    assign next_pc = !rst_n ? start :
                      jump   ? jump_addr     :
                      advance ? pc + 1'b1    : pc;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            pc <= {WIDTH{1'b0}};
+            pc <= start;
         else
             pc <= next_pc;
     end
