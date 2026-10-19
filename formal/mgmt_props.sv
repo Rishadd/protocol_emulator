@@ -29,6 +29,9 @@ module mgmt_props (
     wire [6:0]  uo_hi;
     wire [2:0]  view_sel, misc, vsel;
     wire        pin_hit, pin_ok, pin_we, err, hold, trig_en, irq;
+    wire [3:0]  f_nbytes;
+    wire        f_is_v2;
+    wire [15:0] f_rxcrc, f_low16;
     wire [15:0] owner, oowner, viol, mask;
     wire [23:0] remap, oremap;
     wire [7:0]  od, irq_st;
@@ -42,7 +45,8 @@ module mgmt_props (
                  .halted(halted), .fault(fault), .pc0(pc0), .pc1(pc1), .tx_full(tx_full), .rx_empty(rx_empty),
                  .rx_data0(rx_data0), .rx_data1(rx_data1), .rx_rd_en(rx_rd_en), .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data),
                  .pin_wa(pin_wa), .pin_wd(pin_wd), .pin_hit(pin_hit), .pin_ok(pin_ok), .pin_we(pin_we),
-                 .pin_ra(pin_ra), .pin_rd(pin_rd), .hold(hold), .err(err));
+                 .pin_ra(pin_ra), .pin_rd(pin_rd), .hold(hold), .err(err),
+                 .f_nbytes(f_nbytes), .f_is_v2(f_is_v2), .f_rxcrc(f_rxcrc), .f_low16(f_low16));
     pin_mgr u_pins (.clk(clk), .rst_n(rst_n), .run(eng_run), .w_addr(pin_wa), .w_data(pin_wd), .w_hit(pin_hit), .w_ok(pin_ok),
                     .we(pin_we), .r_addr(pin_ra), .r_data(pin_rd), .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
                     .uio_in(uio_in), .ui_hi(ui_hi), .uio_oe(uio_oe), .uio_out(uio_out), .uo_hi(uo_hi), .view(view),
@@ -50,11 +54,43 @@ module mgmt_props (
                     .owner(owner), .od(od), .remap(remap), .oowner(oowner), .oremap(oremap), .isel0_r(isel0), .isel1_r(isel1),
                     .viol(viol), .misc(misc), .vsel(vsel), .mask(mask), .irq_st(irq_st));
 
-    // bytes of the current frame, counted here from the SPI slave's outputs (independent of mgmt's own counter)
-    reg [3:0] nb;
+    // bytes of the current frame, counted here from the SPI slave's outputs (independent of mgmt's own counter), and a CRC-16/CCITT-FALSE of
+    // bytes 0..9 written bit by bit (another formulation than the byte-wise one in mgmt.v)
+    reg [3:0]  nb;
+    reg [7:0]  b0, b10, b11;
+    reg [15:0] pcrc;
+    function [15:0] crc_bits;
+        input [15:0] c;
+        input [7:0]  d;
+        integer      i;
+        reg [15:0]   x;
+        begin
+            x = c;
+            for (i = 7; i >= 0; i = i - 1) x = {x[14:0], 1'b0} ^ ((x[15] ^ d[i]) ? 16'h1021 : 16'h0000);
+            crc_bits = x;
+        end
+    endfunction
     always @(posedge clk)
-        if (init || frame_end) nb <= 4'd0;
-        else if (byte_valid && nb != 4'd8) nb <= nb + 4'd1;
+        if (init || frame_end) begin
+            nb   <= 4'd0;
+            pcrc <= 16'hFFFF;
+        end else if (byte_valid) begin
+            if (nb != 4'd13) nb <= nb + 4'd1;
+            if (nb == 4'd0)  b0  <= rx_byte;
+            if (nb == 4'd10) b10 <= rx_byte;
+            if (nb == 4'd11) b11 <= rx_byte;
+            if (nb < 4'd10)  pcrc <= crc_bits(pcrc, rx_byte);
+        end
+    // helper invariants: the controller's byte counter, frame type and CRC follow the independent ones above (they strengthen the induction)
+    always @(*) if (rst_n) begin
+        assert (f_nbytes == nb);
+        assert (f_rxcrc == pcrc);
+        if (nb != 4'd0) assert (f_is_v2 == b0[7]);
+        if (nb == 4'd11) assert (f_low16[7:0] == b10);
+        if (nb == 4'd12) assert (f_low16 == {b10, b11});
+    end
+    wire frame_ok = frame_clean && ((nb == 4'd7 && !b0[7]) ||                                   // frame v1: 7 whole bytes
+                                    (nb == 4'd12 && b0[7] && pcrc == {b10, b11}));              // frame v2: 12 whole bytes and the right CRC-16
 
     // M1
     always @(*) if (rst_n) assert (!pin_we || pin_ok);
@@ -63,10 +99,10 @@ module mgmt_props (
         assert (!imem_we[0] || !eng_run[0]);
         assert (!imem_we[1] || !eng_run[1]);
     end
-    // M3
+    // M3 every state change follows a complete, intact frame: v1 = exactly 7 bytes, v2 = exactly 12 bytes with the right CRC-16
     always @(posedge clk) if (rst_n && !$past(init)) begin
         if (pin_we || imem_we != 2'b00 || tx_wr_en != 2'b00 || rx_rd_en != 2'b00 || (eng_run != $past(eng_run) && !$past(hold)))
-            assert ($past(frame_end && frame_clean && nb == 4'd7));
+            assert ($past(frame_end && frame_ok));
     end
     // M4 HOLD: both engines are stopped one clock after it is seen, and RUN cannot be set in the cycle HOLD is active
     always @(posedge clk) if (rst_n && !$past(init) && $past(hold)) assert (eng_run == 2'b00);
