@@ -11,6 +11,7 @@ Decoders are written from the protocol rules only (independent of the firmware):
 """
 import glob
 import os
+import random
 import subprocess
 
 import spi_prog as sp
@@ -57,8 +58,53 @@ def _safe(name):
     return "".join(c if c.isalnum() or c in "-+=." else "_" for c in name)
 
 
-def run(name, progs=None, htx=None, od=0, ext=0, stim=None, dur_ns=1_000_000, peer=0, plus=None, own=None, chip=None):
+REMAP = os.environ.get("PROTO_REMAP", "")
+
+
+def pin_map(seed, own_mask, od=0, uo_ok=0):
+    """Random pin placement for the full chip (tb_chip_proto.v +OLOC/+ILOC; physical codes: 0-7 uio[p], 8-14 uo_out[code-7],
+    inputs also 8-12 = ui_in[code-5]). Returns (oloc, iloc) as 8-digit hex strings, nibble l = logical pin l.
+    Every logical pin an engine owns gets its own physical output pin (uio, or uo_out when uo_ok allows it: output-only push-pull pins);
+    each logical input is read from its own pad or, at random, from another free input node (a wire on the board): that exercises the
+    output remap and the input select of the pin manager in every combination. Physical nodes are never shared between two nets."""
+    rnd = random.Random(seed)
+    uio, uo = list(range(8)), list(range(8, 15))
+    rnd.shuffle(uio)
+    rnd.shuffle(uo)
+    oloc = {}
+    for l in range(8):
+        if not own_mask >> l & 1:
+            oloc[l] = 15
+        elif uo_ok >> l & 1 and not od >> l & 1 and rnd.random() < 0.6:
+            oloc[l] = uo.pop()
+        else:
+            oloc[l] = uio.pop()
+    free = [p for p in uio] + list(range(8, 13))          # input nodes nobody drives (leftover uio pads and ui_in[7:3])
+    rnd.shuffle(free)
+    iloc = {}
+    for l in range(8):                                     # pins that need a node of their own first
+        if oloc[l] >= 8:
+            iloc[l] = free.pop()
+    for l in rnd.sample(range(8), 8):                      # the others keep their pad, or move to a free node at random
+        if l not in iloc:
+            iloc[l] = oloc[l] if oloc[l] < 8 and (rnd.random() < 0.5 or not free) else free.pop()
+    for l in range(8):
+        assert iloc[l] != 15
+    return "".join(f"{oloc[l]:x}" for l in reversed(range(8))), "".join(f"{iloc[l]:x}" for l in reversed(range(8)))
+
+
+def run(name, progs=None, htx=None, od=0, ext=0, stim=None, dur_ns=1_000_000, peer=0, plus=None, own=None, chip=None, remap=None,
+        uo_ok=0):
+    """remap = seed of a random pin placement (chip mode; env PROTO_REMAP gives the default), uo_ok = logical pins that may sit on uo_out."""
     chip = CHIP if chip is None else chip
+    if remap is None and REMAP:
+        remap = int(REMAP)
+    uo_ok = uo_ok or int(os.environ.get("PROTO_REMAP_UO", "0"), 0)    # logical pins that are output-only push-pull (e.g. JTAG TCK/TMS/TDI = 0x38)
+    if chip and remap:
+        own_m = {0: 0xFF if 0 in (progs or {}) else 0, 1: 0xFF if (1 in (progs or {}) and 0 not in (progs or {})) else 0}
+        own_m.update(own or {})
+        oloc, iloc = pin_map(remap, own_m[0] | own_m[1], od, uo_ok)
+        plus = dict(plus or {}, OLOC=oloc, ILOC=iloc)
     d = os.path.join(BUILD, _safe(name) + ("_chip" if chip else ""))
     os.makedirs(d, exist_ok=True)
     args = []

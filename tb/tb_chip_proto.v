@@ -6,6 +6,10 @@
 //   +PROG0/+PROG1=<hex>  programs      +HTX0/+HTX1=<hex> +N0/+N1=<n>  host TX words      +OD=<hex>  pads claimed open-drain
 //   +OWN0/+OWN1=<hex>    pads claimed by engine 0 / 1 (default: all pads for engine 0, or for engine 1 when it is the only one with a program)
 //   +EXT=<hex> +STIM=<file> +WAND=<hex> +PEER=<n> +DUR_NS=<n> +OUT=<log> +MGMT_HALF_NS=<n>
+//   +OLOC=<8 hex digits>  physical output pin of each logical pin l (nibble l): 0-7 = uio[p], 8-14 = uo_out[nibble-7], F = none (default 76543210: identity)
+//   +ILOC=<8 hex digits>  physical input pin of each logical pin (nibble l): 0-7 = uio[p], 8-12 = ui_in[nibble-5] (default 76543210)
+// The 'pad' bus of the log is the LOGICAL pin bus (what the peers and decoders see); the board wiring between it and the physical pins is
+// modelled here: the physical pin carrying logical pin l as output is wired to the same net as the input pin chosen for l.
 // All times in the log are relative to the moment both engines have been started (RUN written), the stimulus file is applied from there.
 // Log: P <ns> <pads hex> on every pad change, A/B <ns> <word hex> for every word read from engine 0 / 1,
 //      END cyc= fault0= fault1= halted0= halted1= pc0= pc1= contend= frames= err= viol= retries=
@@ -22,14 +26,34 @@ module tb_chip_proto;
     reg  [7:0] ext_mask = 0, ext_val = 8'hFF, wand_mask = 0;
     integer    peer = 0, contend = 0;
     wire [7:0] pad, peer_low;
-    wire [7:0] low_any = (uio_oe & ~uio_out) | peer_low;
-    wire [7:0] hi_any  = uio_oe & uio_out;
+    reg [31:0] oloc = 32'h76543210, iloc = 32'h76543210;
+    reg  [7:0] ch_low, ch_hi, uio_in_v;      // what the chip drives low / high on each logical pin; the physical uio input nodes
+    reg  [4:0] ui_hi_v;                       // ui_in[7:3] nodes
+    reg  [3:0] oc, ic;
+    integer    lg;
+    always @* begin
+        ch_low = 8'd0; ch_hi = 8'd0; uio_in_v = 8'd0; ui_hi_v = 5'd0;
+        for (lg = 0; lg < 8; lg = lg + 1) begin
+            if (oloc[4*lg +: 4] < 8) begin
+                ch_low[lg] = uio_oe[oloc[4*lg +: 4]] & ~uio_out[oloc[4*lg +: 4]];
+                ch_hi[lg]  = uio_oe[oloc[4*lg +: 4]] & uio_out[oloc[4*lg +: 4]];
+                uio_in_v[oloc[4*lg +: 4]] = pad[lg];
+            end else if (oloc[4*lg +: 4] < 15) begin     // uo_out has no output enable: the pin shows oe & out of the engine
+                ch_low[lg] = ~uo_out[oloc[4*lg +: 4] - 7];
+                ch_hi[lg]  = uo_out[oloc[4*lg +: 4] - 7];
+            end
+            if (iloc[4*lg +: 4] < 8) uio_in_v[iloc[4*lg +: 4]] = pad[lg];
+            else if (iloc[4*lg +: 4] < 13) ui_hi_v[iloc[4*lg +: 4] - 8] = pad[lg];
+        end
+    end
+    wire [7:0] low_any = ch_low | peer_low;
+    wire [7:0] hi_any  = ch_hi;
     assign pad = (ext_mask & ext_val) | (~ext_mask & ~low_any & (ext_val | ~wand_mask));
     always @(pad) if ((hi_any & low_any & ~ext_mask) != 0) contend = contend + 1;
 
     tt_um_protocol_emulator dut (
-        .ui_in({5'd0, cs_n, mosi, sclk}), .uo_out(uo_out),
-        .uio_in(pad), .uio_out(uio_out), .uio_oe(uio_oe),
+        .ui_in({ui_hi_v, cs_n, mosi, sclk}), .uo_out(uo_out),
+        .uio_in(uio_in_v), .uio_out(uio_out), .uio_oe(uio_oe),
         .ena(1'b1), .clk(clk), .rst_n(rst_n));
     peer_models pm (.pad(pad), .peer_sel(peer[7:0]), .peer_low(peer_low));
 
@@ -114,15 +138,30 @@ module tb_chip_proto;
         own1 = (has1 && !has0) ? 8'hFF : 8'h00;
         if ($value$plusargs("OWN0=%h", k)) own0 = k[7:0];
         if ($value$plusargs("OWN1=%h", k)) own1 = k[7:0];
+        if ($value$plusargs("OLOC=%h", k)) oloc = k;
+        if ($value$plusargs("ILOC=%h", k)) iloc = k;
         for (k = 0; k < 256; k = k + 1) begin img0[k] = W_HALT; img1[k] = W_HALT; end
         if (has0) $readmemh(p0f, img0);
         if (has1) $readmemh(p1f, img1);
 
         repeat (3) @(posedge clk); #1 rst_n = 1;
         repeat (4) @(posedge clk);
+        // claim the physical pin that carries each logical pin (remap field = logical pin XOR physical pin index)
         for (p = 0; p < 8; p = p + 1) begin
-            if (own0[p]) frame(OP_WR, 16'h0200 + 4 * p, 32'd1 | (od[p] ? 32'd4 : 32'd0));
-            if (own1[p]) frame(OP_WR, 16'h0200 + 4 * p, 32'd2 | (od[p] ? 32'd4 : 32'd0));
+            oc = oloc[4*p +: 4];
+            for (e = 0; e < 2; e = e + 1) if (e ? own1[p] : own0[p]) begin
+                if (oc < 8) frame(OP_WR, 16'h0200 + 4 * oc, (e + 1) | (od[p] ? 32'd4 : 32'd0) | (((p ^ oc) & 7) << 3));
+                else        frame(OP_WR, 16'h0240 + 4 * (oc - 7), (e + 1) | (((p ^ (oc - 7)) & 7) << 3));
+            end
+        end
+        // input select of both engines, only where it differs from the reset identity
+        for (p = 0; p < 8; p = p + 1) begin
+            ic = iloc[4*p +: 4];
+            if (ic != p) begin
+                frame(OP_WR, 16'h0280 + 4 * p, ic);
+                frame(OP_WR, 16'h02A0 + 4 * p, ic);
+            end
+            if (ic == 8) frame(OP_WR, 16'h02C0, 32'h6);          // ui_in[3] is the HOLD pin by default: here it is a protocol input
         end
         if (has0) begin image_len(0, nimg); load(0, nimg); end
         if (has1) begin image_len(1, nimg); load(1, nimg); end
