@@ -32,8 +32,9 @@
 `define OP_RPUT   5'd25  // [2:0] rs, [6:4] dst : OSR / ISR / loop counter <= R[rs]; RX FIFO <= R[rs] (stalls while full)
 `define OP_WAITR  5'd26  // [2:0] rs : hold R[rs] + 1 cycles (WAIT with the delay taken from a register)
 `define OP_CRC    5'd27  // [26:24] cop, [2:0] rs : CRC unit operation (see CRC_* below)
+`define OP_LINE   5'd28  // [26:24] lop, [2:0] rs : line coder operation (see LN_* below, docs/LINE_CODER.md)
 // All others trap.
-`define OP_LAST_LEGAL 5'd27
+`define OP_LAST_LEGAL 5'd28
 
 // ALU functions (OP_ALU [26:23]); 13..15 trap
 `define ALU_MOV  4'd0
@@ -61,13 +62,15 @@
 `define CC_GTU 3'd6   // C and not Z (unsigned greater after CMP)
 `define CC_LEU 3'd7   // not C or Z
 
-// RGET sources (OP_RGET [6:4]); 6, 7 trap
+// RGET sources (OP_RGET [6:4]); all eight are used
 `define RG_OSR 3'd0
 `define RG_ISR 3'd1
 `define RG_LC  3'd2
 `define RG_PIN 3'd3
 `define RG_CRC 3'd4
 `define RG_TXF 3'd5
+`define RG_LINE 3'd6   // line coder status and received byte (a read consumes the byte); stalls 1 clock after a LINE instruction
+`define RG_FIFO 3'd7   // FIFO occupancy, never stalls: [2:0] words in the TX FIFO, [5:3] words in the RX FIFO
 // RPUT destinations (OP_RPUT [6:4]); 4..7 trap
 `define RP_OSR 3'd0
 `define RP_ISR 3'd1
@@ -81,5 +84,12 @@
 `define CRC_FMT   3'd4
 `define CRC_BIT   3'd5
 `define CRC_BYTE  3'd6
+// Line coder operations (OP_LINE [26:24]); 6, 7 trap
+`define LN_CFG    3'd0   // R[rs]: [2:0] D+ pin, [5:3] D- pin, [6] NRZI, [7] stuffing, [10:8] stuff run length, [11] J polarity
+`define LN_PERIOD 3'd1   // R[rs][15:0]: bit period in clocks * 256
+`define LN_TXB    3'd2   // R[rs][7:0] queued for transmission (stalls while the queue is full)
+`define LN_TXE    3'd3   // queue an end of packet: SE0 SE0 J, then release (stalls while the queue is full)
+`define LN_RXCTL  3'd4   // R[rs][0] receiver enable, [1] clear receive flags
+`define LN_RESET  3'd5   // transmitter and receiver to idle
 
 `endif

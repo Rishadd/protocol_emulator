@@ -1,8 +1,8 @@
 {
   "DESIGN_NAME": "tt_um_protocol_emulator",
   "VERILOG_FILES": [
-    "dir::../src/alu_unit.v", "dir::../src/control_unit.v", "dir::../src/crc_unit.v", "dir::../src/delay_counter.v", "dir::../src/engine_top.v",
-    "dir::../src/fifo.v", "dir::../src/instr_mem.v", "dir::../src/loop_counter.v",
+    "dir::../src/alu_unit.v", "dir::../src/control_unit.v", "dir::../src/crc_unit.v", "dir::../src/dbg_view.v", "dir::../src/delay_counter.v", "dir::../src/engine_top.v",
+    "dir::../src/fifo.v", "dir::../src/instr_mem.v", "dir::../src/line_coder.v", "dir::../src/loop_counter.v",
     "dir::../src/mgmt.v", "dir::../src/pc_reg.v", "dir::../src/pin_block.v", "dir::../src/pin_mgr.v",
     "dir::../src/shift_reg.v", "dir::../src/spi_slave.v", "dir::../src/tt_um_protocol_emulator.v"
   ],

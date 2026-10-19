@@ -6,7 +6,7 @@ abc pdr
 
 [script]
 read -formal sram_free.v
-read -formal -D SYNTHESIS alu_unit.v control_unit.v crc_unit.v delay_counter.v engine_top.v fifo.v instr_mem.v loop_counter.v pc_reg.v pin_block.v shift_reg.v
+read -formal -D SYNTHESIS alu_unit.v control_unit.v crc_unit.v delay_counter.v engine_top.v fifo.v instr_mem.v line_coder.v loop_counter.v pc_reg.v pin_block.v shift_reg.v
 read -formal engine_props.sv
 prep -top engine_props
 
@@ -19,6 +19,7 @@ prep -top engine_props
 ../src/engine_top.v
 ../src/fifo.v
 ../src/instr_mem.v
+../src/line_coder.v
 ../src/loop_counter.v
 ../src/pc_reg.v
 ../src/pin_block.v

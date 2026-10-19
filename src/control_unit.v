@@ -47,6 +47,9 @@ module control_unit (
     output reg         crc_feed_bit,
     output reg         crc_feed_byte,
     input  wire        crc_busy,        // a CRC command issued in the previous clock is still executing (RGET CRC waits)
+    output reg         line_go,         // LINE instruction commits (engine_top passes operand[26:24] and R[rs] to the line coder)
+    input  wire        line_full,       // the coder's transmit queue cannot take another byte / EOP (LINE TXB, TXE wait)
+    input  wire        line_busy,       // a LINE command issued in the previous clock is not applied yet (RGET LINE waits)
     // shift registers
     output reg         osr_load,        // signal to load the output shift register
     output reg         osr_shift,       // signal to shift the output shift register
@@ -88,10 +91,12 @@ module control_unit (
     wire [2:0]  rg_src   = operand[6:4];
     wire [2:0]  rp_dst   = operand[6:4];
     wire [2:0]  crc_cop  = operand[26:24];
+    wire [2:0]  line_lop = operand[26:24];
     wire sub_ok = (opcode == `OP_ALU)  ? (alu_func <= `ALU_LAST_LEGAL) :
-                  (opcode == `OP_RGET) ? (rg_src   <= `RG_TXF) :
+                  (opcode == `OP_RGET) ? (rg_src   <= `RG_FIFO) :
                   (opcode == `OP_RPUT) ? (rp_dst   <= `RP_RXF) :
-                  (opcode == `OP_CRC)  ? (crc_cop  <= `CRC_BYTE) : 1'b1;
+                  (opcode == `OP_CRC)  ? (crc_cop  <= `CRC_BYTE) :
+                  (opcode == `OP_LINE) ? (line_lop <= `LN_RESET) : 1'b1;
     wire legal      = (opcode <= `OP_LAST_LEGAL) && sub_ok;   // opcodes above OP_LAST_LEGAL, or a reserved sub-field, trap
     wire jp_taken   = (pin_in[operand[10:8]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [10:8], addr in [7:0]
     wire timed      = (opcode == `OP_WAIT) || (opcode == `OP_OUT1) || (opcode == `OP_IN1);  // instructions that require holding for a condition
@@ -121,6 +126,8 @@ module control_unit (
                  (opcode == `OP_WAITL) ?  pin_in[pin_sel] :  // WAITL waits for pin to go low
                  (opcode == `OP_RGET && rg_src == `RG_TXF) ? tx_empty :   // RGET TXF needs a TX FIFO word
                  (opcode == `OP_RGET && rg_src == `RG_CRC) ? crc_busy :   // RGET CRC directly after a CRC instruction: 1 clock
+                 (opcode == `OP_RGET && rg_src == `RG_LINE) ? line_busy : // RGET LINE directly after a LINE instruction: 1 clock
+                 (opcode == `OP_LINE && (line_lop == `LN_TXB || line_lop == `LN_TXE)) ? line_full :   // transmit queue full
                  (opcode == `OP_RPUT && rp_dst == `RP_RXF) ? rx_full :    // RPUT RXF needs RX FIFO space
                                           1'b0;              // all other opcodes never stall
 
@@ -181,6 +188,7 @@ module control_unit (
         crc_set_fmt   = 1'b0;
         crc_feed_bit  = 1'b0;
         crc_feed_byte = 1'b0;
+        line_go       = 1'b0;
         osr_load   = 1'b0;
         osr_shift  = 1'b0;
         isr_shift  = 1'b0;
@@ -302,6 +310,10 @@ module control_unit (
                                 `CRC_BIT:  crc_feed_bit  = 1'b1;
                                 default:   crc_feed_byte = 1'b1;     // CRC_BYTE
                             endcase
+                            pc_advance = 1'b1;
+                        end
+                        `OP_LINE: begin
+                            line_go    = 1'b1;
                             pc_advance = 1'b1;
                         end
                         default: ;

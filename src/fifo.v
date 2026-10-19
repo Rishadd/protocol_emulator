@@ -10,7 +10,8 @@ module fifo #(
     output wire             full,
     input  wire             rd_en,
     output wire [WIDTH-1:0] rd_data,
-    output wire             empty
+    output wire             empty,
+    output wire [$clog2(DEPTH):0] level    // number of words stored
 );
     localparam AW = (DEPTH > 1) ? $clog2(DEPTH) : 1;
 
@@ -20,6 +21,7 @@ module fifo #(
 
     assign full    = (count == DEPTH);
     assign empty   = (count == 0);
+    assign level   = count;
     assign rd_data = mem[rd_ptr];
 
     wire do_wr = wr_en && !full;

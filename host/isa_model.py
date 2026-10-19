@@ -17,6 +17,7 @@ import collections
 
 import asm as A
 import crc_model as cm
+from line_model import LineCoder
 
 MASK32 = 0xFFFFFFFF
 FIFO_DEPTH = 4
@@ -77,6 +78,10 @@ class Engine:
         self.z = self.n = self.c = 0
         self.crc = CrcUnit()
         self.crc_cmd = None            # (cop, R[rs]) issued last clock: the CRC unit executes it at this clock's edge
+        if hasattr(self, "line"):
+            self.line.reset()
+        else:
+            self.line = LineCoder()    # line coder (src/line_coder.v)
 
     # ---- shift register helpers
     def osr_bit(self):
@@ -131,11 +136,11 @@ class Engine:
             return False
         if op == A.OPCODE["ALU"] and operand >> 23 > 12:
             return False
-        if op == A.OPCODE["RGET"] and (operand >> 4 & 7) > 5:
-            return False
         if op == A.OPCODE["RPUT"] and (operand >> 4 & 7) > 3:
             return False
         if op == A.OPCODE["CRC"] and (operand >> 24 & 7) > 6:
+            return False
+        if op == A.OPCODE["LINE"] and (operand >> 24 & 7) > 5:
             return False
         return True
 
@@ -167,6 +172,10 @@ class Engine:
         tx_head = self.tx[0] if self.tx else 0
         push_rx = None                 # value pushed into the RX FIFO at this edge
         new_crc_cmd = None             # CRC command issued at this edge
+        line_cmd = (0, 0, 0)           # (go, op, R[rs]) for the line coder at this edge
+        line_pop = False
+        ldp = sync1 >> self.line.dp_pin & 1      # the pins the line coder watches (pre-edge, like the RTL)
+        ldm = sync1 >> self.line.dm_pin & 1
         pop_tx = False
         dc_load = None
         pc_next = None                 # None = hold
@@ -198,6 +207,12 @@ class Engine:
                     stall = tx_empty
                 if name == "RPUT" and operand >> 4 & 7 == 3:
                     stall = rx_full
+                if name == "RGET" and operand >> 4 & 7 == 6 and self.line.busy():
+                    stall = True               # RGET LINE directly after a LINE instruction waits one clock
+                    self.cov[("rget_line_wait",)] += 1
+                if name == "LINE" and operand >> 24 & 7 in (2, 3) and self.line.full():
+                    stall = True               # TXB / TXE wait while the 2-entry transmit queue is full
+                    self.cov[("line_full_wait",)] += 1
                 if name == "RGET" and operand >> 4 & 7 == 4 and self.crc_cmd is not None:
                     stall = True               # RGET CRC directly after a CRC instruction waits one clock for the command to execute
                     self.cov[("rget_crc_wait",)] += 1
@@ -212,6 +227,8 @@ class Engine:
                         self.cov[("rput", operand >> 4 & 7)] += 1
                     elif name == "CRC":
                         self.cov[("crc", operand >> 24 & 7)] += 1
+                    elif name == "LINE":
+                        self.cov[("line", operand >> 24 & 7)] += 1
                     elif name == "JCC":
                         self.cov[("jcc", operand >> 8 & 7, int(bool(self.cond(operand >> 8 & 7))))] += 1
                     if name == "WAIT":
@@ -280,9 +297,12 @@ class Engine:
                             pc_next, adv = operand & 0xFF, False
                     elif name == "RGET":
                         src = operand >> 4 & 7
-                        val = [self.osr, self.isr, self.lc, sync1, self.crc.value(), tx_head][src]
+                        val = [self.osr, self.isr, self.lc, sync1, self.crc.value(), tx_head, self.line.status(ldp, ldm),
+                               len(self.rx) << 3 | len(self.tx)][src]
                         if src == 5:
                             pop_tx = True
+                        if src == 6:
+                            line_pop = True
                         self.r[operand & 7] = val & MASK32
                     elif name == "RPUT":
                         dst = operand >> 4 & 7
@@ -296,12 +316,15 @@ class Engine:
                             push_rx = rs
                     elif name == "CRC":
                         new_crc_cmd = (operand >> 24 & 7, rs)  # executed by the CRC unit one clock later
+                    elif name == "LINE":
+                        line_cmd = (1, operand >> 24 & 7, rs)   # applied by the line coder one clock later
                     if adv:
                         pc_next = (self.pc + 1) & 0xFF
         # CRC unit: executes the command issued in the previous clock (in order, one per clock), then takes this clock's command
         if self.crc_cmd is not None:
             self.crc_exec(*self.crc_cmd)
         self.crc_cmd = new_crc_cmd
+        self.line.step(line_cmd[0], line_cmd[1], line_cmd[2], line_pop, ldp, ldm)
         # counters that run on their own
         if dc_load is not None:
             self.dc = dc_load
@@ -325,8 +348,19 @@ class Engine:
         self.sync0 = pin_in & 0xFF
         return self.snapshot()
 
+    def pins(self):
+        """(pin_out, pin_oe) as the engine drives them: the pin block, with the line coder in charge of its two pins while it transmits."""
+        oe, dpv, dmv = self.line.outputs()
+        pin_out, pin_oe = self.pin_out, self.pin_oe
+        if oe:
+            for p, v in ((self.line.dm_pin, dmv), (self.line.dp_pin, dpv)):   # D+ wins if both name the same pin
+                pin_oe |= 1 << p
+                pin_out = (pin_out & ~(1 << p)) | v << p
+        return pin_out, pin_oe
+
     def snapshot(self):
-        return dict(pc=self.pc, pin_out=self.pin_out, pin_oe=self.pin_oe, halted=int(self.halted), fault=int(self.fault),
+        pin_out, pin_oe = self.pins()
+        return dict(pc=self.pc, pin_out=pin_out, pin_oe=pin_oe, halted=int(self.halted), fault=int(self.fault),
                     tx_full=int(len(self.tx) >= FIFO_DEPTH), rx_empty=int(not self.rx),
                     rx_head=self.rx[0] if self.rx else 0, osr=self.osr, isr=self.isr, lc=self.lc,
                     crc=self.crc.value(), z=self.z, n=self.n, c=self.c, r=list(self.r))
@@ -403,7 +437,7 @@ def selftest():
         check(f"RGET CRC {'one instruction after' if gap else 'directly after'} CRC BYTE: pc {pcs}",
               pcs == want_pcs and e.rx == [cm.CRC(32, 0x04C11DB7, 0xFFFFFFFF, True, True, 0xFFFFFFFF).of(b"1")])
     # trap on a reserved opcode / sub-field
-    for w in (28 << 27, A.enc_alu(13, 0, imm=1), A.word("RGET", 6 << 4), A.word("RPUT", 4 << 4), A.word("CRC", 7 << 24)):
+    for w in (29 << 27, A.enc_alu(13, 0, imm=1), A.word("RPUT", 4 << 4), A.word("CRC", 7 << 24), A.word("LINE", 6 << 24)):
         e = Engine([w])
         e.step()
         check(f"trap {w:08x}", e.halted and e.fault and e.pc == 0)

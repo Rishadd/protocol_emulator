@@ -174,14 +174,26 @@ module tb_engine_alu;
         // ---- T8: traps
         prog[0] = ALUI(13, 0, 0);  load_prog(1); go(10);
         `CHECK(halted && fault && pc == 8'd0, "T8 ALU function 13 traps (pc frozen)")
-        prog[0] = I(`OP_RGET, {3'd6, 1'b0, 3'd0}); load_prog(1); go(10);
-        `CHECK(halted && fault, "T8 RGET source 6 traps")
+        // RGET FIFO (source 7): {RX level, TX level}, never stalls
+        prog[0] = RGET(0, `RG_FIFO); prog[1] = RPUT(`RP_RXF, 0); prog[2] = RGET(1, `RG_FIFO); prog[3] = RPUT(`RP_RXF, 1); prog[4] = RGET(2, `RG_FIFO);
+        prog[5] = RPUT(`RP_RXF, 2); prog[6] = RGET(3, `RG_TXF); prog[7] = RGET(4, `RG_FIFO); prog[8] = RPUT(`RP_RXF, 4); prog[9] = I(`OP_HALT, 0);
+        load_prog(10); tx_push(32'h11); tx_push(32'h22); tx_push(32'h33); drain = 0; go(200);
+        `CHECK(!fault && halted, "T8 RGET FIFO is legal and does not stall")
+        `CHECK(dut.rx_fifo.count == 4, "T8 four status words pushed")
+        drain = 1; repeat (20) @(posedge clk);
+        `CHECK(nrx == 4 && rx[0] == {26'd0, 3'd0, 3'd3} && rx[1] == {26'd0, 3'd1, 3'd3} && rx[2] == {26'd0, 3'd2, 3'd3} && rx[3] == {26'd0, 3'd3, 3'd2},
+               "T8 RGET FIFO = {RX words, TX words}: 0/3, 1/3, 2/3, then 3/2 after RGET TXF popped one")
+        prog[0] = I(`OP_RGET, {3'd7, 1'b0, 3'd0}); prog[1] = RPUT(`RP_RXF, 0); prog[2] = I(`OP_HALT, 0);
+        load_prog(3); tx_push(32'h1); tx_push(32'h2); tx_push(32'h3); tx_push(32'h4); go(100);
+        `CHECK(nrx == 1 && rx[0] == {26'd0, 3'd0, 3'd4}, "T8 a full TX FIFO reads 4")
         prog[0] = I(`OP_RPUT, {3'd4, 1'b0, 3'd0}); load_prog(1); go(10);
         `CHECK(halted && fault, "T8 RPUT destination 4 traps")
         prog[0] = I(`OP_CRC, {3'd7, 24'd0}); load_prog(1); go(10);
         `CHECK(halted && fault, "T8 CRC operation 7 traps")
-        prog[0] = I(5'd28, 0); load_prog(1); go(10);
-        `CHECK(halted && fault, "T8 opcode 28 traps")
+        prog[0] = I(5'd29, 0); load_prog(1); go(10);
+        `CHECK(halted && fault, "T8 opcode 29 traps")
+        prog[0] = I(`OP_LINE, {3'd6, 24'd0}); load_prog(1); go(10);
+        `CHECK(halted && fault, "T8 LINE operation 6 traps")
 
         // ---- T9: stopping the engine (run=0) clears registers, flags and the CRC unit; FIFOs are kept
         prog[0] = LDI(0, 24'h123456); prog[1] = ALUI(`ALU_CMP, 0, 0); prog[2] = LDI(1, 16'h0007);

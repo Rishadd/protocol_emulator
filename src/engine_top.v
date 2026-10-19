@@ -49,6 +49,11 @@ module engine_top #(
     wire        flag_z, flag_n, flag_c, rs_zero;
     wire        alu_go, ldi_go, rget_go, isr_load, osr_from_reg, lc_from_reg, dc_from_reg;
     wire        crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte, crc_busy;
+    wire        line_go, line_full, line_busy, line_oe, line_dp, line_dm;
+    wire [2:0]  line_dp_pin, line_dm_pin;
+    wire [31:0] line_status;
+    wire [2:0]  tx_level, rx_level;                 // FIFO occupancy for RGET FIFO
+    wire [7:0]  pin_out_c, pin_oe_c;                // pin block outputs, before the line coder takes over its two pins
     wire [31:0] rs_val, crc_value, rget_data, osr_load_value;
     wire        osr_load, osr_shift, osr_bit;
     wire [31:0] osr_data, isr_data;
@@ -91,7 +96,9 @@ module engine_top #(
                        (instr[6:4] == `RG_ISR) ? isr_data :
                        (instr[6:4] == `RG_LC)  ? {16'd0, lc_count} :
                        (instr[6:4] == `RG_PIN) ? {24'd0, pin_in_sync} :
-                       (instr[6:4] == `RG_CRC) ? crc_value : tx_rd_data;   // RG_TXF
+                       (instr[6:4] == `RG_CRC) ? crc_value :
+                       (instr[6:4] == `RG_LINE) ? line_status :
+                       (instr[6:4] == `RG_FIFO) ? {26'd0, rx_level, tx_level} : tx_rd_data;   // RG_TXF
 
     alu_unit alu (
         .clk       (clk),
@@ -124,6 +131,34 @@ module engine_top #(
         .busy      (crc_busy)      // a CRC command executes one clock after its instruction: RGET CRC waits for it
     );
 
+    line_coder line (
+        .clk       (clk),
+        .rst_n     (core_rst_n),
+        .cmd_go    (line_go),
+        .cmd_op    (instr[26:24]),
+        .cmd_data  (rs_val),
+        .full      (line_full),
+        .busy      (line_busy),
+        .rd_pop    (rget_go && instr[6:4] == `RG_LINE),
+        .status    (line_status),
+        .dp_in     (pin_in_sync[line_dp_pin]),
+        .dm_in     (pin_in_sync[line_dm_pin]),
+        .dp_pin    (line_dp_pin),
+        .dm_pin    (line_dm_pin),
+        .tx_oe     (line_oe),
+        .tx_dp     (line_dp),
+        .tx_dm     (line_dm)
+    );
+
+    // while the coder transmits it drives its two logical pins; otherwise the pin block's values pass through
+    genvar gi;
+    generate for (gi = 0; gi < 8; gi = gi + 1) begin : g_line
+        wire is_dp = line_oe && (line_dp_pin == gi);
+        wire is_dm = line_oe && (line_dm_pin == gi);
+        assign pin_oe[gi]  = pin_oe_c[gi] | is_dp | is_dm;
+        assign pin_out[gi] = is_dp ? line_dp : is_dm ? line_dm : pin_out_c[gi];
+    end endgenerate
+
     delay_counter dc (
         .clk        (clk),
         .rst_n      (core_rst_n),
@@ -150,7 +185,8 @@ module engine_top #(
         .full    (tx_full),
         .rd_en   (tx_rd_en & core_rst_n),   // masked while held (note above imem)
         .rd_data (tx_rd_data),
-        .empty   (tx_empty)
+        .empty   (tx_empty),
+        .level   (tx_level)
     );
 
     fifo rx_fifo (
@@ -161,7 +197,8 @@ module engine_top #(
         .full    (rx_full),
         .rd_en   (rx_rd_en),
         .rd_data (rx_rd_data),
-        .empty   (rx_empty)
+        .empty   (rx_empty),
+        .level   (rx_level)
     );
 
     shift_reg osr (
@@ -202,8 +239,8 @@ module engine_top #(
         .dir_wr_idx  (dir_wr_idx),
         .dir_wr_val  (dir_wr_val),
         .pin_in      (pin_in),
-        .pin_out     (pin_out),
-        .pin_oe      (pin_oe),
+        .pin_out     (pin_out_c),
+        .pin_oe      (pin_oe_c),
         .pin_in_sync (pin_in_sync)
     );
 
@@ -246,6 +283,9 @@ module engine_top #(
         .crc_feed_bit  (crc_feed_bit),
         .crc_feed_byte (crc_feed_byte),
         .crc_busy      (crc_busy),
+        .line_go       (line_go),
+        .line_full     (line_full),
+        .line_busy     (line_busy),
         .osr_load      (osr_load),
         .osr_shift     (osr_shift),
         .osr_bit       (osr_bit),

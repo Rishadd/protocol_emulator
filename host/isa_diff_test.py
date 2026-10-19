@@ -17,20 +17,23 @@ import sys
 import asm as A
 import isa_model as M
 import mutation as mut
+import usb_ls as U
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, "build", "isa_diff")
 if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
     os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
 
-CYC = 400
+CYC = 600
+LINE_RX_ONLY = False                                 # inside a receive-focused test: no transmit commands, few reconfigurations
+LINE_FOCUS = False                                   # inside a line-coder-focused test: LINE and RGET LINE are favoured
 
 
 # ------------------------------------------------------------------ random programs
 WEIGHTS = [("NOP", 2), ("WAIT", 3), ("JMP", 3), ("HALT", 0.6), ("SETL", 4), ("DJNZ", 5), ("PULL", 3), ("PUSH", 3),
            ("OUT1", 4), ("IN1", 4), ("SETH", 3), ("SETLO", 3), ("DIRO", 2), ("DIRI", 2), ("WAITH", 2), ("WAITL", 2),
            ("CFG", 3), ("JPH", 3), ("JPL", 3), ("JPO", 3), ("PUSHI", 3), ("LDI", 6), ("ALU", 14), ("JCC", 8),
-           ("RGET", 6), ("RPUT", 6), ("WAITR", 1.2), ("CRC", 9), ("BAD", 0.9),
+           ("RGET", 6), ("RPUT", 6), ("WAITR", 1.2), ("CRC", 9), ("LINE", 8), ("BAD", 0.9),
            ("XSELF", 2.5), ("NOTI", 2.5)]       # idioms that make Z=1 and N=1 common enough to cover every JCC condition both ways
 
 
@@ -42,14 +45,14 @@ def rnd_word(rnd, L):
         return rnd.randrange(L)
 
     if n == "BAD":                                  # every reserved encoding gets its share
-        op, extra = rnd.choice([(28, 0), (29, 0), (30, 0), (31, 0), ("ALU", 13), ("ALU", 14), ("ALU", 15), ("RGET", 6),
-                                ("RGET", 7), ("RPUT", 4), ("RPUT", 5), ("RPUT", 6), ("RPUT", 7), ("CRC", 7)])
+        op, extra = rnd.choice([(29, 0), (30, 0), (31, 0), ("ALU", 13), ("ALU", 14), ("ALU", 15),
+                                ("RPUT", 4), ("RPUT", 5), ("RPUT", 6), ("RPUT", 7), ("CRC", 7), ("LINE", 6), ("LINE", 7)])
         if isinstance(op, int):
             return op << 27 | rnd.getrandbits(27)
         if op == "ALU":
             return A.word("ALU", extra << 23 | rnd.getrandbits(23))
-        if op == "CRC":
-            return A.word("CRC", extra << 24 | rnd.getrandbits(3))
+        if op in ("CRC", "LINE"):
+            return A.word(op, extra << 24 | rnd.getrandbits(3))
         return A.word(op, extra << 4 | rnd.randrange(8))
     if n == "XSELF":
         r = rnd.randrange(8)
@@ -91,18 +94,78 @@ def rnd_word(rnd, L):
     if n == "JCC":
         return A.enc_jcc(rnd.randrange(8), tgt())
     if n == "RGET":     # CRC source favoured: RGET CRC right after a CRC instruction (the 1-clock wait) must come up often
-        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.3 else rnd.randrange(6))
+        if LINE_FOCUS:
+            return A.enc_rget(rnd.randrange(8), 6 if rnd.random() < 0.8 else rnd.randrange(8))
+        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.45 else 6 if rnd.random() < 0.2 else rnd.randrange(8))
     if n == "RPUT":
         return A.enc_rput(rnd.randrange(4), rnd.randrange(8))
     if n == "WAITR":
         return A.word("WAITR", rnd.randrange(8))
+    if n == "LINE":
+        if LINE_RX_ONLY:
+            return A.enc_line(rnd.choices(range(6), [0.05, 0.05, 0, 0, 0.4, 0.02])[0], rnd.randrange(8))
+        if LINE_FOCUS:
+            return A.enc_line(rnd.choices(range(6), [0.3, 0.3, 10, 3, 1, 0.2])[0], rnd.randrange(8))
+        return A.enc_line(rnd.choices(range(6), [2, 2, 8, 3, 2, 1])[0], rnd.randrange(8))
     return A.enc_crc(rnd.randrange(7), rnd.randrange(8))
 
 
 SAFE = ("NOP", "LDI", "ALU", "CRC", "SETH", "SETLO", "DIRO", "DIRI", "CFG")    # straight-line instructions: no jumps, no stalls
 
 
+def line_waveform_cycles(rnd, dp, dm, tclk):
+    """Per-clock (dp, dm) levels of a few USB low-speed packets at a random bit rate and start time (idle = J by the pull-up)."""
+    lv = [(0, 1)] * CYC
+    t = rnd.randrange(20, 120)
+    T = tclk * (1 + rnd.uniform(-0.015, 0.015)) * 20.0                   # the host's bit time: the coder's programmed period, off by up to 1.5 %
+    for _ in range(rnd.randrange(1, 4)):
+        pkt = bytes(rnd.choice([0xFF, 0x7F, 0xFE, 0x3F, 0xFC, 0x00, rnd.randrange(256), rnd.randrange(256)]) for _ in range(rnd.randrange(0, 4)))
+        syms = U.packet_symbols(pkt)
+        if rnd.random() < 0.2:
+            syms = syms[:rnd.randrange(3, len(syms))]                 # truncated: no EOP, or a broken SYNC
+        ev = U.waveform(syms, t * 20.0, T, 0.0, rnd)
+        for k in range(t, CYC):
+            now = [e for e in ev if e[0] <= k * 20.0]
+            if not now:
+                continue
+            _, a, b, oe = now[-1]
+            lv[k] = (a, b) if oe else (0, 1)
+        t += int(len(syms) * T / 20.0) + rnd.randrange(5, 60)
+        if t >= CYC:
+            break
+    return lv
+
+
+def make_line_test(rnd):
+    """A program that configures the line coder and then mixes LINE / RGET LINE with other instructions; the coder's two pins carry a USB waveform."""
+    global LINE_FOCUS, LINE_RX_ONLY
+    LINE_RX_ONLY = rnd.random() < 0.5
+    dp, dm = (0, 1) if rnd.random() < 0.7 else rnd.sample(range(8), 2)
+    cfg = dp | dm << 3 | rnd.choice([1, 1, 1, 0]) << 6 | rnd.choice([1, 1, 1, 0]) << 7 | rnd.choice([6, 6, 6, 5, 3, 7]) << 8 | rnd.choice([0, 0, 0, 1]) << 11
+    period = rnd.choice([0x0400, 0x0600, 0x0800, 0x0A55, 0x0C00, 0x0A00, 0x0600, 0x1000])      # 4 .. 16 clocks per bit: whole packets fit in the run
+    L = rnd.randint(24, 96)
+    prog = [A.enc_ldi(0, cfg), A.enc_ldi(1, period), A.enc_ldi(2, 1), A.enc_ldi(3, 3)]
+    prog += [A.enc_ldi(i, rnd.getrandbits(8)) for i in range(4, 8)]
+    prog += [A.enc_line("CFG", 0), A.enc_line("PERIOD", 1), A.enc_line("RXCTL", 2 if rnd.random() < 0.8 else 3)]
+    saved, LINE_FOCUS = list(WEIGHTS), True
+    WEIGHTS[:] = [("LINE", 3 if LINE_RX_ONLY else 22), ("RGET", 10), ("WAIT", 3), ("JMP", 2), ("JCC", 5), ("ALU", 6), ("LDI", 3), ("DJNZ", 2), ("SETL", 2),
+                  ("SETH", 1), ("DIRO", 1), ("NOP", 1)]
+    prog += [rnd_word(rnd, L) for _ in range(L - len(prog))]
+    WEIGHTS[:], LINE_FOCUS, LINE_RX_ONLY = saved, False, False
+    prog += [A.word("HALT")] * (256 - L)
+    lv = line_waveform_cycles(rnd, dp, dm, period / 256.0)
+    stim, pin = [], rnd.getrandbits(8)
+    for k in range(CYC):
+        if rnd.random() < 0.05:
+            pin = rnd.getrandbits(8)
+        pv = pin & ~(1 << dp) & ~(1 << dm) | lv[k][0] << dp | lv[k][1] << dm
+        stim.append((pv, None, rnd.random() < 0.3))
+    return prog, stim
+
+
 def make_test(rnd):
+    if rnd.random() < 0.35:
+        return make_line_test(rnd)
     L = rnd.randint(24, 96)
     prog = [A.enc_ldi(i, rnd.randrange(0, 300) if rnd.random() < 0.5 else rnd.getrandbits(24)) for i in range(8)]   # varied register values
     if rnd.random() < 0.15:                      # trap-focused: straight-line code that is certain to reach a reserved encoding
@@ -176,7 +239,9 @@ def model_trace(test):
     for pin, tx, rd in stim:
         e.step(pin, tx, rd)
         lines.append(e.trace_line())
-    return lines, e.cov
+    cov = e.cov.copy()
+    cov.update({("lineev", k): v for k, v in e.line.ev.items()})
+    return lines, cov
 
 
 FIELDS = "pc pin_out pin_oe status rx_head osr isr lc crc znc r0 r1 r2 r3 r4 r5 r6 r7".split()
@@ -208,7 +273,9 @@ def make_tests(seed, n):
 REQUIRED = [("op", n, 40) for n in A.OPCODE if n not in ("HALT",)] + [("op", "HALT", 5)] + \
            [("alu", f, 30) for f in range(13)] + \
            [("jcc", c, t, 15) for c in range(8) for t in (0, 1)] + \
-           [("rget", s, 30) for s in range(6)] + [("rput", d, 30) for d in range(4)] + [("crc", k, 30) for k in range(7)] + \
+           [("rget", s, 30) for s in range(8)] + [("line", k, 30) for k in range(6)] + [("rget_line_wait", 10), ("line_full_wait", 10)] + \
+           [("lineev", k, 20) for k in ("tx_bit", "tx_stuff", "tx_eop", "rx_sync", "rx_byte", "rx_eop", "rx_destuff")] + \
+           [("lineev", k, 3) for k in ("underrun", "rx_partial", "rx_serr", "rx_ovr")] + [("rput", d, 30) for d in range(4)] + [("crc", k, 30) for k in range(7)] + \
            [("rget_crc_wait", 20)]
 
 
@@ -241,9 +308,16 @@ ENGINE_MUTANTS = [
     ("control_unit.v", "WAITR holds even when the register is 0", "(opcode == `OP_WAITR && !rs_zero);", "(opcode == `OP_WAITR);"),
     ("alu_unit.v", "ALU source read from operand[2:0] (wrong read port)", "wire [31:0] alu_b = r[operand[19:17]];", "wire [31:0] alu_b = r[operand[2:0]];"),
     ("control_unit.v", "ALU function 13 is legal", "(alu_func <= `ALU_LAST_LEGAL)", "(alu_func <= `ALU_LAST_LEGAL + 4'd1)"),
-    ("control_unit.v", "RGET source 6 is legal", "(rg_src   <= `RG_TXF)", "(rg_src   <= 3'd6)"),
+    ("engine_top.v", "RGET FIFO returns the TX level in both fields", "{26'd0, rx_level, tx_level}", "{26'd0, tx_level, tx_level}"),
+    ("control_unit.v", "RGET FIFO stalls like RGET TXF", "(opcode == `OP_RGET && rg_src == `RG_TXF) ? tx_empty :", "(opcode == `OP_RGET && (rg_src == `RG_TXF || rg_src == `RG_FIFO)) ? tx_empty :"),
+    ("control_unit.v", "LINE operation 6 is legal", "(line_lop <= `LN_RESET)", "(line_lop <= 3'd6)"),
+    ("control_unit.v", "RGET LINE does not wait for the line coder", "(opcode == `OP_RGET && rg_src == `RG_LINE) ? line_busy :", "(opcode == `OP_RGET && rg_src == `RG_LINE) ? 1'b0 :"),
+    ("control_unit.v", "LINE TXB does not wait when the queue is full", "? line_full :", "? 1'b0 :"),
+    ("engine_top.v", "RGET LINE does not consume the received byte", ".rd_pop    (rget_go && instr[6:4] == `RG_LINE),", ".rd_pop    (1'b0),"),
+    ("engine_top.v", "the line coder never takes over its pins", "assign pin_oe[gi]  = pin_oe_c[gi] | is_dp | is_dm;", "assign pin_oe[gi]  = pin_oe_c[gi];"),
+    ("engine_top.v", "RGET LINE returns the CRC value", "(instr[6:4] == `RG_LINE) ? line_status : tx_rd_data;", "(instr[6:4] == `RG_LINE) ? crc_value : tx_rd_data;"),
     ("control_unit.v", "CRC operation 7 is legal", "(crc_cop  <= `CRC_BYTE)", "(crc_cop  <= 3'd7)"),
-    ("control_unit.v", "opcode 28 is legal", "(opcode <= `OP_LAST_LEGAL) && sub_ok", "(opcode <= 5'd28) && sub_ok"),
+    ("control_unit.v", "opcode 29 is legal", "(opcode <= `OP_LAST_LEGAL) && sub_ok", "(opcode <= 5'd29) && sub_ok"),
     ("control_unit.v", "RPUT OSR also pops the TX FIFO", "`RP_OSR: begin osr_load = 1'b1; osr_from_reg = 1'b1; end",
      "`RP_OSR: begin osr_load = 1'b1; osr_from_reg = 1'b1; tx_rd_en = 1'b1; end"),
     ("control_unit.v", "RPUT LC loads the operand", "`RP_LC:  begin lc_load = 1'b1; lc_from_reg = 1'b1; end",

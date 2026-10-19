@@ -18,7 +18,8 @@ module tb_control_unit;
     wire [2:0]  pin_wr_idx, dir_wr_idx, cfg_out_pin, cfg_in_pin;
     wire        cfg_osr_msb, cfg_isr_msb;
     // register / ALU / CRC extension
-    reg         flag_z = 0, flag_n = 0, flag_c = 0, rs_zero = 0, crc_busy = 0;
+    reg         flag_z = 0, flag_n = 0, flag_c = 0, rs_zero = 0, crc_busy = 0, line_full = 0, line_busy = 0;
+    wire        line_go;
     wire        push_reg, alu_go, ldi_go, rget_go, isr_load, osr_from_reg, lc_from_reg, dc_from_reg;
     wire        crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte;
 
@@ -35,6 +36,7 @@ module tb_control_unit;
         .lc_from_reg(lc_from_reg), .dc_from_reg(dc_from_reg),
         .crc_rst(crc_rst), .crc_set_poly(crc_set_poly), .crc_set_init(crc_set_init), .crc_set_xor(crc_set_xor),
         .crc_set_fmt(crc_set_fmt), .crc_feed_bit(crc_feed_bit), .crc_feed_byte(crc_feed_byte), .crc_busy(crc_busy),
+        .line_go(line_go), .line_full(line_full), .line_busy(line_busy),
         .osr_load(osr_load), .osr_shift(osr_shift), .osr_bit(osr_bit),
         .isr_shift(isr_shift), .isr_clear(isr_clear),
         .pin_wr(pin_wr), .pin_wr_idx(pin_wr_idx), .pin_wr_val(pin_wr_val),
@@ -49,17 +51,17 @@ module tb_control_unit;
                       .dec(lc_dec), .count(lc_count));
 
     // all one-bit control strobes packed so a single compare proves "this and nothing else"
-    wire [24:0] ctl = {pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en,
+    wire [25:0] ctl = {pc_advance, pc_jump, dc_load, lc_load, lc_dec, tx_rd_en, rx_wr_en,
                        osr_load, osr_shift, isr_shift, isr_clear, pin_wr, dir_wr,
                        alu_go, ldi_go, rget_go, isr_load, push_reg,
-                       crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte};
-    localparam [24:0] ADV = 25'd1 << 24, JMP = 25'd1 << 23, DCL = 25'd1 << 22, LCL = 25'd1 << 21,
-                      LCD = 25'd1 << 20, TXR = 25'd1 << 19, RXW = 25'd1 << 18, OSL = 25'd1 << 17,
-                      OSS = 25'd1 << 16, ISS = 25'd1 << 15, ISC = 25'd1 << 14, PW  = 25'd1 << 13,
-                      DW  = 25'd1 << 12, NONE = 25'd0,
-                      X_ALU = 25'd1 << 11, X_LDI = 25'd1 << 10, X_RGET = 25'd1 << 9, X_ISL = 25'd1 << 8,
-                      X_PSR = 25'd1 << 7, X_CRST = 25'd1 << 6, X_CPOLY = 25'd1 << 5, X_CINIT = 25'd1 << 4,
-                      X_CXOR = 25'd1 << 3, X_CFMT = 25'd1 << 2, X_CBIT = 25'd1 << 1, X_CBYTE = 25'd1;
+                       crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte, line_go};
+    localparam [25:0] ADV = 26'd1 << 25, JMP = 26'd1 << 24, DCL = 26'd1 << 23, LCL = 26'd1 << 22,
+                      LCD = 26'd1 << 21, TXR = 26'd1 << 20, RXW = 26'd1 << 19, OSL = 26'd1 << 18,
+                      OSS = 26'd1 << 17, ISS = 26'd1 << 16, ISC = 26'd1 << 15, PW  = 26'd1 << 14,
+                      DW  = 26'd1 << 13, NONE = 26'd0,
+                      X_ALU = 26'd1 << 12, X_LDI = 26'd1 << 11, X_RGET = 26'd1 << 10, X_ISL = 26'd1 << 9,
+                      X_PSR = 26'd1 << 8, X_CRST = 26'd1 << 7, X_CPOLY = 26'd1 << 6, X_CINIT = 26'd1 << 5,
+                      X_CXOR = 26'd1 << 4, X_CFMT = 26'd1 << 3, X_CBIT = 26'd1 << 2, X_CBYTE = 26'd1 << 1, X_LINE = 26'd1;
 
     always #5 clk = ~clk;
     task tick; begin @(posedge clk); #1; end endtask
@@ -67,7 +69,7 @@ module tb_control_unit;
     task do_reset; begin rst_n = 0; set(`OP_NOP, 0); tick; rst_n = 1; end endtask
 
     // timed instruction: first-cycle strobes `first`, then silence, then ADV exactly on cycle d
-    task hold_test(input [4:0] op, input [26:0] d, input [24:0] first, input [80*8-1:0] name);
+    task hold_test(input [4:0] op, input [26:0] d, input [25:0] first, input [80*8-1:0] name);
         begin
             set(op, d);
             `CHECK(ctl == (first | (d == 0 ? ADV : NONE)), name)
@@ -258,10 +260,17 @@ module tb_control_unit;
         crc_busy = 1; set(`OP_CRC, {3'd6, 21'd0, 3'd4});
         `CHECK(ctl == (ADV | X_CBYTE), "B6 a CRC instruction never waits for crc_busy") tick;
         crc_busy = 0;
-        do_reset; set(`OP_RGET, {20'd0, 3'd6, 1'b0, 3'd2}); tick;
-        `CHECK(halted == 1 && fault == 1, "B6 RGET source 6 traps")
-        do_reset; set(`OP_RGET, {20'd0, 3'd7, 1'b0, 3'd2}); tick;
-        `CHECK(halted == 1 && fault == 1, "B6 RGET source 7 traps")
+        // RGET LINE (source 6) waits for the line coder to apply the previous LINE command; no other source looks at line_busy
+        line_busy = 1; set(`OP_RGET, {20'd0, 3'd6, 1'b0, 3'd2});
+        `CHECK(ctl == NONE, "B6 RGET LINE stalls while the line coder is busy, no side effects") tick;
+        line_busy = 0; #1;
+        `CHECK(ctl == (ADV | X_RGET), "B6 RGET LINE commits when the line coder is idle") tick;
+        line_busy = 1; set(`OP_RGET, {20'd0, 3'd1, 1'b0, 3'd2});
+        `CHECK(ctl == (ADV | X_RGET), "B6 RGET ISR ignores line_busy") tick;
+        line_busy = 0;
+        do_reset; tx_empty = 1; rx_full = 1; set(`OP_RGET, {20'd0, 3'd7, 1'b0, 3'd2});
+        `CHECK(ctl == (ADV | X_RGET), "B6 RGET FIFO (source 7) never stalls, whatever the FIFOs hold") tick;
+        tx_empty = 0; rx_full = 0;
         do_reset;
 
         // RPUT
@@ -305,11 +314,31 @@ module tb_control_unit;
         do_reset; set(`OP_CRC, {3'd7, 24'd0}); tick;
         `CHECK(halted == 1 && fault == 1, "B9 CRC operation 7 traps")
 
-        // reserved opcodes trap (21..27 are legal now)
-        for (k = 28; k <= 31; k = k + 1) begin
+        // LINE (opcode 28): operations 0..5 commit, TXB / TXE wait while the transmit queue is full, 6 and 7 trap
+        for (k = 0; k <= 5; k = k + 1) begin
+            do_reset; set(`OP_LINE, {k[2:0], 21'd0, 3'd1});
+            `CHECK(ctl == (ADV | X_LINE), "B10 LINE operation commits") tick;
+        end
+        for (k = 2; k <= 3; k = k + 1) begin
+            do_reset; line_full = 1; set(`OP_LINE, {k[2:0], 21'd0, 3'd1});
+            `CHECK(ctl == NONE, "B10 LINE TXB / TXE wait while the queue is full, no side effects") tick; tick;
+            line_full = 0; #1;
+            `CHECK(ctl == (ADV | X_LINE), "B10 LINE TXB / TXE go when the queue has room") tick;
+        end
+        do_reset; line_full = 1; set(`OP_LINE, {3'd0, 21'd0, 3'd1});
+        `CHECK(ctl == (ADV | X_LINE), "B10 other LINE operations ignore line_full") tick; line_full = 0;
+        do_reset; line_busy = 1; set(`OP_LINE, {3'd2, 21'd0, 3'd1});
+        `CHECK(ctl == (ADV | X_LINE), "B10 LINE ignores line_busy") tick; line_busy = 0;
+        for (k = 6; k <= 7; k = k + 1) begin
+            do_reset; set(`OP_LINE, {k[2:0], 24'd0}); tick;
+            `CHECK(halted == 1 && fault == 1, "B10 LINE operation 6, 7 traps")
+        end
+
+        // reserved opcodes trap (21..28 are legal now)
+        for (k = 29; k <= 31; k = k + 1) begin
             do_reset; set(k[4:0], 27'd0);
             `CHECK(ctl == NONE, "A7 reserved opcode: no strobes") tick;
-            `CHECK(halted == 1 && fault == 1, "A7 opcodes 28..31 trap")
+            `CHECK(halted == 1 && fault == 1, "A7 opcodes 29..31 trap")
         end
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 faulted engine ignores NOP")
