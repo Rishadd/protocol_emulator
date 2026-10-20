@@ -6,8 +6,8 @@ build the logic analyser on top of it. Tick items off as they finish.
 ## A. Timing of the shared-memory layout
 - [x] A1. Flow-only variants started on the sh4 baseline: sh5a (17 ns + resizer margin), sh5b (18 ns + repair after global routing), sh5c (18 ns + delay synthesis)
 - [x] A2. Live pictures for sh5a / sh5b / sh5c
-- [ ] A3. Read the three results, keep what helps
-- [ ] A4 (in progress: sh6 = gate moved into the engines). RTL / placement changes aimed at the macro-to-ALU path (gating next to the engines, instruction register, fences), each with its own run
+- [x] A3. Read the results, keep what helps: tight constraint (17 ns) + setup margin 0.5 + trap gate in the engines; repair after GRT and delay synthesis do not pay (sh5a-sh9b, reproduce/flows/README.md)
+- [x] A4 (sh6 gate in the engines: 21.45 -> 20.41 ns, free; sh8 recipe 19.64 ns = 50.9 MHz, +0.36 ns slack at 20 ns). RTL / placement changes aimed at the macro-to-ALU path (gating next to the engines, instruction register, fences), each with its own run
 - [ ] A5. Best layout checked: LVS, DRC, precheck, picture review (meaningful floorplan, not a random mess)
 - [x] A6. Explain what a slower clock changes (instruction timing, firmware tables, protocols)
 
@@ -17,6 +17,13 @@ build the logic analyser on top of it. Tick items off as they finish.
 - [x] B3. feat/shared-imem merged with frame v2 + the STATUS fix (branch shared/on-v2 in ~/pe_shared_v2: mgmt.v re-applied by hand, 22/22 unit tb, shmem_chip_test PASS, v2 236/236); also fixed tb_pc_reg (START tied)
 - [x] B4. Clean up the directory: six stale worktree copies deleted (about 3 GB), build/ cleared, unique files archived in results/archive_old_worktrees, backup bundle ~/protocol_emulator_all_refs_2026-10-20.bundle
 
+## A2. Submission check of the current version (started 2026-10-20 evening)
+- [x] Branch check/shared-sh8 pushed (starts GitHub docs / gds / test); config = sh8 recipe
+- [ ] Read the GitHub Actions result (gds, precheck, gl_test, test)
+- [ ] Local flow sh10 (same RTL and recipe) finished: LVS, DRC, antenna, slack, hold, slew / cap
+- [ ] Precheck on sh10 (`bash reproduce/06_precheck_and_reports.sh sh10`)
+- [ ] Judge the 14-18 max-slew / 24-42 max-cap violations seen in every run
+
 ## C. Shared-memory software (before the logic analyser)
 - [x] C1. Explain what it is and what Step 4 needs
 - [x] C2. RTL-versus-model differential test in shared mode
@@ -24,11 +31,20 @@ build the logic analyser on top of it. Tick items off as they finish.
 - [x] C4. REGION read (ENG_BASE+0x008) and instruction readback
 - [x] C5. Host layer (verified load, REGION check on start, plan_images), RTL mutants (16/16) and the protocol suites from the shared memory (phase E: CAN, JTAG, 1-Wire, Modbus, SPI, I2C) done; docs and final flow run (S7) open
 
+## C2. Logic analyser (docs/DEBUG_LA_PLAN.md phases)
+- [x] Phase 1 model, Phase 2 capture unit RTL against the model (la_rtl_test, 12/12 mutants)
+- [x] Phase 3a TSTAMP opcode 30 + RPUT TRIG (diff tests 0 mismatches, 38/38 mutants), 3b la_block + window 0x0300 + IRQ bit 8 + view 6 + la_host.py + la_chip_test PASS
+- [ ] Phase 4 engine debug, Phase 5 sniffers, Phase 6 formal + chip-level mutants, Phase 7 flow with the third macro (placement not defined yet), Phase 8 la_capture.py + GTKWave demo
+
 ## D. Plans
 - [x] D1. Logic analyser plan (same format as the other module plans)
 - [x] D2. Standalone USB device plan and test plan (like the competitors)
 - [x] D3. Ethernet (10BASE-T) feasibility
 - [x] D4. Web search: how many protocols can we pull off
+
+## E0. Reproducibility
+- [x] reproduce/ folder (README.md, install / tests / formal / flow / precheck / docs scripts, flows/ archive sh4-sh9b); sh8 rerun matched 29 of 29 completed steps
+- [ ] Refresh reproduce/branches.bundle + SHARED_COMMIT after the final merge of shared/on-v2
 
 ## E. Wrap-up
 - [ ] E1. memory.md, EXECUTION_PLAN, HANDOFF updated; commit; push (repo is private)
