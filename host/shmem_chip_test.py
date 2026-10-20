@@ -188,6 +188,37 @@ def main():
         chip.clear_err()
         chip.stop(0)
 
+        # ---- S4: the host workflow: verified load, REGION check on start, plan_images
+        chip.stop(0); chip.stop(1)
+        words = [0x71000000 + i for i in range(20)]
+        chip.load_imem(300, words)                                        # written and read back by the chip
+        try:
+            chip._verify("planted", 300, [w ^ 1 for w in words])
+            check("readback verification catches a differing word", False)
+        except HostError:
+            check("readback verification catches a differing word", True)
+        img = S.Image.from_asm("w", loop_prog(), origin=60)
+        chip.start(0, img)                                                # verifies the load and the window the chip holds
+        check("region() equals the image's window after start", chip.region(0) == img.window)
+        check("the other engine, still held, holds the whole memory", chip.region(1) == (0, 512))
+        chip.stop(0)
+        img2 = S.Image.from_asm("w2", loop_prog(), origin=60)
+        img2.limit += 1                                                   # the host believes in another window than the firmware sets
+        try:
+            chip.start(0, img2)
+            check("start detects a window mismatch", False)
+        except HostError:
+            check("start detects a window mismatch", True)
+        check("a failed start leaves the engine held", chip.region(0) == (0, 512))
+        a1 = S.Image.from_asm("p1", loop_prog(), origin=70)
+        a2 = S.Image.from_asm("p2", loop_prog(), origin=72)
+        try:
+            S.ShmemHost.plan_images([a1, a2], [(a1, a2)])
+            check("plan_images refuses overlapping images that run together", False)
+        except HostError:
+            check("plan_images refuses overlapping images that run together", True)
+        chip.stop(0); chip.stop(1)
+
     print(f"RESULT shmem_chip_test: {'PASS' if not errs else 'FAIL (%d)' % errs}")
     return 1 if errs else 0
 

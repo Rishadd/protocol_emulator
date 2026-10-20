@@ -29,6 +29,7 @@ from chip_host import ChipHost, HostError, ENG_BASE, CTRL   # noqa: E402
 
 IMEM_BASE = 0x0400              # physical instruction word w at 0x0400 + 4*w (mgmt.v, SHARED_IMEM)
 IMEM_WORDS = 512
+REGION = 0x008                  # per-engine register at ENG_BASE + 0x008 (read only): the window the engine holds, {limit[9:0] at 25:16, base[8:0] at 8:0}
 START = 0x00C                   # per-engine register at ENG_BASE + 0x00C: the program counter's reset value (write while held)
 REGION_OP = A.OPCODE["REGION"]
 
@@ -115,22 +116,59 @@ class ShmemHost(ChipHost):
             if _overlap((base, limit), img.span):
                 raise HostError(f"image {img.name} overlaps the running window of engine {e} [{base}, {limit})")
 
-    def load_image(self, img):
-        """Write img into the shared memory at its origin. Every word is checked by the chip (mgmt err) and by _check_writable."""
+    def region(self, eng):
+        """The window the chip says engine eng holds, (base, limit): a running engine holds what its OP_REGION set, a held one the whole memory (0, 512)."""
+        v = self.read2(ENG_BASE[eng] + REGION)
+        return (v & 0x1FF, (v >> 16) & 0x3FF)
+
+    def read_imem(self, origin, n):
+        """Read n instruction words back from physical address origin (frame v2). The chip serves it through a held engine's port: both running is refused."""
+        if len(self.running()) == 2:
+            raise HostError("both engines run: the host has no memory port, instruction readback is refused (src/imem_shared.v)")
+        return [self.read2(IMEM_BASE + 4 * (origin + i)) for i in range(n)]
+
+    def load_imem(self, origin, words, verify=True):
+        """Write raw words at a physical address (no Image checks) and, with verify, read them back and compare."""
+        for i, w in enumerate(words):
+            self.write(IMEM_BASE + 4 * (origin + i), w)
+        self.check_err("load_imem")
+        if verify:
+            self._verify(f"words at {origin}", origin, list(words))
+
+    def _verify(self, what, origin, words):
+        back = self.read_imem(origin, len(words))
+        bad = [origin + i for i, (a, b) in enumerate(zip(back, words)) if a != b]
+        if bad:
+            raise HostError(f"{what}: readback differs at word(s) {bad[:8]}{' ...' if len(bad) > 8 else ''}: wrote 0x{words[bad[0] - origin]:08X}, "
+                            f"read 0x{back[bad[0] - origin]:08X}")
+
+    plan_images = staticmethod(plan)
+
+    def load_image(self, img, verify=True):
+        """Write img into the shared memory at its origin. Every word is checked by the chip (mgmt err) and by _check_writable; with verify the
+        words are read back (frame v2) and compared."""
         self._check_writable(img)
         for i, w in enumerate(img.words):
             self.write(IMEM_BASE + 4 * (img.origin + i), w)
         self.check_err(f"load_image {img.name}")
+        if verify:
+            self._verify(f"image {img.name}", img.origin, list(img.words))
 
-    def start(self, eng, img):
-        """Stop engine eng, load img, write its START address (the program counter's reset value), set RUN.
-        The image's first instruction (OP_REGION) sets the window on the chip."""
+    def start(self, eng, img, verify=True):
+        """Stop engine eng, load img (read back), write its START address (the program counter's reset value), set RUN.
+        The image's first instruction (OP_REGION) sets the window on the chip; with verify the REGION register is read and must equal the
+        image's window (a mismatch means the image was linked for another origin, or the load went wrong)."""
         self.stop(eng)                                    # the engine is held: its port is free for the load
         self._win[eng] = None
-        self.load_image(img)
+        self.load_image(img, verify=verify)
         self.write(ENG_BASE[eng] + START, img.origin, check=True)   # held engine only (mgmt refuses it while RUN = 1)
         self.run(eng, True)
         self._win[eng] = img.window                       # the window the firmware is expected to set; the chip enforces it
+        if verify:
+            got = self.region(eng)                        # one management frame later: the engine has long executed its OP_REGION
+            if got != img.window:
+                self.stop(eng)
+                raise HostError(f"image {img.name}: engine {eng} holds the window {got}, expected {img.window}")
         return img.window
 
     def stop(self, eng):
