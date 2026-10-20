@@ -84,14 +84,14 @@ E = [(n.replace("chip_", "shared_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, c
 # against the model, chip level through the SPI link); every *_mutants run must catch all its planted bugs
 F = [
     ("mgmt_v2_test", [PY, "host/mgmt_v2_test.py"], {}),
-    ("mgmt_v2_mutants", [PY, "host/mgmt_v2_mutants.py"], {}),
+    ("mgmt_v2_mutants", [PY, "host/mgmt_v2_mutants.py"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
     ("shmem_test", [PY, "host/shmem_test.py"], {}),
     ("shmem_chip_test", [PY, "host/shmem_chip_test.py"], {}),
     ("isa_diff_shared", [PY, "host/isa_diff_shared.py", "run"], {}),
-    ("isa_diff_shared_mutants", [PY, "host/isa_diff_shared.py", "mutants"], {}),
+    ("isa_diff_shared_mutants", [PY, "host/isa_diff_shared.py", "mutants"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
     ("la_model", [PY, "host/la_model.py"], {}),
     ("la_rtl_test", [PY, "host/la_rtl_test.py", "run"], {}),
-    ("la_rtl_mutants", [PY, "host/la_rtl_test.py", "mutants"], {}),
+    ("la_rtl_mutants", [PY, "host/la_rtl_test.py", "mutants"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
     ("la_chip_test", [PY, "host/la_chip_test.py"], {}),
 ]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
