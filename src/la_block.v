@@ -15,6 +15,7 @@
 //       a 8  0x0320 TS       R  the clock counter
 //     CONFIG .. POST cannot be written while the capture runs (armed or triggered).
 //   * channels: 0-7 uio[7:0], 8-12 ui_in[7:3], 13 / 14 RUN of engine 0 / 1, 15 OR of the engines' trigger lines
+`ifdef LA
 module la_block (
     input  wire        clk,
     input  wire        rst_n,
@@ -143,3 +144,4 @@ module la_block (
     endfunction
 `endif
 endmodule
+`endif
