@@ -1,0 +1,1754 @@
+
+Cell sg13cmos5l_decap_8 (0) disconnected node: VDD
+Cell sg13cmos5l_decap_8 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_decap_8              |Circuit 2: sg13cmos5l_decap_8              
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_decap_8 and sg13cmos5l_decap_8 are equivalent.
+
+Cell sg13cmos5l_fill_2 (0) disconnected node: VDD
+Cell sg13cmos5l_fill_2 (0) disconnected node: VSS
+Cell sg13cmos5l_fill_2 (1) disconnected node: VDD
+Cell sg13cmos5l_fill_2 (1) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_fill_2               |Circuit 2: sg13cmos5l_fill_2               
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_fill_2 and sg13cmos5l_fill_2 are equivalent.
+
+Cell sg13cmos5l_decap_4 (0) disconnected node: VDD
+Cell sg13cmos5l_decap_4 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_decap_4              |Circuit 2: sg13cmos5l_decap_4              
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_decap_4 and sg13cmos5l_decap_4 are equivalent.
+
+Cell sg13cmos5l_nor2_1 (0) disconnected node: Y
+Cell sg13cmos5l_nor2_1 (0) disconnected node: A
+Cell sg13cmos5l_nor2_1 (0) disconnected node: B
+Cell sg13cmos5l_nor2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nor2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nor2_1               |Circuit 2: sg13cmos5l_nor2_1               
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nor2_1 and sg13cmos5l_nor2_1 are equivalent.
+
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: Y
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: A1
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: A2
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: B1
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: VDD
+Cell sg13cmos5l_a21oi_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_a21oi_1              |Circuit 2: sg13cmos5l_a21oi_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A1                                         |A1                                         
+A2                                         |A2                                         
+B1                                         |B1                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_a21oi_1 and sg13cmos5l_a21oi_1 are equivalent.
+
+Cell sg13cmos5l_or2_1 (0) disconnected node: X
+Cell sg13cmos5l_or2_1 (0) disconnected node: A
+Cell sg13cmos5l_or2_1 (0) disconnected node: B
+Cell sg13cmos5l_or2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_or2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_or2_1                |Circuit 2: sg13cmos5l_or2_1                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_or2_1 and sg13cmos5l_or2_1 are equivalent.
+
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: Y
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: A1
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: A2
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: B1
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: VDD
+Cell sg13cmos5l_o21ai_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_o21ai_1              |Circuit 2: sg13cmos5l_o21ai_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A1                                         |A1                                         
+A2                                         |A2                                         
+B1                                         |B1                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_o21ai_1 and sg13cmos5l_o21ai_1 are equivalent.
+
+Cell sg13cmos5l_fill_1 (0) disconnected node: VDD
+Cell sg13cmos5l_fill_1 (0) disconnected node: VSS
+Cell sg13cmos5l_fill_1 (1) disconnected node: VDD
+Cell sg13cmos5l_fill_1 (1) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_fill_1               |Circuit 2: sg13cmos5l_fill_1               
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_fill_1 and sg13cmos5l_fill_1 are equivalent.
+
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: Q
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: CLK
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: D
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: RESET_B
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: VDD
+Cell sg13cmos5l_dfrbpq_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_dfrbpq_1             |Circuit 2: sg13cmos5l_dfrbpq_1             
+-------------------------------------------|-------------------------------------------
+Q                                          |Q                                          
+CLK                                        |CLK                                        
+D                                          |D                                          
+RESET_B                                    |RESET_B                                    
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_dfrbpq_1 and sg13cmos5l_dfrbpq_1 are equivalent.
+
+Cell sg13cmos5l_nand2_1 (0) disconnected node: Y
+Cell sg13cmos5l_nand2_1 (0) disconnected node: A
+Cell sg13cmos5l_nand2_1 (0) disconnected node: B
+Cell sg13cmos5l_nand2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nand2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nand2_1              |Circuit 2: sg13cmos5l_nand2_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nand2_1 and sg13cmos5l_nand2_1 are equivalent.
+
+Cell sg13cmos5l_buf_8 (0) disconnected node: X
+Cell sg13cmos5l_buf_8 (0) disconnected node: A
+Cell sg13cmos5l_buf_8 (0) disconnected node: VDD
+Cell sg13cmos5l_buf_8 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_buf_8                |Circuit 2: sg13cmos5l_buf_8                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_buf_8 and sg13cmos5l_buf_8 are equivalent.
+
+Cell sg13cmos5l_mux2_1 (0) disconnected node: X
+Cell sg13cmos5l_mux2_1 (0) disconnected node: A0
+Cell sg13cmos5l_mux2_1 (0) disconnected node: A1
+Cell sg13cmos5l_mux2_1 (0) disconnected node: S
+Cell sg13cmos5l_mux2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_mux2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_mux2_1               |Circuit 2: sg13cmos5l_mux2_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A0                                         |A0                                         
+A1                                         |A1                                         
+S                                          |S                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_mux2_1 and sg13cmos5l_mux2_1 are equivalent.
+
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: Y
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: A1
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: A2
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: B1
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: B2
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: C1
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: VDD
+Cell sg13cmos5l_a221oi_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_a221oi_1             |Circuit 2: sg13cmos5l_a221oi_1             
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A1                                         |A1                                         
+A2                                         |A2                                         
+B1                                         |B1                                         
+B2                                         |B2                                         
+C1                                         |C1                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_a221oi_1 and sg13cmos5l_a221oi_1 are equivalent.
+
+Cell sg13cmos5l_buf_1 (0) disconnected node: X
+Cell sg13cmos5l_buf_1 (0) disconnected node: A
+Cell sg13cmos5l_buf_1 (0) disconnected node: VDD
+Cell sg13cmos5l_buf_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_buf_1                |Circuit 2: sg13cmos5l_buf_1                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_buf_1 and sg13cmos5l_buf_1 are equivalent.
+
+Cell sg13cmos5l_nand3_1 (0) disconnected node: Y
+Cell sg13cmos5l_nand3_1 (0) disconnected node: A
+Cell sg13cmos5l_nand3_1 (0) disconnected node: B
+Cell sg13cmos5l_nand3_1 (0) disconnected node: C
+Cell sg13cmos5l_nand3_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nand3_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nand3_1              |Circuit 2: sg13cmos5l_nand3_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nand3_1 and sg13cmos5l_nand3_1 are equivalent.
+
+Cell sg13cmos5l_or3_1 (0) disconnected node: X
+Cell sg13cmos5l_or3_1 (0) disconnected node: A
+Cell sg13cmos5l_or3_1 (0) disconnected node: B
+Cell sg13cmos5l_or3_1 (0) disconnected node: C
+Cell sg13cmos5l_or3_1 (0) disconnected node: VDD
+Cell sg13cmos5l_or3_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_or3_1                |Circuit 2: sg13cmos5l_or3_1                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_or3_1 and sg13cmos5l_or3_1 are equivalent.
+
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: Y
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: A1
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: A2
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: B1
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: B2
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: VDD
+Cell sg13cmos5l_a22oi_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_a22oi_1              |Circuit 2: sg13cmos5l_a22oi_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A1                                         |A1                                         
+A2                                         |A2                                         
+B1                                         |B1                                         
+B2                                         |B2                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_a22oi_1 and sg13cmos5l_a22oi_1 are equivalent.
+
+Cell sg13cmos5l_inv_1 (0) disconnected node: Y
+Cell sg13cmos5l_inv_1 (0) disconnected node: A
+Cell sg13cmos5l_inv_1 (0) disconnected node: VDD
+Cell sg13cmos5l_inv_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_inv_1                |Circuit 2: sg13cmos5l_inv_1                
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_inv_1 and sg13cmos5l_inv_1 are equivalent.
+
+Cell sg13cmos5l_a21o_1 (0) disconnected node: X
+Cell sg13cmos5l_a21o_1 (0) disconnected node: A1
+Cell sg13cmos5l_a21o_1 (0) disconnected node: A2
+Cell sg13cmos5l_a21o_1 (0) disconnected node: B1
+Cell sg13cmos5l_a21o_1 (0) disconnected node: VDD
+Cell sg13cmos5l_a21o_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_a21o_1               |Circuit 2: sg13cmos5l_a21o_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A1                                         |A1                                         
+A2                                         |A2                                         
+B1                                         |B1                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_a21o_1 and sg13cmos5l_a21o_1 are equivalent.
+
+Cell sg13cmos5l_and2_1 (0) disconnected node: X
+Cell sg13cmos5l_and2_1 (0) disconnected node: A
+Cell sg13cmos5l_and2_1 (0) disconnected node: B
+Cell sg13cmos5l_and2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_and2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_and2_1               |Circuit 2: sg13cmos5l_and2_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_and2_1 and sg13cmos5l_and2_1 are equivalent.
+
+Cell sg13cmos5l_nor3_1 (0) disconnected node: Y
+Cell sg13cmos5l_nor3_1 (0) disconnected node: A
+Cell sg13cmos5l_nor3_1 (0) disconnected node: B
+Cell sg13cmos5l_nor3_1 (0) disconnected node: C
+Cell sg13cmos5l_nor3_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nor3_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nor3_1               |Circuit 2: sg13cmos5l_nor3_1               
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nor3_1 and sg13cmos5l_nor3_1 are equivalent.
+
+Cell sg13cmos5l_nand2b_1 (0) disconnected node: Y
+Cell sg13cmos5l_nand2b_1 (0) disconnected node: A_N
+Cell sg13cmos5l_nand2b_1 (0) disconnected node: B
+Cell sg13cmos5l_nand2b_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nand2b_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nand2b_1             |Circuit 2: sg13cmos5l_nand2b_1             
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A_N                                        |A_N                                        
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nand2b_1 and sg13cmos5l_nand2b_1 are equivalent.
+
+Cell sg13cmos5l_nand4_1 (0) disconnected node: Y
+Cell sg13cmos5l_nand4_1 (0) disconnected node: A
+Cell sg13cmos5l_nand4_1 (0) disconnected node: B
+Cell sg13cmos5l_nand4_1 (0) disconnected node: C
+Cell sg13cmos5l_nand4_1 (0) disconnected node: D
+Cell sg13cmos5l_nand4_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nand4_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nand4_1              |Circuit 2: sg13cmos5l_nand4_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+D                                          |D                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nand4_1 and sg13cmos5l_nand4_1 are equivalent.
+
+Cell sg13cmos5l_tiehi (0) disconnected node: L_HI
+Cell sg13cmos5l_tiehi (0) disconnected node: VDD
+Cell sg13cmos5l_tiehi (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_tiehi                |Circuit 2: sg13cmos5l_tiehi                
+-------------------------------------------|-------------------------------------------
+L_HI                                       |L_HI                                       
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_tiehi and sg13cmos5l_tiehi are equivalent.
+
+Cell sg13cmos5l_xnor2_1 (0) disconnected node: Y
+Cell sg13cmos5l_xnor2_1 (0) disconnected node: A
+Cell sg13cmos5l_xnor2_1 (0) disconnected node: B
+Cell sg13cmos5l_xnor2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_xnor2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_xnor2_1              |Circuit 2: sg13cmos5l_xnor2_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_xnor2_1 and sg13cmos5l_xnor2_1 are equivalent.
+
+Cell sg13cmos5l_nor2b_1 (0) disconnected node: Y
+Cell sg13cmos5l_nor2b_1 (0) disconnected node: A
+Cell sg13cmos5l_nor2b_1 (0) disconnected node: B_N
+Cell sg13cmos5l_nor2b_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nor2b_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nor2b_1              |Circuit 2: sg13cmos5l_nor2b_1              
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B_N                                        |B_N                                        
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nor2b_1 and sg13cmos5l_nor2b_1 are equivalent.
+
+Cell sg13cmos5l_mux4_1 (0) disconnected node: X
+Cell sg13cmos5l_mux4_1 (0) disconnected node: A0
+Cell sg13cmos5l_mux4_1 (0) disconnected node: A1
+Cell sg13cmos5l_mux4_1 (0) disconnected node: A2
+Cell sg13cmos5l_mux4_1 (0) disconnected node: A3
+Cell sg13cmos5l_mux4_1 (0) disconnected node: S0
+Cell sg13cmos5l_mux4_1 (0) disconnected node: S1
+Cell sg13cmos5l_mux4_1 (0) disconnected node: VDD
+Cell sg13cmos5l_mux4_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_mux4_1               |Circuit 2: sg13cmos5l_mux4_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A0                                         |A0                                         
+A1                                         |A1                                         
+A2                                         |A2                                         
+A3                                         |A3                                         
+S0                                         |S0                                         
+S1                                         |S1                                         
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_mux4_1 and sg13cmos5l_mux4_1 are equivalent.
+
+Cell sg13cmos5l_and3_1 (0) disconnected node: X
+Cell sg13cmos5l_and3_1 (0) disconnected node: A
+Cell sg13cmos5l_and3_1 (0) disconnected node: B
+Cell sg13cmos5l_and3_1 (0) disconnected node: C
+Cell sg13cmos5l_and3_1 (0) disconnected node: VDD
+Cell sg13cmos5l_and3_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_and3_1               |Circuit 2: sg13cmos5l_and3_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_and3_1 and sg13cmos5l_and3_1 are equivalent.
+
+Cell sg13cmos5l_xor2_1 (0) disconnected node: X
+Cell sg13cmos5l_xor2_1 (0) disconnected node: A
+Cell sg13cmos5l_xor2_1 (0) disconnected node: B
+Cell sg13cmos5l_xor2_1 (0) disconnected node: VDD
+Cell sg13cmos5l_xor2_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_xor2_1               |Circuit 2: sg13cmos5l_xor2_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_xor2_1 and sg13cmos5l_xor2_1 are equivalent.
+
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: Y
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: A_N
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: B
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: C
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nand3b_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nand3b_1             |Circuit 2: sg13cmos5l_nand3b_1             
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A_N                                        |A_N                                        
+B                                          |B                                          
+C                                          |C                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nand3b_1 and sg13cmos5l_nand3b_1 are equivalent.
+
+Cell sg13cmos5l_tielo (0) disconnected node: L_LO
+Cell sg13cmos5l_tielo (0) disconnected node: VDD
+Cell sg13cmos5l_tielo (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_tielo                |Circuit 2: sg13cmos5l_tielo                
+-------------------------------------------|-------------------------------------------
+L_LO                                       |L_LO                                       
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_tielo and sg13cmos5l_tielo are equivalent.
+
+Cell sg13cmos5l_nor4_1 (0) disconnected node: Y
+Cell sg13cmos5l_nor4_1 (0) disconnected node: A
+Cell sg13cmos5l_nor4_1 (0) disconnected node: B
+Cell sg13cmos5l_nor4_1 (0) disconnected node: C
+Cell sg13cmos5l_nor4_1 (0) disconnected node: D
+Cell sg13cmos5l_nor4_1 (0) disconnected node: VDD
+Cell sg13cmos5l_nor4_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_nor4_1               |Circuit 2: sg13cmos5l_nor4_1               
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+D                                          |D                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_nor4_1 and sg13cmos5l_nor4_1 are equivalent.
+
+Cell sg13cmos5l_dlygate4sd3_1 (0) disconnected node: X
+Cell sg13cmos5l_dlygate4sd3_1 (0) disconnected node: A
+Cell sg13cmos5l_dlygate4sd3_1 (0) disconnected node: VDD
+Cell sg13cmos5l_dlygate4sd3_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_dlygate4sd3_1        |Circuit 2: sg13cmos5l_dlygate4sd3_1        
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_dlygate4sd3_1 and sg13cmos5l_dlygate4sd3_1 are equivalent.
+
+Cell sg13cmos5l_inv_2 (0) disconnected node: Y
+Cell sg13cmos5l_inv_2 (0) disconnected node: A
+Cell sg13cmos5l_inv_2 (0) disconnected node: VDD
+Cell sg13cmos5l_inv_2 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_inv_2                |Circuit 2: sg13cmos5l_inv_2                
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_inv_2 and sg13cmos5l_inv_2 are equivalent.
+
+Cell sg13cmos5l_or4_1 (0) disconnected node: X
+Cell sg13cmos5l_or4_1 (0) disconnected node: A
+Cell sg13cmos5l_or4_1 (0) disconnected node: B
+Cell sg13cmos5l_or4_1 (0) disconnected node: C
+Cell sg13cmos5l_or4_1 (0) disconnected node: D
+Cell sg13cmos5l_or4_1 (0) disconnected node: VDD
+Cell sg13cmos5l_or4_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_or4_1                |Circuit 2: sg13cmos5l_or4_1                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+D                                          |D                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_or4_1 and sg13cmos5l_or4_1 are equivalent.
+
+Cell sg13cmos5l_and4_1 (0) disconnected node: X
+Cell sg13cmos5l_and4_1 (0) disconnected node: A
+Cell sg13cmos5l_and4_1 (0) disconnected node: B
+Cell sg13cmos5l_and4_1 (0) disconnected node: C
+Cell sg13cmos5l_and4_1 (0) disconnected node: D
+Cell sg13cmos5l_and4_1 (0) disconnected node: VDD
+Cell sg13cmos5l_and4_1 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_and4_1               |Circuit 2: sg13cmos5l_and4_1               
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+D                                          |D                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_and4_1 and sg13cmos5l_and4_1 are equivalent.
+
+Cell sg13cmos5l_buf_4 (0) disconnected node: X
+Cell sg13cmos5l_buf_4 (0) disconnected node: A
+Cell sg13cmos5l_buf_4 (0) disconnected node: VDD
+Cell sg13cmos5l_buf_4 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_buf_4                |Circuit 2: sg13cmos5l_buf_4                
+-------------------------------------------|-------------------------------------------
+X                                          |X                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_buf_4 and sg13cmos5l_buf_4 are equivalent.
+
+Cell sg13cmos5l_antennanp (0) disconnected node: A
+Cell sg13cmos5l_antennanp (0) disconnected node: VDD
+Cell sg13cmos5l_antennanp (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_antennanp            |Circuit 2: sg13cmos5l_antennanp            
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_antennanp and sg13cmos5l_antennanp are equivalent.
+
+Cell sg13cmos5l_inv_8 (0) disconnected node: Y
+Cell sg13cmos5l_inv_8 (0) disconnected node: A
+Cell sg13cmos5l_inv_8 (0) disconnected node: VDD
+Cell sg13cmos5l_inv_8 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_inv_8                |Circuit 2: sg13cmos5l_inv_8                
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_inv_8 and sg13cmos5l_inv_8 are equivalent.
+
+Cell sg13cmos5l_inv_4 (0) disconnected node: Y
+Cell sg13cmos5l_inv_4 (0) disconnected node: A
+Cell sg13cmos5l_inv_4 (0) disconnected node: VDD
+Cell sg13cmos5l_inv_4 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_inv_4                |Circuit 2: sg13cmos5l_inv_4                
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_inv_4 and sg13cmos5l_inv_4 are equivalent.
+
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[16]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[15]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: VSS
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: VDD
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: VDDARRAY
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[17]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[14]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[18]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[13]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[19]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[12]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[20]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[11]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[21]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[10]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[22]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[9]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[23]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[24]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[25]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[26]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[27]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[28]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[29]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[30]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DIN[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_DIN[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BM[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_BM[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DOUT[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DIN[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_DIN[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BM[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_BM[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[31]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DOUT[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[0]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[1]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[2]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[3]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[4]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[5]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[6]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[7]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_ADDR[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_ADDR[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_ADDR[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_ADDR[8]
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_CLK
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_REN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_WEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_MEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_DLY
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_CLK
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_REN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_WEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_MEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_DLY
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_EN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_CLK
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_REN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_WEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: A_BIST_MEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_EN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_CLK
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_REN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_WEN
+Cell RM_IHPSG13_2P_512x32_c2_bm_bist (0) disconnected node: B_BIST_MEN
+
+Subcircuit pins:
+Circuit 1: RM_IHPSG13_2P_512x32_c2_bm_bist |Circuit 2: RM_IHPSG13_2P_512x32_c2_bm_bist 
+-------------------------------------------|-------------------------------------------
+A_DIN[16]                                  |A_DIN[16]                                  
+A_DIN[15]                                  |A_DIN[15]                                  
+A_BIST_DIN[16]                             |A_BIST_DIN[16]                             
+A_BIST_DIN[15]                             |A_BIST_DIN[15]                             
+A_BM[16]                                   |A_BM[16]                                   
+A_BM[15]                                   |A_BM[15]                                   
+A_BIST_BM[16]                              |A_BIST_BM[16]                              
+A_BIST_BM[15]                              |A_BIST_BM[15]                              
+A_DOUT[16]                                 |A_DOUT[16]                                 
+A_DOUT[15]                                 |A_DOUT[15]                                 
+B_DIN[16]                                  |B_DIN[16]                                  
+B_DIN[15]                                  |B_DIN[15]                                  
+B_BIST_DIN[16]                             |B_BIST_DIN[16]                             
+B_BIST_DIN[15]                             |B_BIST_DIN[15]                             
+B_BM[16]                                   |B_BM[16]                                   
+B_BM[15]                                   |B_BM[15]                                   
+B_BIST_BM[16]                              |B_BIST_BM[16]                              
+B_BIST_BM[15]                              |B_BIST_BM[15]                              
+B_DOUT[16]                                 |B_DOUT[16]                                 
+B_DOUT[15]                                 |B_DOUT[15]                                 
+VSS                                        |\VSS                                       
+VDD                                        |\VDD                                       
+VDDARRAY                                   |\VDDARRAY                                  
+A_DIN[17]                                  |A_DIN[17]                                  
+A_DIN[14]                                  |A_DIN[14]                                  
+A_BIST_DIN[17]                             |A_BIST_DIN[17]                             
+A_BIST_DIN[14]                             |A_BIST_DIN[14]                             
+A_BM[17]                                   |A_BM[17]                                   
+A_BM[14]                                   |A_BM[14]                                   
+A_BIST_BM[17]                              |A_BIST_BM[17]                              
+A_BIST_BM[14]                              |A_BIST_BM[14]                              
+A_DOUT[17]                                 |A_DOUT[17]                                 
+A_DOUT[14]                                 |A_DOUT[14]                                 
+B_DIN[17]                                  |B_DIN[17]                                  
+B_DIN[14]                                  |B_DIN[14]                                  
+B_BIST_DIN[17]                             |B_BIST_DIN[17]                             
+B_BIST_DIN[14]                             |B_BIST_DIN[14]                             
+B_BM[17]                                   |B_BM[17]                                   
+B_BM[14]                                   |B_BM[14]                                   
+B_BIST_BM[17]                              |B_BIST_BM[17]                              
+B_BIST_BM[14]                              |B_BIST_BM[14]                              
+B_DOUT[17]                                 |B_DOUT[17]                                 
+B_DOUT[14]                                 |B_DOUT[14]                                 
+A_DIN[18]                                  |A_DIN[18]                                  
+A_DIN[13]                                  |A_DIN[13]                                  
+A_BIST_DIN[18]                             |A_BIST_DIN[18]                             
+A_BIST_DIN[13]                             |A_BIST_DIN[13]                             
+A_BM[18]                                   |A_BM[18]                                   
+A_BM[13]                                   |A_BM[13]                                   
+A_BIST_BM[18]                              |A_BIST_BM[18]                              
+A_BIST_BM[13]                              |A_BIST_BM[13]                              
+A_DOUT[18]                                 |A_DOUT[18]                                 
+A_DOUT[13]                                 |A_DOUT[13]                                 
+B_DIN[18]                                  |B_DIN[18]                                  
+B_DIN[13]                                  |B_DIN[13]                                  
+B_BIST_DIN[18]                             |B_BIST_DIN[18]                             
+B_BIST_DIN[13]                             |B_BIST_DIN[13]                             
+B_BM[18]                                   |B_BM[18]                                   
+B_BM[13]                                   |B_BM[13]                                   
+B_BIST_BM[18]                              |B_BIST_BM[18]                              
+B_BIST_BM[13]                              |B_BIST_BM[13]                              
+B_DOUT[18]                                 |B_DOUT[18]                                 
+B_DOUT[13]                                 |B_DOUT[13]                                 
+A_DIN[19]                                  |A_DIN[19]                                  
+A_DIN[12]                                  |A_DIN[12]                                  
+A_BIST_DIN[19]                             |A_BIST_DIN[19]                             
+A_BIST_DIN[12]                             |A_BIST_DIN[12]                             
+A_BM[19]                                   |A_BM[19]                                   
+A_BM[12]                                   |A_BM[12]                                   
+A_BIST_BM[19]                              |A_BIST_BM[19]                              
+A_BIST_BM[12]                              |A_BIST_BM[12]                              
+A_DOUT[19]                                 |A_DOUT[19]                                 
+A_DOUT[12]                                 |A_DOUT[12]                                 
+B_DIN[19]                                  |B_DIN[19]                                  
+B_DIN[12]                                  |B_DIN[12]                                  
+B_BIST_DIN[19]                             |B_BIST_DIN[19]                             
+B_BIST_DIN[12]                             |B_BIST_DIN[12]                             
+B_BM[19]                                   |B_BM[19]                                   
+B_BM[12]                                   |B_BM[12]                                   
+B_BIST_BM[19]                              |B_BIST_BM[19]                              
+B_BIST_BM[12]                              |B_BIST_BM[12]                              
+B_DOUT[19]                                 |B_DOUT[19]                                 
+B_DOUT[12]                                 |B_DOUT[12]                                 
+A_DIN[20]                                  |A_DIN[20]                                  
+A_DIN[11]                                  |A_DIN[11]                                  
+A_BIST_DIN[20]                             |A_BIST_DIN[20]                             
+A_BIST_DIN[11]                             |A_BIST_DIN[11]                             
+A_BM[20]                                   |A_BM[20]                                   
+A_BM[11]                                   |A_BM[11]                                   
+A_BIST_BM[20]                              |A_BIST_BM[20]                              
+A_BIST_BM[11]                              |A_BIST_BM[11]                              
+A_DOUT[20]                                 |A_DOUT[20]                                 
+A_DOUT[11]                                 |A_DOUT[11]                                 
+B_DIN[20]                                  |B_DIN[20]                                  
+B_DIN[11]                                  |B_DIN[11]                                  
+B_BIST_DIN[20]                             |B_BIST_DIN[20]                             
+B_BIST_DIN[11]                             |B_BIST_DIN[11]                             
+B_BM[20]                                   |B_BM[20]                                   
+B_BM[11]                                   |B_BM[11]                                   
+B_BIST_BM[20]                              |B_BIST_BM[20]                              
+B_BIST_BM[11]                              |B_BIST_BM[11]                              
+B_DOUT[20]                                 |B_DOUT[20]                                 
+B_DOUT[11]                                 |B_DOUT[11]                                 
+A_DIN[21]                                  |A_DIN[21]                                  
+A_DIN[10]                                  |A_DIN[10]                                  
+A_BIST_DIN[21]                             |A_BIST_DIN[21]                             
+A_BIST_DIN[10]                             |A_BIST_DIN[10]                             
+A_BM[21]                                   |A_BM[21]                                   
+A_BM[10]                                   |A_BM[10]                                   
+A_BIST_BM[21]                              |A_BIST_BM[21]                              
+A_BIST_BM[10]                              |A_BIST_BM[10]                              
+A_DOUT[21]                                 |A_DOUT[21]                                 
+A_DOUT[10]                                 |A_DOUT[10]                                 
+B_DIN[21]                                  |B_DIN[21]                                  
+B_DIN[10]                                  |B_DIN[10]                                  
+B_BIST_DIN[21]                             |B_BIST_DIN[21]                             
+B_BIST_DIN[10]                             |B_BIST_DIN[10]                             
+B_BM[21]                                   |B_BM[21]                                   
+B_BM[10]                                   |B_BM[10]                                   
+B_BIST_BM[21]                              |B_BIST_BM[21]                              
+B_BIST_BM[10]                              |B_BIST_BM[10]                              
+B_DOUT[21]                                 |B_DOUT[21]                                 
+B_DOUT[10]                                 |B_DOUT[10]                                 
+A_DIN[22]                                  |A_DIN[22]                                  
+A_DIN[9]                                   |A_DIN[9]                                   
+A_BIST_DIN[22]                             |A_BIST_DIN[22]                             
+A_BIST_DIN[9]                              |A_BIST_DIN[9]                              
+A_BM[22]                                   |A_BM[22]                                   
+A_BM[9]                                    |A_BM[9]                                    
+A_BIST_BM[22]                              |A_BIST_BM[22]                              
+A_BIST_BM[9]                               |A_BIST_BM[9]                               
+A_DOUT[22]                                 |A_DOUT[22]                                 
+A_DOUT[9]                                  |A_DOUT[9]                                  
+B_DIN[22]                                  |B_DIN[22]                                  
+B_DIN[9]                                   |B_DIN[9]                                   
+B_BIST_DIN[22]                             |B_BIST_DIN[22]                             
+B_BIST_DIN[9]                              |B_BIST_DIN[9]                              
+B_BM[22]                                   |B_BM[22]                                   
+B_BM[9]                                    |B_BM[9]                                    
+B_BIST_BM[22]                              |B_BIST_BM[22]                              
+B_BIST_BM[9]                               |B_BIST_BM[9]                               
+B_DOUT[22]                                 |B_DOUT[22]                                 
+B_DOUT[9]                                  |B_DOUT[9]                                  
+A_DIN[23]                                  |A_DIN[23]                                  
+A_DIN[8]                                   |A_DIN[8]                                   
+A_BIST_DIN[23]                             |A_BIST_DIN[23]                             
+A_BIST_DIN[8]                              |A_BIST_DIN[8]                              
+A_BM[23]                                   |A_BM[23]                                   
+A_BM[8]                                    |A_BM[8]                                    
+A_BIST_BM[23]                              |A_BIST_BM[23]                              
+A_BIST_BM[8]                               |A_BIST_BM[8]                               
+A_DOUT[23]                                 |A_DOUT[23]                                 
+A_DOUT[8]                                  |A_DOUT[8]                                  
+B_DIN[23]                                  |B_DIN[23]                                  
+B_DIN[8]                                   |B_DIN[8]                                   
+B_BIST_DIN[23]                             |B_BIST_DIN[23]                             
+B_BIST_DIN[8]                              |B_BIST_DIN[8]                              
+B_BM[23]                                   |B_BM[23]                                   
+B_BM[8]                                    |B_BM[8]                                    
+B_BIST_BM[23]                              |B_BIST_BM[23]                              
+B_BIST_BM[8]                               |B_BIST_BM[8]                               
+B_DOUT[23]                                 |B_DOUT[23]                                 
+B_DOUT[8]                                  |B_DOUT[8]                                  
+A_DIN[24]                                  |A_DIN[24]                                  
+A_DIN[7]                                   |A_DIN[7]                                   
+A_BIST_DIN[24]                             |A_BIST_DIN[24]                             
+A_BIST_DIN[7]                              |A_BIST_DIN[7]                              
+A_BM[24]                                   |A_BM[24]                                   
+A_BM[7]                                    |A_BM[7]                                    
+A_BIST_BM[24]                              |A_BIST_BM[24]                              
+A_BIST_BM[7]                               |A_BIST_BM[7]                               
+A_DOUT[24]                                 |A_DOUT[24]                                 
+A_DOUT[7]                                  |A_DOUT[7]                                  
+B_DIN[24]                                  |B_DIN[24]                                  
+B_DIN[7]                                   |B_DIN[7]                                   
+B_BIST_DIN[24]                             |B_BIST_DIN[24]                             
+B_BIST_DIN[7]                              |B_BIST_DIN[7]                              
+B_BM[24]                                   |B_BM[24]                                   
+B_BM[7]                                    |B_BM[7]                                    
+B_BIST_BM[24]                              |B_BIST_BM[24]                              
+B_BIST_BM[7]                               |B_BIST_BM[7]                               
+B_DOUT[24]                                 |B_DOUT[24]                                 
+B_DOUT[7]                                  |B_DOUT[7]                                  
+A_DIN[25]                                  |A_DIN[25]                                  
+A_DIN[6]                                   |A_DIN[6]                                   
+A_BIST_DIN[25]                             |A_BIST_DIN[25]                             
+A_BIST_DIN[6]                              |A_BIST_DIN[6]                              
+A_BM[25]                                   |A_BM[25]                                   
+A_BM[6]                                    |A_BM[6]                                    
+A_BIST_BM[25]                              |A_BIST_BM[25]                              
+A_BIST_BM[6]                               |A_BIST_BM[6]                               
+A_DOUT[25]                                 |A_DOUT[25]                                 
+A_DOUT[6]                                  |A_DOUT[6]                                  
+B_DIN[25]                                  |B_DIN[25]                                  
+B_DIN[6]                                   |B_DIN[6]                                   
+B_BIST_DIN[25]                             |B_BIST_DIN[25]                             
+B_BIST_DIN[6]                              |B_BIST_DIN[6]                              
+B_BM[25]                                   |B_BM[25]                                   
+B_BM[6]                                    |B_BM[6]                                    
+B_BIST_BM[25]                              |B_BIST_BM[25]                              
+B_BIST_BM[6]                               |B_BIST_BM[6]                               
+B_DOUT[25]                                 |B_DOUT[25]                                 
+B_DOUT[6]                                  |B_DOUT[6]                                  
+A_DIN[26]                                  |A_DIN[26]                                  
+A_DIN[5]                                   |A_DIN[5]                                   
+A_BIST_DIN[26]                             |A_BIST_DIN[26]                             
+A_BIST_DIN[5]                              |A_BIST_DIN[5]                              
+A_BM[26]                                   |A_BM[26]                                   
+A_BM[5]                                    |A_BM[5]                                    
+A_BIST_BM[26]                              |A_BIST_BM[26]                              
+A_BIST_BM[5]                               |A_BIST_BM[5]                               
+A_DOUT[26]                                 |A_DOUT[26]                                 
+A_DOUT[5]                                  |A_DOUT[5]                                  
+B_DIN[26]                                  |B_DIN[26]                                  
+B_DIN[5]                                   |B_DIN[5]                                   
+B_BIST_DIN[26]                             |B_BIST_DIN[26]                             
+B_BIST_DIN[5]                              |B_BIST_DIN[5]                              
+B_BM[26]                                   |B_BM[26]                                   
+B_BM[5]                                    |B_BM[5]                                    
+B_BIST_BM[26]                              |B_BIST_BM[26]                              
+B_BIST_BM[5]                               |B_BIST_BM[5]                               
+B_DOUT[26]                                 |B_DOUT[26]                                 
+B_DOUT[5]                                  |B_DOUT[5]                                  
+A_DIN[27]                                  |A_DIN[27]                                  
+A_DIN[4]                                   |A_DIN[4]                                   
+A_BIST_DIN[27]                             |A_BIST_DIN[27]                             
+A_BIST_DIN[4]                              |A_BIST_DIN[4]                              
+A_BM[27]                                   |A_BM[27]                                   
+A_BM[4]                                    |A_BM[4]                                    
+A_BIST_BM[27]                              |A_BIST_BM[27]                              
+A_BIST_BM[4]                               |A_BIST_BM[4]                               
+A_DOUT[27]                                 |A_DOUT[27]                                 
+A_DOUT[4]                                  |A_DOUT[4]                                  
+B_DIN[27]                                  |B_DIN[27]                                  
+B_DIN[4]                                   |B_DIN[4]                                   
+B_BIST_DIN[27]                             |B_BIST_DIN[27]                             
+B_BIST_DIN[4]                              |B_BIST_DIN[4]                              
+B_BM[27]                                   |B_BM[27]                                   
+B_BM[4]                                    |B_BM[4]                                    
+B_BIST_BM[27]                              |B_BIST_BM[27]                              
+B_BIST_BM[4]                               |B_BIST_BM[4]                               
+B_DOUT[27]                                 |B_DOUT[27]                                 
+B_DOUT[4]                                  |B_DOUT[4]                                  
+A_DIN[28]                                  |A_DIN[28]                                  
+A_DIN[3]                                   |A_DIN[3]                                   
+A_BIST_DIN[28]                             |A_BIST_DIN[28]                             
+A_BIST_DIN[3]                              |A_BIST_DIN[3]                              
+A_BM[28]                                   |A_BM[28]                                   
+A_BM[3]                                    |A_BM[3]                                    
+A_BIST_BM[28]                              |A_BIST_BM[28]                              
+A_BIST_BM[3]                               |A_BIST_BM[3]                               
+A_DOUT[28]                                 |A_DOUT[28]                                 
+A_DOUT[3]                                  |A_DOUT[3]                                  
+B_DIN[28]                                  |B_DIN[28]                                  
+B_DIN[3]                                   |B_DIN[3]                                   
+B_BIST_DIN[28]                             |B_BIST_DIN[28]                             
+B_BIST_DIN[3]                              |B_BIST_DIN[3]                              
+B_BM[28]                                   |B_BM[28]                                   
+B_BM[3]                                    |B_BM[3]                                    
+B_BIST_BM[28]                              |B_BIST_BM[28]                              
+B_BIST_BM[3]                               |B_BIST_BM[3]                               
+B_DOUT[28]                                 |B_DOUT[28]                                 
+B_DOUT[3]                                  |B_DOUT[3]                                  
+A_DIN[29]                                  |A_DIN[29]                                  
+A_DIN[2]                                   |A_DIN[2]                                   
+A_BIST_DIN[29]                             |A_BIST_DIN[29]                             
+A_BIST_DIN[2]                              |A_BIST_DIN[2]                              
+A_BM[29]                                   |A_BM[29]                                   
+A_BM[2]                                    |A_BM[2]                                    
+A_BIST_BM[29]                              |A_BIST_BM[29]                              
+A_BIST_BM[2]                               |A_BIST_BM[2]                               
+A_DOUT[29]                                 |A_DOUT[29]                                 
+A_DOUT[2]                                  |A_DOUT[2]                                  
+B_DIN[29]                                  |B_DIN[29]                                  
+B_DIN[2]                                   |B_DIN[2]                                   
+B_BIST_DIN[29]                             |B_BIST_DIN[29]                             
+B_BIST_DIN[2]                              |B_BIST_DIN[2]                              
+B_BM[29]                                   |B_BM[29]                                   
+B_BM[2]                                    |B_BM[2]                                    
+B_BIST_BM[29]                              |B_BIST_BM[29]                              
+B_BIST_BM[2]                               |B_BIST_BM[2]                               
+B_DOUT[29]                                 |B_DOUT[29]                                 
+B_DOUT[2]                                  |B_DOUT[2]                                  
+A_DIN[30]                                  |A_DIN[30]                                  
+A_DIN[1]                                   |A_DIN[1]                                   
+A_BIST_DIN[30]                             |A_BIST_DIN[30]                             
+A_BIST_DIN[1]                              |A_BIST_DIN[1]                              
+A_BM[30]                                   |A_BM[30]                                   
+A_BM[1]                                    |A_BM[1]                                    
+A_BIST_BM[30]                              |A_BIST_BM[30]                              
+A_BIST_BM[1]                               |A_BIST_BM[1]                               
+A_DOUT[30]                                 |A_DOUT[30]                                 
+A_DOUT[1]                                  |A_DOUT[1]                                  
+B_DIN[30]                                  |B_DIN[30]                                  
+B_DIN[1]                                   |B_DIN[1]                                   
+B_BIST_DIN[30]                             |B_BIST_DIN[30]                             
+B_BIST_DIN[1]                              |B_BIST_DIN[1]                              
+B_BM[30]                                   |B_BM[30]                                   
+B_BM[1]                                    |B_BM[1]                                    
+B_BIST_BM[30]                              |B_BIST_BM[30]                              
+B_BIST_BM[1]                               |B_BIST_BM[1]                               
+B_DOUT[30]                                 |B_DOUT[30]                                 
+B_DOUT[1]                                  |B_DOUT[1]                                  
+A_DIN[31]                                  |A_DIN[31]                                  
+A_DIN[0]                                   |A_DIN[0]                                   
+A_BIST_DIN[31]                             |A_BIST_DIN[31]                             
+A_BIST_DIN[0]                              |A_BIST_DIN[0]                              
+A_BM[31]                                   |A_BM[31]                                   
+A_BM[0]                                    |A_BM[0]                                    
+A_BIST_BM[31]                              |A_BIST_BM[31]                              
+A_BIST_BM[0]                               |A_BIST_BM[0]                               
+A_DOUT[31]                                 |A_DOUT[31]                                 
+A_DOUT[0]                                  |A_DOUT[0]                                  
+B_DIN[31]                                  |B_DIN[31]                                  
+B_DIN[0]                                   |B_DIN[0]                                   
+B_BIST_DIN[31]                             |B_BIST_DIN[31]                             
+B_BIST_DIN[0]                              |B_BIST_DIN[0]                              
+B_BM[31]                                   |B_BM[31]                                   
+B_BM[0]                                    |B_BM[0]                                    
+B_BIST_BM[31]                              |B_BIST_BM[31]                              
+B_BIST_BM[0]                               |B_BIST_BM[0]                               
+B_DOUT[31]                                 |B_DOUT[31]                                 
+B_DOUT[0]                                  |B_DOUT[0]                                  
+A_ADDR[0]                                  |A_ADDR[0]                                  
+A_BIST_ADDR[0]                             |A_BIST_ADDR[0]                             
+B_ADDR[0]                                  |B_ADDR[0]                                  
+B_BIST_ADDR[0]                             |B_BIST_ADDR[0]                             
+A_ADDR[1]                                  |A_ADDR[1]                                  
+A_BIST_ADDR[1]                             |A_BIST_ADDR[1]                             
+B_ADDR[1]                                  |B_ADDR[1]                                  
+B_BIST_ADDR[1]                             |B_BIST_ADDR[1]                             
+A_ADDR[2]                                  |A_ADDR[2]                                  
+A_BIST_ADDR[2]                             |A_BIST_ADDR[2]                             
+B_ADDR[2]                                  |B_ADDR[2]                                  
+B_BIST_ADDR[2]                             |B_BIST_ADDR[2]                             
+A_ADDR[3]                                  |A_ADDR[3]                                  
+A_BIST_ADDR[3]                             |A_BIST_ADDR[3]                             
+B_ADDR[3]                                  |B_ADDR[3]                                  
+B_BIST_ADDR[3]                             |B_BIST_ADDR[3]                             
+A_ADDR[4]                                  |A_ADDR[4]                                  
+A_BIST_ADDR[4]                             |A_BIST_ADDR[4]                             
+B_ADDR[4]                                  |B_ADDR[4]                                  
+B_BIST_ADDR[4]                             |B_BIST_ADDR[4]                             
+A_ADDR[5]                                  |A_ADDR[5]                                  
+A_BIST_ADDR[5]                             |A_BIST_ADDR[5]                             
+B_ADDR[5]                                  |B_ADDR[5]                                  
+B_BIST_ADDR[5]                             |B_BIST_ADDR[5]                             
+A_ADDR[6]                                  |A_ADDR[6]                                  
+A_BIST_ADDR[6]                             |A_BIST_ADDR[6]                             
+B_ADDR[6]                                  |B_ADDR[6]                                  
+B_BIST_ADDR[6]                             |B_BIST_ADDR[6]                             
+A_ADDR[7]                                  |A_ADDR[7]                                  
+A_BIST_ADDR[7]                             |A_BIST_ADDR[7]                             
+B_ADDR[7]                                  |B_ADDR[7]                                  
+B_BIST_ADDR[7]                             |B_BIST_ADDR[7]                             
+A_ADDR[8]                                  |A_ADDR[8]                                  
+A_BIST_ADDR[8]                             |A_BIST_ADDR[8]                             
+B_ADDR[8]                                  |B_ADDR[8]                                  
+B_BIST_ADDR[8]                             |B_BIST_ADDR[8]                             
+A_CLK                                      |A_CLK                                      
+A_REN                                      |A_REN                                      
+A_WEN                                      |A_WEN                                      
+A_MEN                                      |A_MEN                                      
+A_DLY                                      |A_DLY                                      
+B_CLK                                      |B_CLK                                      
+B_REN                                      |B_REN                                      
+B_WEN                                      |B_WEN                                      
+B_MEN                                      |B_MEN                                      
+B_DLY                                      |B_DLY                                      
+A_BIST_EN                                  |A_BIST_EN                                  
+A_BIST_CLK                                 |A_BIST_CLK                                 
+A_BIST_REN                                 |A_BIST_REN                                 
+A_BIST_WEN                                 |A_BIST_WEN                                 
+A_BIST_MEN                                 |A_BIST_MEN                                 
+B_BIST_EN                                  |B_BIST_EN                                  
+B_BIST_CLK                                 |B_BIST_CLK                                 
+B_BIST_REN                                 |B_BIST_REN                                 
+B_BIST_WEN                                 |B_BIST_WEN                                 
+B_BIST_MEN                                 |B_BIST_MEN                                 
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes RM_IHPSG13_2P_512x32_c2_bm_bist and RM_IHPSG13_2P_512x32_c2_bm_bist are equivalent.
+
+Cell sg13cmos5l_inv_16 (0) disconnected node: Y
+Cell sg13cmos5l_inv_16 (0) disconnected node: A
+Cell sg13cmos5l_inv_16 (0) disconnected node: VDD
+Cell sg13cmos5l_inv_16 (0) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: sg13cmos5l_inv_16               |Circuit 2: sg13cmos5l_inv_16               
+-------------------------------------------|-------------------------------------------
+Y                                          |Y                                          
+A                                          |A                                          
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sg13cmos5l_inv_16 and sg13cmos5l_inv_16 are equivalent.
+
+Cell tt_um_protocol_emulator (0) disconnected node: ena
+Cell tt_um_protocol_emulator (1) disconnected node: ena
+Class tt_um_protocol_emulator (0):  Merged 64523 parallel devices.
+Class tt_um_protocol_emulator (1):  Merged 64523 parallel devices.
+Cell tt_um_protocol_emulator (0) disconnected node: ena
+Cell tt_um_protocol_emulator (1) disconnected node: ena
+Subcircuit summary:
+Circuit 1: tt_um_protocol_emulator         |Circuit 2: tt_um_protocol_emulator         
+-------------------------------------------|-------------------------------------------
+sg13cmos5l_decap_8 (47110->1)              |sg13cmos5l_decap_8 (47110->1)              
+sg13cmos5l_fill_2 (6276->1)                |sg13cmos5l_fill_2 (6276->1)                
+sg13cmos5l_decap_4 (4540->1)               |sg13cmos5l_decap_4 (4540->1)               
+sg13cmos5l_nor2_1 (1804)                   |sg13cmos5l_nor2_1 (1804)                   
+sg13cmos5l_a21oi_1 (1917)                  |sg13cmos5l_a21oi_1 (1917)                  
+sg13cmos5l_or2_1 (190)                     |sg13cmos5l_or2_1 (190)                     
+sg13cmos5l_o21ai_1 (2350)                  |sg13cmos5l_o21ai_1 (2350)                  
+sg13cmos5l_fill_1 (6601->1)                |sg13cmos5l_fill_1 (6601->1)                
+sg13cmos5l_dfrbpq_1 (2555)                 |sg13cmos5l_dfrbpq_1 (2555)                 
+sg13cmos5l_nand2_1 (1914)                  |sg13cmos5l_nand2_1 (1914)                  
+sg13cmos5l_buf_8 (262)                     |sg13cmos5l_buf_8 (262)                     
+sg13cmos5l_mux2_1 (1587)                   |sg13cmos5l_mux2_1 (1587)                   
+sg13cmos5l_a221oi_1 (561)                  |sg13cmos5l_a221oi_1 (561)                  
+sg13cmos5l_buf_1 (3283)                    |sg13cmos5l_buf_1 (3283)                    
+sg13cmos5l_nand3_1 (654)                   |sg13cmos5l_nand3_1 (654)                   
+sg13cmos5l_or3_1 (58)                      |sg13cmos5l_or3_1 (58)                      
+sg13cmos5l_a22oi_1 (1011)                  |sg13cmos5l_a22oi_1 (1011)                  
+sg13cmos5l_inv_1 (951)                     |sg13cmos5l_inv_1 (951)                     
+sg13cmos5l_a21o_1 (502)                    |sg13cmos5l_a21o_1 (502)                    
+sg13cmos5l_and2_1 (558)                    |sg13cmos5l_and2_1 (558)                    
+sg13cmos5l_nor3_1 (495)                    |sg13cmos5l_nor3_1 (495)                    
+sg13cmos5l_nand2b_1 (475)                  |sg13cmos5l_nand2b_1 (475)                  
+sg13cmos5l_nand4_1 (216)                   |sg13cmos5l_nand4_1 (216)                   
+sg13cmos5l_tiehi (599)                     |sg13cmos5l_tiehi (599)                     
+sg13cmos5l_xnor2_1 (726)                   |sg13cmos5l_xnor2_1 (726)                   
+sg13cmos5l_nor2b_1 (521)                   |sg13cmos5l_nor2b_1 (521)                   
+sg13cmos5l_mux4_1 (274)                    |sg13cmos5l_mux4_1 (274)                    
+sg13cmos5l_and3_1 (163)                    |sg13cmos5l_and3_1 (163)                    
+sg13cmos5l_xor2_1 (156)                    |sg13cmos5l_xor2_1 (156)                    
+sg13cmos5l_nand3b_1 (102)                  |sg13cmos5l_nand3b_1 (102)                  
+sg13cmos5l_tielo (252)                     |sg13cmos5l_tielo (252)                     
+sg13cmos5l_nor4_1 (209)                    |sg13cmos5l_nor4_1 (209)                    
+sg13cmos5l_dlygate4sd3_1 (1261)            |sg13cmos5l_dlygate4sd3_1 (1261)            
+sg13cmos5l_inv_2 (34)                      |sg13cmos5l_inv_2 (34)                      
+sg13cmos5l_or4_1 (24)                      |sg13cmos5l_or4_1 (24)                      
+sg13cmos5l_and4_1 (38)                     |sg13cmos5l_and4_1 (38)                     
+sg13cmos5l_buf_4 (25)                      |sg13cmos5l_buf_4 (25)                      
+sg13cmos5l_antennanp (104)                 |sg13cmos5l_antennanp (104)                 
+sg13cmos5l_inv_8 (10)                      |sg13cmos5l_inv_8 (10)                      
+sg13cmos5l_inv_4 (29)                      |sg13cmos5l_inv_4 (29)                      
+RM_IHPSG13_2P_512x32_c2_bm_bist (1)        |RM_IHPSG13_2P_512x32_c2_bm_bist (1)        
+sg13cmos5l_inv_16 (1)                      |sg13cmos5l_inv_16 (1)                      
+Number of devices: 25876                   |Number of devices: 25876                   
+Number of nets: 25850 **Mismatch**         |Number of nets: 25851 **Mismatch**         
+---------------------------------------------------------------------------------------
+NET mismatches: Class fragments follow (with fanout counts):
+Circuit 1: tt_um_protocol_emulator         |Circuit 2: tt_um_protocol_emulator         
+
+---------------------------------------------------------------------------------------
+Net: VPWR                                  |Net: VPWR                                  
+  sg13cmos5l_antennanp/VDD = 104           |  sg13cmos5l_antennanp/VDD = 104           
+  sg13cmos5l_decap_8/VDD = 1               |  sg13cmos5l_decap_8/VDD = 1               
+  sg13cmos5l_fill_1/VDD = 1                |  sg13cmos5l_fill_1/VDD = 1                
+  sg13cmos5l_fill_2/VDD = 1                |  sg13cmos5l_fill_2/VDD = 1                
+  sg13cmos5l_decap_4/VDD = 1               |  sg13cmos5l_decap_4/VDD = 1               
+  sg13cmos5l_buf_1/VDD = 3283              |  sg13cmos5l_buf_1/VDD = 3283              
+  sg13cmos5l_inv_1/VDD = 951               |  sg13cmos5l_inv_1/VDD = 951               
+  sg13cmos5l_dfrbpq_1/VDD = 2555           |  sg13cmos5l_dfrbpq_1/VDD = 2555           
+  sg13cmos5l_tiehi/VDD = 599               |  sg13cmos5l_tiehi/VDD = 599               
+  sg13cmos5l_buf_8/VDD = 262               |  sg13cmos5l_buf_8/VDD = 262               
+  sg13cmos5l_inv_2/VDD = 34                |  sg13cmos5l_inv_2/VDD = 34                
+  sg13cmos5l_inv_8/VDD = 10                |  sg13cmos5l_inv_8/VDD = 10                
+  sg13cmos5l_inv_4/VDD = 29                |  sg13cmos5l_inv_4/VDD = 29                
+  sg13cmos5l_inv_16/VDD = 1                |  sg13cmos5l_inv_16/VDD = 1                
+  sg13cmos5l_dlygate4sd3_1/VDD = 1261      |  sg13cmos5l_dlygate4sd3_1/VDD = 1261      
+  sg13cmos5l_xor2_1/VDD = 156              |  sg13cmos5l_xor2_1/VDD = 156              
+  sg13cmos5l_nand3_1/VDD = 654             |  sg13cmos5l_nand3_1/VDD = 654             
+  sg13cmos5l_a21o_1/VDD = 502              |  sg13cmos5l_a21o_1/VDD = 502              
+  sg13cmos5l_and2_1/VDD = 558              |  sg13cmos5l_and2_1/VDD = 558              
+  sg13cmos5l_nand4_1/VDD = 216             |  sg13cmos5l_nand4_1/VDD = 216             
+  sg13cmos5l_xnor2_1/VDD = 726             |  sg13cmos5l_xnor2_1/VDD = 726             
+  sg13cmos5l_nor2_1/VDD = 1804             |  sg13cmos5l_nor2_1/VDD = 1804             
+  sg13cmos5l_nor3_1/VDD = 495              |  sg13cmos5l_nor3_1/VDD = 495              
+  sg13cmos5l_nor2b_1/VDD = 521             |  sg13cmos5l_nor2b_1/VDD = 521             
+  sg13cmos5l_a21oi_1/VDD = 1917            |  sg13cmos5l_a21oi_1/VDD = 1917            
+  sg13cmos5l_and3_1/VDD = 163              |  sg13cmos5l_and3_1/VDD = 163              
+  sg13cmos5l_nor4_1/VDD = 209              |  sg13cmos5l_nor4_1/VDD = 209              
+  sg13cmos5l_and4_1/VDD = 38               |  sg13cmos5l_and4_1/VDD = 38               
+  sg13cmos5l_a22oi_1/VDD = 1011            |  sg13cmos5l_a22oi_1/VDD = 1011            
+  sg13cmos5l_nand2_1/VDD = 1914            |  sg13cmos5l_nand2_1/VDD = 1914            
+  sg13cmos5l_o21ai_1/VDD = 2350            |  sg13cmos5l_o21ai_1/VDD = 2350            
+  sg13cmos5l_nand2b_1/VDD = 475            |  sg13cmos5l_nand2b_1/VDD = 475            
+  sg13cmos5l_nand3b_1/VDD = 102            |  sg13cmos5l_nand3b_1/VDD = 102            
+  sg13cmos5l_or3_1/VDD = 58                |  sg13cmos5l_or3_1/VDD = 58                
+  sg13cmos5l_mux2_1/VDD = 1587             |  sg13cmos5l_mux2_1/VDD = 1587             
+  sg13cmos5l_a221oi_1/VDD = 561            |  sg13cmos5l_a221oi_1/VDD = 561            
+  sg13cmos5l_or2_1/VDD = 190               |  sg13cmos5l_or2_1/VDD = 190               
+  sg13cmos5l_tielo/VDD = 252               |  sg13cmos5l_tielo/VDD = 252               
+  sg13cmos5l_mux4_1/VDD = 274              |  sg13cmos5l_mux4_1/VDD = 274              
+  sg13cmos5l_or4_1/VDD = 24                |  sg13cmos5l_or4_1/VDD = 24                
+  sg13cmos5l_buf_8/VSS = 262               |  RM_IHPSG13_2P_512x32_c2_bm_bist/\VDD! =  
+  sg13cmos5l_nor3_1/VSS = 495              |  RM_IHPSG13_2P_512x32_c2_bm_bist/\VDDARRA 
+  sg13cmos5l_buf_4/VDD = 25                |  sg13cmos5l_buf_4/VDD = 25                
+  sg13cmos5l_nand2b_1/VSS = 475            |                                           
+  sg13cmos5l_nand2_1/VSS = 1914            |                                           
+  sg13cmos5l_nand4_1/VSS = 216             |                                           
+  sg13cmos5l_inv_1/VSS = 951               |                                           
+  sg13cmos5l_tiehi/VSS = 599               |                                           
+  sg13cmos5l_a21oi_1/VSS = 1917            |                                           
+  sg13cmos5l_xnor2_1/VSS = 726             |                                           
+  sg13cmos5l_mux2_1/VSS = 1587             |                                           
+  sg13cmos5l_nor2b_1/VSS = 521             |                                           
+  sg13cmos5l_nand3_1/VSS = 654             |                                           
+  sg13cmos5l_mux4_1/VSS = 274              |                                           
+  sg13cmos5l_a221oi_1/VSS = 561            |                                           
+  sg13cmos5l_and3_1/VSS = 163              |                                           
+  sg13cmos5l_fill_1/VSS = 1                |                                           
+  sg13cmos5l_xor2_1/VSS = 156              |                                           
+  sg13cmos5l_nor2_1/VSS = 1804             |                                           
+  sg13cmos5l_nand3b_1/VSS = 102            |                                           
+  sg13cmos5l_a21o_1/VSS = 502              |                                           
+  sg13cmos5l_tielo/VSS = 252               |                                           
+  sg13cmos5l_decap_4/VSS = 1               |                                           
+  sg13cmos5l_nor4_1/VSS = 209              |                                           
+  sg13cmos5l_fill_2/VSS = 1                |                                           
+  sg13cmos5l_dlygate4sd3_1/VSS = 1261      |                                           
+  sg13cmos5l_dfrbpq_1/VSS = 2555           |                                           
+  sg13cmos5l_inv_2/VSS = 34                |                                           
+  sg13cmos5l_and2_1/VSS = 558              |                                           
+  sg13cmos5l_or4_1/VSS = 24                |                                           
+  sg13cmos5l_buf_1/VSS = 3283              |                                           
+  sg13cmos5l_and4_1/VSS = 38               |                                           
+  sg13cmos5l_or3_1/VSS = 58                |                                           
+  sg13cmos5l_buf_4/VSS = 25                |                                           
+  sg13cmos5l_decap_8/VSS = 1               |                                           
+  sg13cmos5l_antennanp/VSS = 104           |                                           
+  sg13cmos5l_or2_1/VSS = 190               |                                           
+  sg13cmos5l_inv_8/VSS = 10                |                                           
+  sg13cmos5l_a22oi_1/VSS = 1011            |                                           
+  sg13cmos5l_inv_4/VSS = 29                |                                           
+  RM_IHPSG13_2P_512x32_c2_bm_bist/VSS = 1  |                                           
+  RM_IHPSG13_2P_512x32_c2_bm_bist/VDD = 1  |                                           
+  RM_IHPSG13_2P_512x32_c2_bm_bist/VDDARRAY |                                           
+  sg13cmos5l_o21ai_1/VSS = 2350            |                                           
+  sg13cmos5l_inv_16/VSS = 1                |                                           
+                                           |                                           
+(no matching net)                          |Net: VGND                                  
+                                           |  sg13cmos5l_antennanp/VSS = 104           
+                                           |  sg13cmos5l_decap_8/VSS = 1               
+                                           |  sg13cmos5l_fill_1/VSS = 1                
+                                           |  sg13cmos5l_fill_2/VSS = 1                
+                                           |  sg13cmos5l_decap_4/VSS = 1               
+                                           |  sg13cmos5l_buf_1/VSS = 3283              
+                                           |  sg13cmos5l_inv_1/VSS = 951               
+                                           |  sg13cmos5l_dfrbpq_1/VSS = 2555           
+                                           |  sg13cmos5l_tiehi/VSS = 599               
+                                           |  sg13cmos5l_buf_8/VSS = 262               
+                                           |  sg13cmos5l_inv_2/VSS = 34                
+                                           |  sg13cmos5l_inv_8/VSS = 10                
+                                           |  sg13cmos5l_inv_4/VSS = 29                
+                                           |  sg13cmos5l_inv_16/VSS = 1                
+                                           |  sg13cmos5l_dlygate4sd3_1/VSS = 1261      
+                                           |  sg13cmos5l_xor2_1/VSS = 156              
+                                           |  sg13cmos5l_nand3_1/VSS = 654             
+                                           |  sg13cmos5l_a21o_1/VSS = 502              
+                                           |  sg13cmos5l_and2_1/VSS = 558              
+                                           |  sg13cmos5l_nand4_1/VSS = 216             
+                                           |  sg13cmos5l_xnor2_1/VSS = 726             
+                                           |  sg13cmos5l_nor2_1/VSS = 1804             
+                                           |  sg13cmos5l_nor3_1/VSS = 495              
+                                           |  sg13cmos5l_nor2b_1/VSS = 521             
+                                           |  sg13cmos5l_a21oi_1/VSS = 1917            
+                                           |  sg13cmos5l_and3_1/VSS = 163              
+                                           |  sg13cmos5l_nor4_1/VSS = 209              
+                                           |  sg13cmos5l_and4_1/VSS = 38               
+                                           |  sg13cmos5l_a22oi_1/VSS = 1011            
+                                           |  sg13cmos5l_nand2_1/VSS = 1914            
+                                           |  sg13cmos5l_o21ai_1/VSS = 2350            
+                                           |  sg13cmos5l_nand2b_1/VSS = 475            
+                                           |  sg13cmos5l_nand3b_1/VSS = 102            
+                                           |  sg13cmos5l_or3_1/VSS = 58                
+                                           |  sg13cmos5l_mux2_1/VSS = 1587             
+                                           |  sg13cmos5l_a221oi_1/VSS = 561            
+                                           |  sg13cmos5l_or2_1/VSS = 190               
+                                           |  sg13cmos5l_tielo/VSS = 252               
+                                           |  sg13cmos5l_mux4_1/VSS = 274              
+                                           |  sg13cmos5l_or4_1/VSS = 24                
+                                           |  RM_IHPSG13_2P_512x32_c2_bm_bist/\VSS! =  
+                                           |  sg13cmos5l_buf_4/VSS = 25                
+---------------------------------------------------------------------------------------
+Netlists do not match.
+Port matching may fail to disambiguate symmetries.
+
+Subcircuit pins:
+Circuit 1: tt_um_protocol_emulator         |Circuit 2: tt_um_protocol_emulator         
+-------------------------------------------|-------------------------------------------
+VPWR                                       |VPWR                                       
+uo_out[6]                                  |uo_out[6]                                  
+uio_oe[6]                                  |uio_oe[6]                                  
+uio_oe[2]                                  |uio_oe[2]                                  
+uio_out[1]                                 |uio_out[1]                                 
+uo_out[0]                                  |uo_out[0]                                  
+uio_out[0]                                 |uio_out[0]                                 
+uio_out[2]                                 |uio_out[2]                                 
+uio_out[3]                                 |uio_out[3]                                 
+uio_out[4]                                 |uio_out[4]                                 
+uio_out[5]                                 |uio_out[5]                                 
+uio_out[6]                                 |uio_out[6]                                 
+uio_out[7]                                 |uio_out[7]                                 
+uio_oe[1]                                  |uio_oe[1]                                  
+uo_out[1]                                  |uo_out[1]                                  
+uio_oe[0]                                  |uio_oe[0]                                  
+uio_oe[3]                                  |uio_oe[3]                                  
+uio_oe[4]                                  |uio_oe[4]                                  
+uio_oe[5]                                  |uio_oe[5]                                  
+uio_oe[7]                                  |uio_oe[7]                                  
+uo_out[2]                                  |uo_out[2]                                  
+uo_out[3]                                  |uo_out[3]                                  
+uo_out[7]                                  |uo_out[7]                                  
+uo_out[4]                                  |uo_out[4]                                  
+uo_out[5]                                  |uo_out[5]                                  
+ui_in[2]                                   |ui_in[2]                                   
+ui_in[1]                                   |ui_in[1]                                   
+ui_in[0]                                   |ui_in[0]                                   
+uio_in[0]                                  |uio_in[0]                                  
+uio_in[4]                                  |uio_in[4]                                  
+uio_in[1]                                  |uio_in[1]                                  
+ui_in[5]                                   |ui_in[5]                                   
+ui_in[4]                                   |ui_in[4]                                   
+uio_in[3]                                  |uio_in[3]                                  
+uio_in[5]                                  |uio_in[5]                                  
+uio_in[2]                                  |uio_in[2]                                  
+rst_n                                      |rst_n                                      
+ui_in[6]                                   |ui_in[6]                                   
+ui_in[7]                                   |ui_in[7]                                   
+uio_in[6]                                  |uio_in[6]                                  
+ui_in[3]                                   |ui_in[3]                                   
+uio_in[7]                                  |uio_in[7]                                  
+clk                                        |clk                                        
+ena                                        |ena                                        
+(no pin, node is VPWR)                     |VGND                                       
+---------------------------------------------------------------------------------------
+Cell pin lists for tt_um_protocol_emulator and tt_um_protocol_emulator altered to match.
+Device classes tt_um_protocol_emulator and tt_um_protocol_emulator are equivalent.
+
+Final result: Top level cell failed pin matching.

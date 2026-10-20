@@ -1,0 +1,24 @@
+Phase 1: JTAG controller on the engine, Verilog TAP model on the pins, Python TAP model as oracle
+  PASS     IDCODE read (default instruction after reset)              43 TCK clocks, 1 words, TCK >= 480 ns
+  PASS     IDCODE read, other device ID                               43 TCK clocks, 1 words, TCK >= 480 ns
+  PASS     IR scan (4 bits) reads back the capture pattern 0001       16 TCK clocks, 1 words, TCK >= 480 ns
+  PASS     USER32: write a word, read it back                         90 TCK clocks, 3 words, TCK >= 480 ns
+  PASS     USER64: write 64 bits (2 words), read back                 154 TCK clocks, 5 words, TCK >= 480 ns
+  PASS     BYPASS: 17 bits come back delayed by one clock             38 TCK clocks, 2 words, TCK >= 480 ns
+  PASS     scan lengths 1..40 through BYPASS                          1036 TCK clocks, 49 words, TCK >= 480 ns
+  PASS     scan lengths 1..33 of IDCODE (partial words)               732 TCK clocks, 34 words, TCK >= 480 ns
+  PASS     scan of 100 bits across several words (USER64 chain overrun) 121 TCK clocks, 5 words, TCK >= 480 ns
+  PASS     Pause-DR in the middle of a scan (Exit1 -> Pause -> Exit2 -> Shift) 95 TCK clocks, 4 words, TCK >= 480 ns
+  PASS     idle clocks in Run-Test/Idle                               93 TCK clocks, 1 words, TCK >= 440 ns
+  PASS     TCK half period 3 clocks                                   90 TCK clocks, 3 words, TCK >= 200 ns
+  PASS     TCK half period 40 clocks                                  90 TCK clocks, 3 words, TCK >= 1680 ns
+  PASS     random walk 1 (TMS sequences, scans, idle)                 548 TCK clocks, 20 words, TCK >= 440 ns
+  PASS     random walk 2 (TMS sequences, scans, idle)                 656 TCK clocks, 27 words, TCK >= 440 ns
+  PASS     random walk 3 (TMS sequences, scans, idle)                 567 TCK clocks, 24 words, TCK >= 440 ns
+  PASS     random walk 4 (TMS sequences, scans, idle)                 470 TCK clocks, 16 words, TCK >= 440 ns
+Phase 2: broken firmware must be caught
+  DETECTED mutant: last bit does not raise TMS                        137 TCK clocks, 6 words, TCK >= 440 ns
+  DETECTED mutant: TDO sampled after TCK falls (one bit late)         137 TCK clocks, 6 words, TCK >= 520 ns
+  DETECTED mutant: partial words not right-aligned                    137 TCK clocks, 6 words, TCK >= 480 ns
+  DETECTED mutant: chunks of 31 bits                                  137 TCK clocks, 7 words, TCK >= 480 ns
+RESULT jtag_test: PASS (21/21 cases as expected)

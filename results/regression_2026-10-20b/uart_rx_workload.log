@@ -1,0 +1,47 @@
+committed uart_rx_prog.hex == generator output: PASS
+run             baud     err  sent   got  result
+nominal       115200   +0.0%  1024  1024  PASS  sample-vs-centre(cyc)    -1.2..   -0.1  max-latency(bit)  9.51   53.8s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '1024', 'ledmis': '0'}
+9600            9600   +0.0%    48    48  PASS  sample-vs-centre(cyc)    -3.8..   -0.6  max-latency(bit)  9.50   43.9s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '48', 'ledmis': '0'}
+jitter+-20ns  115200   +0.0%   128   128  PASS  sample-vs-centre(cyc)    -1.2..   -0.1  max-latency(bit)  9.51    7.5s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '128', 'ledmis': '0'}
+
+phone baud error sweep @115200, zero idle between frames:
+err-7.0       115200   -7.0%    64    40  FAIL  sample-vs-centre(cyc)     n/a  max-latency(bit) 250.25    3.2s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '40', 'ledmis': '0'}
+             first mismatch at byte 0
+err-6.5       115200   -6.5%    64    40  FAIL  sample-vs-centre(cyc)     n/a  max-latency(bit) 250.20    2.7s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '40', 'ledmis': '0'}
+             first mismatch at byte 0
+err-6.0       115200   -6.0%    64    40  FAIL  sample-vs-centre(cyc)     n/a  max-latency(bit) 250.14    2.5s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '40', 'ledmis': '0'}
+             first mismatch at byte 0
+err-5.5       115200   -5.5%    64    40  FAIL  sample-vs-centre(cyc)     n/a  max-latency(bit) 250.09    3.4s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '40', 'ledmis': '0'}
+             first mismatch at byte 1
+err-5.0       115200   -5.0%    64    41  FAIL  sample-vs-centre(cyc)     n/a  max-latency(bit) 243.04    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '41', 'ledmis': '0'}
+             first mismatch at byte 1
+err-4.5       115200   -4.5%    64    64  PASS  sample-vs-centre(cyc)   +28.3.. +165.7  max-latency(bit)  9.95    2.3s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-4.0       115200   -4.0%    64    64  PASS  sample-vs-centre(cyc)   +25.0.. +147.2  max-latency(bit)  9.90    2.2s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-3.5       115200   -3.5%    64    64  PASS  sample-vs-centre(cyc)   +21.7.. +128.8  max-latency(bit)  9.85    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-3.0       115200   -3.0%    64    64  PASS  sample-vs-centre(cyc)   +18.5.. +110.3  max-latency(bit)  9.80    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-2.5       115200   -2.5%    64    64  PASS  sample-vs-centre(cyc)   +15.2..  +91.9  max-latency(bit)  9.75    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-2.0       115200   -2.0%    64    64  PASS  sample-vs-centre(cyc)   +12.0..  +73.4  max-latency(bit)  9.70    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-1.5       115200   -1.5%    64    64  PASS  sample-vs-centre(cyc)    +8.7..  +55.0  max-latency(bit)  9.65    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-1.0       115200   -1.0%    64    64  PASS  sample-vs-centre(cyc)    +5.5..  +36.6  max-latency(bit)  9.60    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err-0.5       115200   -0.5%    64    64  PASS  sample-vs-centre(cyc)    +2.2..  +18.1  max-latency(bit)  9.55    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+0.0       115200   +0.0%    64    64  PASS  sample-vs-centre(cyc)    -1.2..   -0.1  max-latency(bit)  9.51    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+0.5       115200   +0.5%    64    64  PASS  sample-vs-centre(cyc)   -19.7..   -3.4  max-latency(bit)  9.46    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+1.0       115200   +1.0%    64    64  PASS  sample-vs-centre(cyc)   -38.1..   -6.7  max-latency(bit)  9.41    2.6s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+1.5       115200   +1.5%    64    64  PASS  sample-vs-centre(cyc)   -56.6..   -9.9  max-latency(bit)  9.37    2.6s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+2.0       115200   +2.0%    64    64  PASS  sample-vs-centre(cyc)   -75.0..  -13.2  max-latency(bit)  9.32    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+2.5       115200   +2.5%    64    64  PASS  sample-vs-centre(cyc)   -93.5..  -16.4  max-latency(bit)  9.27    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+3.0       115200   +3.0%    64    64  PASS  sample-vs-centre(cyc)  -111.9..  -19.7  max-latency(bit)  9.23    2.0s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+3.5       115200   +3.5%    64    64  PASS  sample-vs-centre(cyc)  -130.4..  -22.9  max-latency(bit)  9.18    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+4.0       115200   +4.0%    64    64  PASS  sample-vs-centre(cyc)  -148.8..  -26.2  max-latency(bit)  9.14    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+4.5       115200   +4.5%    64    64  PASS  sample-vs-centre(cyc)  -167.3..  -29.4  max-latency(bit)  9.10    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+5.0       115200   +5.0%    64    64  PASS  sample-vs-centre(cyc)  -185.7..  -32.7  max-latency(bit)  9.05    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+5.5       115200   +5.5%    64    64  PASS  sample-vs-centre(cyc)  -204.1..  -35.9  max-latency(bit)  9.01    2.1s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+6.0       115200   +6.0%    64    64  PASS  sample-vs-centre(cyc)  -222.6..  -39.2  max-latency(bit)  8.97    2.2s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+err+6.5       115200   +6.5%    64    64  FAIL  sample-vs-centre(cyc)  -241.0..  -42.5  max-latency(bit)  8.93    2.2s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+             first mismatch at byte 2
+err+7.0       115200   +7.0%    64    64  FAIL  sample-vs-centre(cyc)  -259.5..  -45.7  max-latency(bit)  8.88    2.7s {'halted': '0', 'fault': '0', 'pc': '2', 'pops': '64', 'ledmis': '0'}
+             first mismatch at byte 2
+
+rx baud tolerance: +6.0% / -4.5% (theory ~ +-5%)
+
+ALL PASS

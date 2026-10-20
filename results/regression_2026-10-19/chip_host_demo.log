@@ -1,0 +1,36 @@
+
+=== 1. Is the chip alive? Reset state (STATUS bit 7 = 1, nothing running, no error)
+    STATUS(0x80 alive=1 err=0 run=(0, 0) tx_full=(0, 0) rx_avail=(0, 0))
+
+=== 2. Load firmware into engine 0 (engine is held in reset until RUN = 1, so the memory can be written)
+    6 instruction words written to engine 0 (IMEM is write-only over this link)
+
+=== 3. RUN, then exchange data through the FIFOs (flow control = the STATUS byte of every frame)
+    sent     ['0x10', '0x20', '0xffffffff', '0x7']
+    received ['0x11', '0x21', '0x0', '0x8']
+    engine 0: {'run': 1, 'halted': 0, 'fault': 0, 'pc': 0}
+
+=== 4. TX flow control: a push is only accepted when STATUS shows the FIFO not full
+    FIFO took 4 words, the next push was dropped (STATUS tx_full = 1); resending would be needed
+
+=== 5. RX flow control: an empty FIFO returns nothing and pops nothing
+    pop_rx on an empty FIFO -> None
+
+=== 6. Pin manager: engine 1 drives logical pin 0 on uio[5] (remap) and uo_out[4]
+    PAD[5] = {'owner': 2, 'od': 0, 'remap': 5}
+    uio_oe=0x20 uio_out=0x20 uo_out=0xB0
+    violations: (0, 0)
+
+=== 7. A rejected access: the chip changes nothing and raises the sticky err flag in STATUS
+    host saw: the chip rejected an access (write 0x0224 <- 0x1): err flag was set (cleared again)
+    err after clear_err: False
+    host saw: the chip rejected an access (write 0x0214 <- 0x1): err flag was set (cleared again)
+
+=== 8. Bring-up without SPI: debug view on uo_out[7:2] (view 0 = heartbeat, err, RUN e0/e1, halted-or-fault e0/e1)
+    uo_out[7:2] = 000000
+
+=== 9. Interrupt and HOLD
+    IRQ status: {'halted_e0': 1, 'violation': 1}  uo_out[1] = 1
+    HOLD high -> engine 0 CTRL: {'run': 0, 'halted': 0, 'fault': 0, 'pc': 0}  inputs: {'uio_in': 0, 'ui_in_7_3': 1, 'hold': 1}
+
+DONE: 574 SPI frames (7 bytes each way per frame), all checks passed

@@ -1,0 +1,1 @@
+Phase 1: JTAG controller on the engine, Verilog TAP model on the pins, Python TAP model as oracle

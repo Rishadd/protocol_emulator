@@ -1,0 +1,584 @@
+Phase 1: decoder vs ideal Python waveform
+  PASS     ideal mode0 msb 1b                             22 frames
+  PASS     ideal mode0 msb 7b                             34 frames
+  PASS     ideal mode0 msb 8b                             36 frames
+  PASS     ideal mode0 msb 16b                            52 frames
+  PASS     ideal mode0 msb 32b                            84 frames
+  PASS     ideal mode0 lsb 1b                             22 frames
+  PASS     ideal mode0 lsb 7b                             34 frames
+  PASS     ideal mode0 lsb 8b                             36 frames
+  PASS     ideal mode0 lsb 16b                            52 frames
+  PASS     ideal mode0 lsb 32b                            84 frames
+  PASS     ideal mode1 msb 1b                             22 frames
+  PASS     ideal mode1 msb 7b                             34 frames
+  PASS     ideal mode1 msb 8b                             36 frames
+  PASS     ideal mode1 msb 16b                            52 frames
+  PASS     ideal mode1 msb 32b                            84 frames
+  PASS     ideal mode1 lsb 1b                             22 frames
+  PASS     ideal mode1 lsb 7b                             34 frames
+  PASS     ideal mode1 lsb 8b                             36 frames
+  PASS     ideal mode1 lsb 16b                            52 frames
+  PASS     ideal mode1 lsb 32b                            84 frames
+  PASS     ideal mode2 msb 1b                             22 frames
+  PASS     ideal mode2 msb 7b                             34 frames
+  PASS     ideal mode2 msb 8b                             36 frames
+  PASS     ideal mode2 msb 16b                            52 frames
+  PASS     ideal mode2 msb 32b                            84 frames
+  PASS     ideal mode2 lsb 1b                             22 frames
+  PASS     ideal mode2 lsb 7b                             34 frames
+  PASS     ideal mode2 lsb 8b                             36 frames
+  PASS     ideal mode2 lsb 16b                            52 frames
+  PASS     ideal mode2 lsb 32b                            84 frames
+  PASS     ideal mode3 msb 1b                             22 frames
+  PASS     ideal mode3 msb 7b                             34 frames
+  PASS     ideal mode3 msb 8b                             36 frames
+  PASS     ideal mode3 msb 16b                            52 frames
+  PASS     ideal mode3 msb 32b                            84 frames
+  PASS     ideal mode3 lsb 1b                             22 frames
+  PASS     ideal mode3 lsb 7b                             34 frames
+  PASS     ideal mode3 lsb 8b                             36 frames
+  PASS     ideal mode3 lsb 16b                            52 frames
+  PASS     ideal mode3 lsb 32b                            84 frames
+  DETECTED wave mode0 decoded as mode1                    
+  DETECTED wave mode0 decoded as mode2                    
+  DETECTED wave mode0 decoded as mode3                    
+  DETECTED wave mode1 decoded as mode0                    
+  DETECTED wave mode1 decoded as mode2                    
+  DETECTED wave mode1 decoded as mode3                    
+  DETECTED wave mode2 decoded as mode0                    
+  DETECTED wave mode2 decoded as mode1                    
+  DETECTED wave mode2 decoded as mode3                    
+  DETECTED wave mode3 decoded as mode0                    
+  DETECTED wave mode3 decoded as mode1                    
+  DETECTED wave mode3 decoded as mode2                    
+  DETECTED SCLK pulse while CS inactive                   
+  DETECTED wrong SCLK idle level                          
+  DETECTED MISO undriven in a frame                       
+Phase 2: Verilog master model <-> slave model (no engine)
+  PASS     peers mode0 msb 1b                             cs_setup=10 lead=10 idle=- cs_hold=10 MOSI setup>=10 hold>=40
+  PASS     peers mode0 msb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 msb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 msb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 msb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 lsb 1b                             cs_setup=10 lead=10 idle=- cs_hold=10 MOSI setup>=10 hold>=40
+  PASS     peers mode0 lsb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 lsb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 lsb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode0 lsb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode1 msb 1b                             cs_setup=10 lead=10 idle=- cs_hold=20 MOSI setup>=10 hold>=50
+  PASS     peers mode1 msb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 msb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 msb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 msb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 lsb 1b                             cs_setup=10 lead=10 idle=- cs_hold=20 MOSI setup>=10 hold>=50
+  PASS     peers mode1 lsb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 lsb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 lsb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode1 lsb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode2 msb 1b                             cs_setup=10 lead=10 idle=- cs_hold=10 MOSI setup>=10 hold>=40
+  PASS     peers mode2 msb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 msb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 msb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 msb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 lsb 1b                             cs_setup=10 lead=10 idle=- cs_hold=10 MOSI setup>=10 hold>=40
+  PASS     peers mode2 lsb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 lsb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 lsb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode2 lsb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=10 hold>=10
+  PASS     peers mode3 msb 1b                             cs_setup=10 lead=10 idle=- cs_hold=20 MOSI setup>=10 hold>=50
+  PASS     peers mode3 msb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 msb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 msb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 msb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 lsb 1b                             cs_setup=10 lead=10 idle=- cs_hold=20 MOSI setup>=10 hold>=50
+  PASS     peers mode3 lsb 7b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 lsb 8b                             cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 lsb 16b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode3 lsb 32b                            cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=10 hold>=10
+  PASS     peers mode0 jitter+-30ns tco=40ns              cs_setup=10 lead=7..13 idle=7..13 cs_hold=10 MOSI setup>=7.1 hold>=7
+  DETECTED peers run in mode1, decoded as mode0           cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=20 hold>=0
+  PASS     peers mode1 jitter+-30ns tco=40ns              cs_setup=10 lead=7..13 idle=7..13 cs_hold=17.5..22.8 MOSI setup>=7 hold>=7
+  DETECTED peers run in mode0, decoded as mode1           cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=20 hold>=0
+  PASS     peers mode2 jitter+-30ns tco=40ns              cs_setup=10 lead=7..13 idle=7..13 cs_hold=10 MOSI setup>=7.1 hold>=7
+  DETECTED peers run in mode3, decoded as mode2           cs_setup=10 lead=10 idle=10 cs_hold=20 MOSI setup>=20 hold>=0
+  PASS     peers mode3 jitter+-30ns tco=40ns              cs_setup=10 lead=7..13 idle=7..13 cs_hold=17.5..22.8 MOSI setup>=7 hold>=7
+  DETECTED peers run in mode2, decoded as mode3           cs_setup=10 lead=10 idle=10 cs_hold=10 MOSI setup>=20 hold>=0
+Phase 3: engine = SPI master, peer = slave model
+  PASS     master mode0 msb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=2 MOSI setup>=5 hold>=14 MOSI_after_shift_edge=- sample_point_after_edge=-1
+  PASS     master mode0 msb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 msb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 msb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 msb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 lsb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=2 MOSI setup>=5 hold>=14 MOSI_after_shift_edge=- sample_point_after_edge=-1
+  PASS     master mode0 lsb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 lsb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 lsb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 lsb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode1 msb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=7 MOSI setup>=5 hold>=19 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 msb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 msb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 msb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 msb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 lsb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=7 MOSI setup>=5 hold>=19 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 lsb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 lsb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 lsb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 lsb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode2 msb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=2 MOSI setup>=5 hold>=14 MOSI_after_shift_edge=- sample_point_after_edge=-1
+  PASS     master mode2 msb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 msb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 msb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 msb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 lsb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=2 MOSI setup>=5 hold>=14 MOSI_after_shift_edge=- sample_point_after_edge=-1
+  PASS     master mode2 lsb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 lsb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 lsb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 lsb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode3 msb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=7 MOSI setup>=5 hold>=19 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 msb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 msb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 msb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 msb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 lsb 1b H=4                        cs_setup=6 lead=6 idle=- cs_hold=7 MOSI setup>=5 hold>=19 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 lsb 7b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 lsb 8b H=4                        cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 lsb 16b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 lsb 32b H=4                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+ H sweep (SCLK = f_clk/(2H+5)), slave model tco=0
+  PASS     master mode0 H=0 (SCLK = clk/5)                cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 H=1 (SCLK = clk/7)                cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 H=2 (SCLK = clk/9)                cs_setup=4 lead=4 idle=5 cs_hold=2 MOSI setup>=3 hold>=6 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode1 H=0 (SCLK = clk/5)                cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 H=1 (SCLK = clk/7)                cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 H=2 (SCLK = clk/9)                cs_setup=4 lead=4 idle=5 cs_hold=5 MOSI setup>=3 hold>=6 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode2 H=0 (SCLK = clk/5)                cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 H=1 (SCLK = clk/7)                cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 H=2 (SCLK = clk/9)                cs_setup=4 lead=4 idle=5 cs_hold=2 MOSI setup>=3 hold>=6 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode3 H=0 (SCLK = clk/5)                cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 H=1 (SCLK = clk/7)                cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 H=2 (SCLK = clk/9)                cs_setup=4 lead=4 idle=5 cs_hold=5 MOSI setup>=3 hold>=6 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+ slave clock-to-out sweep (largest tco the engine still samples correctly)
+  ok       master mode0 H=0 tco=0ns                       cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  fails    master mode0 H=0 tco=10ns                      cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode0 H=0: slave tco ns: last pass 0, first fail 10
+  ok       master mode0 H=4 tco=0ns                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode0 H=4 tco=10ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode0 H=4 tco=20ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode0 H=4 tco=30ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode0 H=4 tco=40ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  fails    master mode0 H=4 tco=50ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode0 H=4: slave tco ns: last pass 40, first fail 50
+  ok       master mode1 H=0 tco=0ns                       cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  fails    master mode1 H=0 tco=10ns                      cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode1 H=0: slave tco ns: last pass 0, first fail 10
+  ok       master mode1 H=4 tco=0ns                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode1 H=4 tco=10ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode1 H=4 tco=20ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode1 H=4 tco=30ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode1 H=4 tco=40ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  fails    master mode1 H=4 tco=50ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode1 H=4: slave tco ns: last pass 40, first fail 50
+  ok       master mode2 H=0 tco=0ns                       cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  fails    master mode2 H=0 tco=10ns                      cs_setup=2 lead=2 idle=3 cs_hold=2 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode2 H=0: slave tco ns: last pass 0, first fail 10
+  ok       master mode2 H=4 tco=0ns                       cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode2 H=4 tco=10ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode2 H=4 tco=20ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode2 H=4 tco=30ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  ok       master mode2 H=4 tco=40ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  fails    master mode2 H=4 tco=50ns                      cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode2 H=4: slave tco ns: last pass 40, first fail 50
+  ok       master mode3 H=0 tco=0ns                       cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  fails    master mode3 H=0 tco=10ns                      cs_setup=2 lead=2 idle=3 cs_hold=3 MOSI setup>=1 hold>=4 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode3 H=0: slave tco ns: last pass 0, first fail 10
+  ok       master mode3 H=4 tco=0ns                       cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode3 H=4 tco=10ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode3 H=4 tco=20ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode3 H=4 tco=30ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  ok       master mode3 H=4 tco=40ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  fails    master mode3 H=4 tco=50ns                      cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+           host RX vs slave data: 24 vs 24 expected, first difference at #0
+  LIMIT    master mode3 H=4: slave tco ns: last pass 40, first fail 50
+ flow control and stress
+  PASS     master mode0 host feeds late, RX drained late  cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode0 1024 random bytes H=1             cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  DETECTED master mode0 vs slave model mode1              cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  DETECTED master mode0 vs slave model mode2              cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode1 host feeds late, RX drained late  cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode1 1024 random bytes H=1             cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  DETECTED master mode1 vs slave model mode0              cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  DETECTED master mode1 vs slave model mode3              cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode2 host feeds late, RX drained late  cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode2 1024 random bytes H=1             cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  DETECTED master mode2 vs slave model mode3              cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  DETECTED master mode2 vs slave model mode0              cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1
+  PASS     master mode3 host feeds late, RX drained late  cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  PASS     master mode3 1024 random bytes H=1             cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  DETECTED master mode3 vs slave model mode2              cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+  DETECTED master mode3 vs slave model mode1              cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1
+Phase 4: engine = SPI slave, peer = master model
+  PASS     slave mode0 msb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=10 MISO setup>=5 hold>=23 MISO_after_shift_edge=- sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 msb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 msb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 msb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 msb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 lsb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=10 MISO setup>=5 hold>=23 MISO_after_shift_edge=- sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 lsb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 lsb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 lsb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 lsb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode1 msb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=20 MISO setup>=6 hold>=23 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 msb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 msb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 msb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 msb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 lsb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=20 MISO setup>=6 hold>=23 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 lsb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 lsb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 lsb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 lsb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode2 msb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=10 MISO setup>=5 hold>=23 MISO_after_shift_edge=- sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 msb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 msb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 msb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 msb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 lsb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=10 MISO setup>=5 hold>=23 MISO_after_shift_edge=- sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 lsb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 lsb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 lsb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 lsb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode3 msb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=20 MISO setup>=6 hold>=23 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 msb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 msb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 msb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 msb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 lsb 1b half=10clk                  cs_setup=10 lead=10 idle=- cs_hold=20 MISO setup>=6 hold>=23 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 lsb 7b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 lsb 8b half=10clk                  cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 lsb 16b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 lsb 32b half=10clk                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+ sweeps (half period, CS setup, CS inactive gap), ns, decreasing
+  ok       slave mode0 half=100ns                         cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=90ns                          cs_setup=10 lead=9 idle=9 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=80ns                          cs_setup=10 lead=8 idle=8 cs_hold=10 MISO setup>=5 hold>=11 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=70ns                          cs_setup=10 lead=7 idle=7 cs_hold=10 MISO setup>=3 hold>=11 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=60ns                          cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=3 hold>=9 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=50ns                          cs_setup=10 lead=5 idle=5 cs_hold=10 MISO setup>=1 hold>=9 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 half=40ns                          cs_setup=10 lead=4 idle=4 cs_hold=10 MISO setup>=1 hold>=7 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode0 half=30ns                          cs_setup=10 lead=3 idle=3 cs_hold=10 MISO setup>=5 hold>=1 MISO_after_shift_edge=4..6 sample_point_after_edge=1..3 MISO_release=4..5 first_bit_after_CS=4..5
+           MISO vs host data: 24 vs 24 expected, first difference at #2
+           host RX vs master data: 0 vs 24 expected, first difference at #0
+  LIMIT    slave mode0: SCLK half period ns: last pass 40, first fail 30
+  ok       slave mode0 CS setup=100ns                     cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS setup=90ns                      cs_setup=9 lead=10 idle=10 cs_hold=10 MISO setup>=4 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS setup=80ns                      cs_setup=8 lead=10 idle=10 cs_hold=10 MISO setup>=3 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS setup=70ns                      cs_setup=7 lead=10 idle=10 cs_hold=10 MISO setup>=2 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS setup=60ns                      cs_setup=6 lead=10 idle=10 cs_hold=10 MISO setup>=1 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode0 CS setup=50ns                      cs_setup=5 lead=10 idle=10 cs_hold=10 MISO setup>=1 hold>=0 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+           295: MISO 'z' at sampling edge
+           295: MISO changes at its sampling edge
+  LIMIT    slave mode0: CS setup ns: last pass 60, first fail 50
+  ok       slave mode0 CS gap=200ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=190ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=180ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=170ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=160ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=150ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=140ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=130ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=120ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=110ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=100ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=90ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=80ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=70ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=60ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=50ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode0 CS gap=40ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode0 CS gap=30ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=2 MISO_release=3 first_bit_after_CS=5
+           1885: MISO driven while CS inactive
+           3525: MISO driven while CS inactive
+           5165: MISO driven while CS inactive
+  LIMIT    slave mode0: CS inactive gap ns: last pass 40, first fail 30
+  ok       slave mode1 half=100ns                         cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 half=90ns                          cs_setup=10 lead=9 idle=9 cs_hold=19 MISO setup>=5 hold>=12 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 half=80ns                          cs_setup=10 lead=8 idle=8 cs_hold=18 MISO setup>=4 hold>=11 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 half=70ns                          cs_setup=10 lead=7 idle=7 cs_hold=17 MISO setup>=3 hold>=10 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 half=60ns                          cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 half=50ns                          cs_setup=10 lead=5 idle=5 cs_hold=15 MISO setup>=1 hold>=8 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  fails    slave mode1 half=40ns                          cs_setup=10 lead=4 idle=4 cs_hold=14 MISO setup>=1 hold>=0 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+           1425: MISO changes at its sampling edge
+           2625: MISO changes at its sampling edge
+           2785: MISO changes at its sampling edge
+  LIMIT    slave mode1: SCLK half period ns: last pass 50, first fail 40
+  ok       slave mode1 CS setup=100ns                     cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=90ns                      cs_setup=9 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=80ns                      cs_setup=8 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=70ns                      cs_setup=7 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=60ns                      cs_setup=6 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=50ns                      cs_setup=5 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=40ns                      cs_setup=4 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=30ns                      cs_setup=3 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=1..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=20ns                      cs_setup=2 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=1..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS setup=10ns                      cs_setup=1 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=13 MISO_after_shift_edge=2..4 sample_point_after_edge=1..2 MISO_release=3
+  LIMIT    slave mode1: CS setup ns: last pass 10, first fail None
+  ok       slave mode1 CS gap=200ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=190ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=180ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=170ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=160ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=150ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=140ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=130ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=120ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=110ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=100ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=90ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=80ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=70ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=60ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=50ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode1 CS gap=40ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  fails    slave mode1 CS gap=30ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+           1985: MISO driven while CS inactive
+           3725: MISO driven while CS inactive
+           5465: MISO driven while CS inactive
+  LIMIT    slave mode1: CS inactive gap ns: last pass 40, first fail 30
+  ok       slave mode2 half=100ns                         cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=90ns                          cs_setup=10 lead=9 idle=9 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=80ns                          cs_setup=10 lead=8 idle=8 cs_hold=10 MISO setup>=5 hold>=11 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=70ns                          cs_setup=10 lead=7 idle=7 cs_hold=10 MISO setup>=3 hold>=11 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=60ns                          cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=3 hold>=9 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=50ns                          cs_setup=10 lead=5 idle=5 cs_hold=10 MISO setup>=1 hold>=9 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 half=40ns                          cs_setup=10 lead=4 idle=4 cs_hold=10 MISO setup>=1 hold>=7 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode2 half=30ns                          cs_setup=10 lead=3 idle=3 cs_hold=10 MISO setup>=5 hold>=1 MISO_after_shift_edge=4..6 sample_point_after_edge=1..3 MISO_release=4..5 first_bit_after_CS=4..5
+           MISO vs host data: 24 vs 24 expected, first difference at #2
+           host RX vs master data: 0 vs 24 expected, first difference at #0
+  LIMIT    slave mode2: SCLK half period ns: last pass 40, first fail 30
+  ok       slave mode2 CS setup=100ns                     cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS setup=90ns                      cs_setup=9 lead=10 idle=10 cs_hold=10 MISO setup>=4 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS setup=80ns                      cs_setup=8 lead=10 idle=10 cs_hold=10 MISO setup>=3 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS setup=70ns                      cs_setup=7 lead=10 idle=10 cs_hold=10 MISO setup>=2 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS setup=60ns                      cs_setup=6 lead=10 idle=10 cs_hold=10 MISO setup>=1 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode2 CS setup=50ns                      cs_setup=5 lead=10 idle=10 cs_hold=10 MISO setup>=1 hold>=0 MISO_after_shift_edge=4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+           295: MISO 'z' at sampling edge
+           295: MISO changes at its sampling edge
+  LIMIT    slave mode2: CS setup ns: last pass 60, first fail 50
+  ok       slave mode2 CS gap=200ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=190ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=180ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=170ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=160ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=150ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=140ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=130ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=120ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=110ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=100ns                       cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=90ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=80ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=70ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=60ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=50ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  ok       slave mode2 CS gap=40ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  fails    slave mode2 CS gap=30ns                        cs_setup=10 lead=10 idle=10 cs_hold=1 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=2 MISO_release=3 first_bit_after_CS=5
+           1885: MISO driven while CS inactive
+           3525: MISO driven while CS inactive
+           5165: MISO driven while CS inactive
+  LIMIT    slave mode2: CS inactive gap ns: last pass 40, first fail 30
+  ok       slave mode3 half=100ns                         cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 half=90ns                          cs_setup=10 lead=9 idle=9 cs_hold=19 MISO setup>=5 hold>=12 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 half=80ns                          cs_setup=10 lead=8 idle=8 cs_hold=18 MISO setup>=4 hold>=11 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 half=70ns                          cs_setup=10 lead=7 idle=7 cs_hold=17 MISO setup>=3 hold>=10 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 half=60ns                          cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 half=50ns                          cs_setup=10 lead=5 idle=5 cs_hold=15 MISO setup>=1 hold>=8 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  fails    slave mode3 half=40ns                          cs_setup=10 lead=4 idle=4 cs_hold=14 MISO setup>=1 hold>=0 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+           1425: MISO changes at its sampling edge
+           2625: MISO changes at its sampling edge
+           2785: MISO changes at its sampling edge
+  LIMIT    slave mode3: SCLK half period ns: last pass 50, first fail 40
+  ok       slave mode3 CS setup=100ns                     cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=90ns                      cs_setup=9 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=80ns                      cs_setup=8 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=70ns                      cs_setup=7 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=60ns                      cs_setup=6 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=50ns                      cs_setup=5 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=40ns                      cs_setup=4 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=30ns                      cs_setup=3 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=1..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=20ns                      cs_setup=2 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=1..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS setup=10ns                      cs_setup=1 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=13 MISO_after_shift_edge=2..4 sample_point_after_edge=1..2 MISO_release=3
+  LIMIT    slave mode3: CS setup ns: last pass 10, first fail None
+  ok       slave mode3 CS gap=200ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=190ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=180ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=170ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=160ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=150ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=140ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=130ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=120ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=110ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=100ns                       cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=90ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=80ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=70ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=60ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=50ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  ok       slave mode3 CS gap=40ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  fails    slave mode3 CS gap=30ns                        cs_setup=10 lead=10 idle=10 cs_hold=11 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+           1985: MISO driven while CS inactive
+           3725: MISO driven while CS inactive
+           5465: MISO driven while CS inactive
+  LIMIT    slave mode3: CS inactive gap ns: last pass 40, first fail 30
+ CS abort (JPH/JPL), jitter, stress, negative
+  PASS     slave mode0 CS pulse with no clocks            cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 CS abort after 3 of 8 bits         cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode0 jitter +-20ns half=10clk           cs_setup=10 lead=8..12 idle=8..12 cs_hold=10 MISO setup>=3.1 hold>=11.2 MISO_after_shift_edge=3..4.9 sample_point_after_edge=1..2.9 MISO_release=3.1..3.9 first_bit_after_CS=4.1..5
+  PASS     slave mode0 1024 random bytes half=6clk        cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED slave mode0 master model in mode1              cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED slave mode0 host does not preload TX           cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=6 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1 MISO_release=3 first_bit_after_CS=4
+  DETECTED slave mode0 host stops draining RX             cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode1 CS pulse with no clocks            cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 CS abort after 3 of 8 bits         cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode1 jitter +-20ns half=10clk           cs_setup=10 lead=8..12 idle=8..12 cs_hold=18..21.9 MISO setup>=3.3 hold>=11.4 MISO_after_shift_edge=3..4.9 sample_point_after_edge=1..2.9 MISO_release=3..3.9
+  PASS     slave mode1 1024 random bytes half=6clk        cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED slave mode1 master model in mode0              cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED slave mode1 host does not preload TX           cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3..5
+  DETECTED slave mode1 host stops draining RX             cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode2 CS pulse with no clocks            cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 CS abort after 3 of 8 bits         cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode2 jitter +-20ns half=10clk           cs_setup=10 lead=8..12 idle=8..12 cs_hold=10 MISO setup>=3.1 hold>=11.2 MISO_after_shift_edge=3..4.9 sample_point_after_edge=1..2.9 MISO_release=3.1..3.9 first_bit_after_CS=4.1..5
+  PASS     slave mode2 1024 random bytes half=6clk        cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED slave mode2 master model in mode3              cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED slave mode2 host does not preload TX           cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=6 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1 MISO_release=3 first_bit_after_CS=4
+  DETECTED slave mode2 host stops draining RX             cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  PASS     slave mode3 CS pulse with no clocks            cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 CS abort after 3 of 8 bits         cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  PASS     slave mode3 jitter +-20ns half=10clk           cs_setup=10 lead=8..12 idle=8..12 cs_hold=18..21.9 MISO setup>=3.3 hold>=11.4 MISO_after_shift_edge=3..4.9 sample_point_after_edge=1..2.9 MISO_release=3..3.9
+  PASS     slave mode3 1024 random bytes half=6clk        cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=2 hold>=9 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED slave mode3 master model in mode2              cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED slave mode3 host does not preload TX           cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3..5
+  DETECTED slave mode3 host stops draining RX             cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+Phase 5: full chip, host only through the management SPI link (master on engine 0, slave on engine 1)
+  PASS     chip master eng0 mode0 msb 8b H=4              96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode0 lsb 8b H=4              96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode0 msb 16b H=4             128 mgmt frames (0 TX retries, 0 empty reads), 1459 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode0 lsb 32b H=4             192 mgmt frames (0 TX retries, 0 empty reads), 2187 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode1 msb 8b H=4              97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode1 lsb 8b H=4              97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode1 msb 16b H=4             129 mgmt frames (0 TX retries, 0 empty reads), 1470 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode1 lsb 32b H=4             193 mgmt frames (0 TX retries, 0 empty reads), 2198 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode2 msb 8b H=4              96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode2 lsb 8b H=4              96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode2 msb 16b H=4             128 mgmt frames (0 TX retries, 0 empty reads), 1459 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode2 lsb 32b H=4             192 mgmt frames (0 TX retries, 0 empty reads), 2187 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode3 msb 8b H=4              97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode3 lsb 8b H=4              97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode3 msb 16b H=4             129 mgmt frames (0 TX retries, 0 empty reads), 1470 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip master eng0 mode3 lsb 32b H=4             193 mgmt frames (0 TX retries, 0 empty reads), 2198 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip slave eng1 mode0 msb 8b gap=40us          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode0 lsb 8b gap=40us          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode0 msb 16b gap=40us         224 mgmt frames (82 TX retries, 13 empty reads), 2578 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode0 lsb 32b gap=40us         370 mgmt frames (162 TX retries, 15 empty reads), 4233 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode1 msb 8b gap=40us          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode1 lsb 8b gap=40us          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode1 msb 16b gap=40us         223 mgmt frames (83 TX retries, 13 empty reads), 2561 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode1 lsb 32b gap=40us         368 mgmt frames (163 TX retries, 14 empty reads), 4218 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode2 msb 8b gap=40us          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode2 lsb 8b gap=40us          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode2 msb 16b gap=40us         224 mgmt frames (82 TX retries, 13 empty reads), 2578 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode2 lsb 32b gap=40us         370 mgmt frames (162 TX retries, 15 empty reads), 4233 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip slave eng1 mode3 msb 8b gap=40us          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode3 lsb 8b gap=40us          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode3 msb 16b gap=40us         223 mgmt frames (83 TX retries, 13 empty reads), 2561 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip slave eng1 mode3 lsb 32b gap=40us         368 mgmt frames (163 TX retries, 14 empty reads), 4218 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+ other engine, stress, negative
+  PASS     chip master eng1 mode0                         96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip slave eng0 mode0                          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip master eng0 mode0 256 random bytes H=1    536 mgmt frames (0 TX retries, 0 empty reads), 6102 us | cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip slave eng1 mode0 256 random bytes half=6clk 951 mgmt frames (402 TX retries, 12 empty reads), 10848 us | cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=2 hold>=10 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  DETECTED chip slave eng1 mode0 master model in mode3    159 mgmt frames (49 TX retries, 13 empty reads), 1831 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9..4025.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip master eng1 mode1                         97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip slave eng0 mode1                          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip master eng0 mode1 256 random bytes H=1    537 mgmt frames (0 TX retries, 0 empty reads), 6113 us | cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip slave eng1 mode1 256 random bytes half=6clk 950 mgmt frames (403 TX retries, 12 empty reads), 10841 us | cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=1 hold>=10 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  DETECTED chip slave eng1 mode1 master model in mode2    156 mgmt frames (49 TX retries, 12 empty reads), 1805 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=3 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip master eng1 mode2                         96 mgmt frames (0 TX retries, 0 empty reads), 1095 us | cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip slave eng0 mode2                          158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip master eng0 mode2 256 random bytes H=1    536 mgmt frames (0 TX retries, 0 empty reads), 6102 us | cs_setup=3 lead=3 idle=4 cs_hold=2 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=2 sample_point_after_edge=-1.1
+  PASS     chip slave eng1 mode2 256 random bytes half=6clk 951 mgmt frames (402 TX retries, 12 empty reads), 10848 us | cs_setup=10 lead=6 idle=6 cs_hold=10 MISO setup>=2 hold>=10 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  DETECTED chip slave eng1 mode2 master model in mode1    159 mgmt frames (49 TX retries, 13 empty reads), 1831 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9..4025.9 MISO_release=4 first_bit_after_CS=5
+  PASS     chip master eng1 mode3                         97 mgmt frames (0 TX retries, 0 empty reads), 1106 us | cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=5 hold>=8 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip slave eng0 mode3                          157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  PASS     chip master eng0 mode3 256 random bytes H=1    537 mgmt frames (0 TX retries, 0 empty reads), 6113 us | cs_setup=3 lead=3 idle=4 cs_hold=4 MOSI setup>=2 hold>=5 MOSI_after_shift_edge=1 sample_point_after_edge=-1.1
+  PASS     chip slave eng1 mode3 256 random bytes half=6clk 950 mgmt frames (403 TX retries, 12 empty reads), 10841 us | cs_setup=10 lead=6 idle=6 cs_hold=16 MISO setup>=1 hold>=10 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  DETECTED chip slave eng1 mode3 master model in mode0    156 mgmt frames (49 TX retries, 12 empty reads), 1805 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=3 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+ sustained slave rate through the host link: CS frame gap sweep (us)
+  ok       chip slave mode0 gap=40us                      158 mgmt frames (49 TX retries, 12 empty reads), 1828 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       chip slave mode0 gap=30us                      127 mgmt frames (22 TX retries, 8 empty reads), 1458 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  ok       chip slave mode0 gap=25us                      111 mgmt frames (8 TX retries, 6 empty reads), 1273 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=14 MISO_after_shift_edge=4 sample_point_after_edge=1.9 MISO_release=4 first_bit_after_CS=5
+  fails    chip slave mode0 gap=20us                      98 mgmt frames (0 TX retries, 4 empty reads), 1117 us | cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=0 MISO_after_shift_edge=4..10 sample_point_after_edge=1.9..2.9 MISO_release=4..5 first_bit_after_CS=5..150
+           955666: MISO 'z' at sampling edge
+           955866: MISO 'z' at sampling edge
+           977366: MISO 'z' at sampling edge
+  LIMIT    chip slave mode0: min CS gap us (host keeps up): last pass 25, first fail 20
+  ok       chip slave mode3 gap=40us                      157 mgmt frames (49 TX retries, 13 empty reads), 1809 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  ok       chip slave mode3 gap=30us                      125 mgmt frames (22 TX retries, 8 empty reads), 1439 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  ok       chip slave mode3 gap=25us                      109 mgmt frames (9 TX retries, 5 empty reads), 1254 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=14 MISO_after_shift_edge=4..5 sample_point_after_edge=1.9..2.9 MISO_release=4
+  fails    chip slave mode3 gap=20us                      96 mgmt frames (0 TX retries, 4 empty reads), 1095 us | cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=5 hold>=7 MISO_after_shift_edge=1..17 sample_point_after_edge=1.9..2.9 MISO_release=4..6
+           1001406: MISO 'z' at sampling edge
+           1023206: MISO 'z' at sampling edge
+           1023406: MISO 'z' at sampling edge
+  LIMIT    chip slave mode3: min CS gap us (host keeps up): last pass 25, first fail 20
+Mutants: deliberately broken firmware
+  DETECTED mut no CS check mode0: CS abort after 3 bits   cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut no CS check mode0: CS pulse, no clocks     cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut no CS check mode1: CS abort after 3 bits   cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED mut no CS check mode1: CS pulse, no clocks     cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED mut no CS check mode2: CS abort after 3 bits   cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut no CS check mode2: CS pulse, no clocks     cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=13 MISO_after_shift_edge=3 sample_point_after_edge=1..2 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut no CS check mode3: CS abort after 3 bits   cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED mut no CS check mode3: CS pulse, no clocks     cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=6 hold>=13 MISO_after_shift_edge=3..4 sample_point_after_edge=1..2 MISO_release=3
+  DETECTED mut slave SCLK waits inverted mode0            cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=3 MISO_after_shift_edge=13 sample_point_after_edge=11..45 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut slave SCLK waits inverted mode1            cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=14 hold>=3 MISO_after_shift_edge=13..14 sample_point_after_edge=11..51 MISO_release=3
+  DETECTED mut slave SCLK waits inverted mode2            cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=3 MISO_after_shift_edge=13 sample_point_after_edge=11..45 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut slave SCLK waits inverted mode3            cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=14 hold>=3 MISO_after_shift_edge=13..14 sample_point_after_edge=11..51 MISO_release=3
+  DETECTED mut master runs mode1 for mode0                cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=12 hold>=1 MOSI_after_shift_edge=8 sample_point_after_edge=5
+  DETECTED mut slave runs mode2 for mode0                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=3 MISO_after_shift_edge=13 sample_point_after_edge=11..45 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut master runs mode0 for mode1                cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=11 hold>=2 MOSI_after_shift_edge=8 sample_point_after_edge=6..12
+  DETECTED mut slave runs mode3 for mode1                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=14 hold>=3 MISO_after_shift_edge=13..14 sample_point_after_edge=11..51 MISO_release=3
+  DETECTED mut master runs mode3 for mode2                cs_setup=6 lead=6 idle=7 cs_hold=7 MOSI setup>=12 hold>=1 MOSI_after_shift_edge=8 sample_point_after_edge=5
+  DETECTED mut slave runs mode0 for mode2                 cs_setup=10 lead=10 idle=10 cs_hold=10 MISO setup>=5 hold>=3 MISO_after_shift_edge=13 sample_point_after_edge=11..45 MISO_release=3 first_bit_after_CS=4..5
+  DETECTED mut master runs mode2 for mode3                cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI setup>=11 hold>=2 MOSI_after_shift_edge=8 sample_point_after_edge=6..12
+  DETECTED mut slave runs mode1 for mode3                 cs_setup=10 lead=10 idle=10 cs_hold=20 MISO setup>=14 hold>=3 MISO_after_shift_edge=13..14 sample_point_after_edge=11..51 MISO_release=3
+  DETECTED mut master bit order flipped                   cs_setup=6 lead=6 idle=7 cs_hold=2 MOSI_after_shift_edge=- sample_point_after_edge=-1
+LIMIT master mode0 H=0: slave tco ns: last pass 0, first fail 10
+LIMIT master mode0 H=4: slave tco ns: last pass 40, first fail 50
+LIMIT master mode1 H=0: slave tco ns: last pass 0, first fail 10
+LIMIT master mode1 H=4: slave tco ns: last pass 40, first fail 50
+LIMIT master mode2 H=0: slave tco ns: last pass 0, first fail 10
+LIMIT master mode2 H=4: slave tco ns: last pass 40, first fail 50
+LIMIT master mode3 H=0: slave tco ns: last pass 0, first fail 10
+LIMIT master mode3 H=4: slave tco ns: last pass 40, first fail 50
+LIMIT slave mode0: SCLK half period ns: last pass 40, first fail 30
+LIMIT slave mode0: CS setup ns: last pass 60, first fail 50
+LIMIT slave mode0: CS inactive gap ns: last pass 40, first fail 30
+LIMIT slave mode1: SCLK half period ns: last pass 50, first fail 40
+LIMIT slave mode1: CS setup ns: last pass 10, first fail None
+LIMIT slave mode1: CS inactive gap ns: last pass 40, first fail 30
+LIMIT slave mode2: SCLK half period ns: last pass 40, first fail 30
+LIMIT slave mode2: CS setup ns: last pass 60, first fail 50
+LIMIT slave mode2: CS inactive gap ns: last pass 40, first fail 30
+LIMIT slave mode3: SCLK half period ns: last pass 50, first fail 40
+LIMIT slave mode3: CS setup ns: last pass 10, first fail None
+LIMIT slave mode3: CS inactive gap ns: last pass 40, first fail 30
+LIMIT chip slave mode0: min CS gap us (host keeps up): last pass 25, first fail 20
+LIMIT chip slave mode3: min CS gap us (host keeps up): last pass 25, first fail 20
+RESULT spi_test: PASS (312/312 cases as expected)

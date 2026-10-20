@@ -1,0 +1,19 @@
+--- transmitter
+  FAIL  tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation'], sent ffffffffffffffff
+  mutant caught   transmitter stuffs after seven ones   (tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff vi)
+--- transmitter
+--- receiver
+  MUTANT MISSED   no stuff bit before the EOP
+--- transmitter
+  FAIL  tx_handshake: bus decodes to  partial=1 errs=[], sent d2
+  mutant caught   NRZI inverted   (tx_handshake: bus decodes to  partial=1 errs=[], sent d2)
+--- transmitter
+  FAIL  tx_token: run J lasts 4.950 bit times
+  mutant caught   fractional bit period ignored   (tx_token: run J lasts 4.950 bit times)
+--- transmitter
+  FAIL  tx_handshake: run J lasts 1.050 bit times
+  mutant caught   data bits one clock too long   (tx_handshake: run J lasts 1.050 bit times)
+--- transmitter
+--- receiver
+  MUTANT MISSED   SE0 one clock too long
+--- transmitter

@@ -1,0 +1,96 @@
+Phase 1: decoder vs ideal waveform
+  PASS     ideal 100 kHz                                      17 tr | low>=4740 high>=5340 su_dat>=4720 hd_dat>=20 hd_sta>=4740 su_sto>=4740 buf>=4740 f<=99kHz
+  DETECTED t_LOW 20 ns short at 100 kHz                       
+  DETECTED t_SU;DAT 10 ns short at 100 kHz                    
+  PASS     ideal 400 kHz                                      17 tr | low>=1340 high>=1240 su_dat>=1320 hd_dat>=20 hd_sta>=640 su_sto>=640 buf>=1340 f<=388kHz
+  DETECTED t_LOW 20 ns short at 400 kHz                       
+  DETECTED t_SU;DAT 10 ns short at 400 kHz                    
+  PASS     ideal 1000 kHz                                     17 tr | low>=540 high>=540 su_dat>=520 hd_dat>=20 hd_sta>=300 su_sto>=300 buf>=540 f<=926kHz
+  DETECTED t_LOW 20 ns short at 1000 kHz                      
+  DETECTED t_SU;DAT 10 ns short at 1000 kHz                   
+  DETECTED SDA change while SCL high inside a byte            
+  DETECTED missing STOP                                       
+  DETECTED NACK vs expected ACK                               
+Phase 2: Verilog master model <-> slave models (no engine)
+  PASS     peers Sm basic set                                 17 tr 70 B | low>=6000 high>=4101 su_dat>=4800 hd_dat>=101 hd_sta>=4100 su_sto>=4101 buf>=8900 f<=99kHz
+  PASS     peers Fm basic set                                 17 tr 74 B | low>=1750 high>=701 su_dat>=1400 hd_dat>=101 hd_sta>=700 su_sto>=701 buf>=2100 f<=408kHz
+  PASS     peers Fm+ basic set                                17 tr 77 B | low>=750 high>=301 su_dat>=600 hd_dat>=101 hd_sta>=300 su_sto>=301 buf>=900 f<=951kHz
+  PASS     peers two slaves                                   4 tr 13 B | low>=1625 high>=601 su_dat>=1300 hd_dat>=101 hd_sta>=600 su_sto>=601 buf>=1900 f<=449kHz
+  PASS     peers slave NACKs data byte 2                      3 tr 10 B | low>=1625 high>=601 su_dat>=1300 hd_dat>=101 hd_sta>=600 su_sto>=601 buf>=1900 f<=449kHz
+  PASS     peers slave stretches every bit 2 us               11 tr 51 B | low>=2001 high>=601 su_dat>=1676 hd_dat>=101 hd_sta>=600 su_sto>=601 buf>=1900 f<=384kHz
+  PASS     peers absent address only                          2 tr 2 B | low>=1625 high>=601 su_dat>=1300 hd_dat>=325 hd_sta>=600 su_sto>=601 buf>=1900 f<=449kHz
+Phase 3: engine = I2C master, peers = slave models
+  PASS     master 100 kHz basic set                           17 tr 72 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     master 100 kHz rise 1000 ns (spec max)             11 tr 53 B | low>=5739 high>=5261 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=5120 buf>=13361 f<=91kHz
+  PASS     master 100 kHz two slaves interleaved              6 tr 20 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     master 100 kHz data NACK (C path drops queued bytes) 3 tr 11 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14480 f<=100kHz
+  PASS     master 100 kHz no slave at all                     3 tr 3 B | low>=4740 high>=5280 su_dat>=4700 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14480 f<=100kHz
+  PASS     master 400 kHz basic set                           17 tr 71 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     master 400 kHz rise 300 ns (spec max)              11 tr 51 B | low>=1639 high>=1161 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=1020 buf>=3161 f<=357kHz
+  PASS     master 400 kHz two slaves interleaved              6 tr 20 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     master 400 kHz data NACK (C path drops queued bytes) 3 tr 11 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     master 400 kHz no slave at all                     3 tr 3 B | low>=1340 high>=1180 su_dat>=1300 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     master 1000 kHz basic set                          17 tr 69 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1520 f<=980kHz
+  PASS     master 1000 kHz rise 120 ns (spec max)             11 tr 49 B | low>=659 high>=461 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=500 buf>=1401 f<=893kHz
+  PASS     master 1000 kHz two slaves interleaved             6 tr 20 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1520 f<=980kHz
+  PASS     master 1000 kHz data NACK (C path drops queued bytes) 3 tr 11 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1640 f<=980kHz
+  PASS     master 1000 kHz no slave at all                    3 tr 3 B | low>=540 high>=480 su_dat>=500 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1640 f<=980kHz
+ clock stretching (400 kHz)
+  PASS     stretch after every byte 10 us                     11 tr 50 B | low>=1340 high>=1179 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=739 buf>=3460 f<=397kHz
+  PASS     stretch every bit 1 us                             11 tr 49 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     stretch after every byte 500 us                    1 tr 5 B | low>=1340 high>=1179 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=739 buf>=- f<=397kHz
+  PASS     slave data valid 800 ns (tVD near Fm max 900)      11 tr 50 B | low>=1340 high>=1180 su_dat>=539 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+ host-side flow (400 kHz)
+  PASS     host words arrive 30 us apart (master parks, SCL low) 11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=7160 f<=397kHz
+  PASS     RX not drained for 2 ms (master stalls in PUSH)    11 tr 49 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  PASS     words without START on an idle bus are dropped     3 tr 7 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3520 f<=397kHz
+ stress
+  PASS     master 100 kHz random stress (307 words)           42 tr 307 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     master 1000 kHz random stress (1105 words)         161 tr 1105 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1520 f<=980kHz
+ speed sweep beyond 1 MHz: shrink tA/tH to 0, data must stay correct (spec check off)
+  ok       sweep tA=10 tH=8 tVD=0 ns                          11 tr 47 B | low>=240 high>=280 su_dat>=220 hd_dat>=1 hd_sta>=320 su_sto>=340 buf>=1180 f<=1923kHz
+  ok       sweep tA=8 tH=6 tVD=0 ns                           11 tr 51 B | low>=200 high>=240 su_dat>=180 hd_dat>=1 hd_sta>=280 su_sto>=300 buf>=1020 f<=2273kHz
+  ok       sweep tA=6 tH=4 tVD=0 ns                           11 tr 47 B | low>=160 high>=200 su_dat>=140 hd_dat>=1 hd_sta>=240 su_sto>=260 buf>=860 f<=2778kHz
+  ok       sweep tA=4 tH=2 tVD=0 ns                           11 tr 52 B | low>=120 high>=160 su_dat>=100 hd_dat>=1 hd_sta>=200 su_sto>=220 buf>=700 f<=3571kHz
+  ok       sweep tA=3 tH=1 tVD=0 ns                           11 tr 47 B | low>=100 high>=140 su_dat>=80 hd_dat>=1 hd_sta>=180 su_sto>=200 buf>=620 f<=4167kHz
+  ok       sweep tA=2 tH=0 tVD=0 ns                           11 tr 48 B | low>=80 high>=120 su_dat>=60 hd_dat>=1 hd_sta>=160 su_sto>=180 buf>=540 f<=5000kHz
+  ok       sweep tA=1 tH=0 tVD=0 ns                           11 tr 52 B | low>=60 high>=120 su_dat>=40 hd_dat>=1 hd_sta>=140 su_sto>=160 buf>=460 f<=5556kHz
+  ok       sweep tA=0 tH=0 tVD=0 ns                           11 tr 47 B | low>=40 high>=120 su_dat>=20 hd_dat>=1 hd_sta>=120 su_sto>=140 buf>=380 f<=6250kHz
+  ok       sweep tA=10 tH=8 tVD=100 ns                        11 tr 47 B | low>=240 high>=280 su_dat>=139 hd_dat>=20 hd_sta>=320 su_sto>=340 buf>=1180 f<=1923kHz
+  ok       sweep tA=8 tH=6 tVD=100 ns                         11 tr 51 B | low>=200 high>=240 su_dat>=99 hd_dat>=20 hd_sta>=280 su_sto>=300 buf>=1020 f<=2273kHz
+  ok       sweep tA=6 tH=4 tVD=100 ns                         11 tr 47 B | low>=160 high>=200 su_dat>=59 hd_dat>=20 hd_sta>=240 su_sto>=260 buf>=860 f<=2778kHz
+  ok       sweep tA=4 tH=2 tVD=100 ns                         11 tr 52 B | low>=120 high>=160 su_dat>=19 hd_dat>=20 hd_sta>=200 su_sto>=220 buf>=700 f<=3571kHz
+  fails    sweep tA=3 tH=1 tVD=100 ns                         21 tr 1 B | low>=100 high>=140 su_dat>=80 hd_dat>=20 hd_sta>=179 su_sto>=2 buf>=680 f<=4167kHz
+           2892: START inside a byte (8 bits)
+           3471: STOP without START
+           6592: START inside a byte (8 bits)
+           7171: STOP without START
+  ok       sweep tA=10 tH=8 tVD=200 ns                        11 tr 47 B | low>=240 high>=280 su_dat>=39 hd_dat>=20 hd_sta>=320 su_sto>=340 buf>=1180 f<=1923kHz
+  fails    sweep tA=8 tH=6 tVD=200 ns                         21 tr 1 B | low>=200 high>=240 su_dat>=180 hd_dat>=20 hd_sta>=279 su_sto>=2 buf>=1080 f<=2273kHz
+           4892: START inside a byte (8 bits)
+           5771: STOP without START
+           11092: START inside a byte (8 bits)
+           11971: STOP without START
+Phase 5: full chip, host only through the management SPI link
+  PASS     chip eng0 100 kHz basic set                        542 mgmt frames (140 TX retries), 12340 us | 17 tr 70 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     chip eng0 400 kHz basic set                        384 mgmt frames (0 TX retries), 8744 us | 17 tr 68 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng0 1000 kHz basic set                       396 mgmt frames (0 TX retries), 9017 us | 17 tr 74 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+  PASS     chip eng1 400 kHz basic set                        380 mgmt frames (0 TX retries), 8653 us | 17 tr 66 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng1 1000 kHz two slaves + data NACK          287 mgmt frames (0 TX retries), 6536 us | 6 tr 20 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+  PASS     chip eng0 400 kHz rise 300 ns + stretch every byte 20 us 354 mgmt frames (0 TX retries), 8061 us | 11 tr 53 B | low>=1639 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=1039 buf>=3161 f<=355kHz
+  PASS     chip eng0 1000 kHz slow host (mgmt half 2 us)      346 mgmt frames (0 TX retries), 77633 us | 11 tr 49 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=439380 f<=980kHz
+  PASS     chip eng0 1000 kHz fastest host (mgmt half 8 clk)  342 mgmt frames (0 TX retries), 6256 us | 11 tr 47 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=27220 f<=980kHz
+  PASS     chip eng0 400 kHz random stress (301 words)        847 mgmt frames (0 TX retries), 19282 us | 57 tr 301 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng1 1000 kHz random stress (307 words)       859 mgmt frames (0 TX retries), 19555 us | 54 tr 307 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+Mutants: broken firmware / pad setup must be caught (400 kHz)
+  DETECTED mut bit loop ignores stretching (no WAITH SCL)     11 tr 0 B | low>=3820 high>=1140 su_dat>=1300 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3520 f<=202kHz
+  DETECTED mut no ACK check (C flag consumed, ignored)        11 tr 52 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+  DETECTED mut samples SDA while SCL is low                   11 tr 51 B | low>=1360 high>=100 su_dat>=1300 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=676kHz
+  DETECTED mut STOP does not pull SDA low first               11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=- buf>=- f<=397kHz
+  DETECTED mut t_HD;STA = 0                                   11 tr 48 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=80 su_sto>=740 buf>=3460 f<=397kHz
+  DETECTED mut t_LOW too short (OUT1 0)                       21 tr 1 B | low>=40 high>=1180 su_dat>=20 hd_dat>=20 hd_sta>=720 su_sto>=62 buf>=3520 f<=820kHz
+  DETECTED mut pads claimed push-pull (drives SDA/SCL high)   11 tr 53 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3460 f<=397kHz
+LIMIT master max SCL, slave tVD 0 ns: last pass 6250 kHz measured (tA=0, tH=0), first fail None
+LIMIT master max SCL, slave tVD 100 ns: last pass 3571 kHz measured (tA=4, tH=2), first fail tA=3 tH=1
+LIMIT master max SCL, slave tVD 200 ns: last pass 1923 kHz measured (tA=10, tH=8), first fail tA=8 tH=6
+RESULT i2c_test: PASS (60/60 cases as expected)

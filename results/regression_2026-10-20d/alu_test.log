@@ -1,0 +1,33 @@
+  RESULT tb_alu_unit: PASS
+  MUTANT  0 caught  SUB carry polarity inverted
+  MUTANT  1 caught  CMP writes the result back
+  MUTANT  2 caught  TST writes the result back
+  MUTANT  3 caught  SHL carry one bit off
+  MUTANT  4 caught  SHR carry one bit off
+  MUTANT  5 caught  N taken from bit 30
+  MUTANT  6 caught  Z inverted
+  MUTANT  7 caught  use_imm ignored
+  MUTANT  8 caught  imm16 sign-extended
+  MUTANT  9 caught  LDI sign-extended
+  MUTANT 10 caught  ALU writes the rs register
+  MUTANT 11 caught  ALU source read from operand[2:0]
+  MUTANT 12 caught  rs_val read from the ALU rs field
+  MUTANT 13 caught  parity inverted
+  MUTANT 14 caught  REV8 is the identity
+  MUTANT 15 caught  ADD carry from bit 31
+  MUTANT 16 caught  NOT of the destination
+  MUTANT 17 caught  MOV copies the destination
+  MUTANT 18 caught  shift by 0 updates C
+  MUTANT 19 caught  LDI also updates Z
+  MUTANT 20 caught  RGET writes the wrong register
+  MUTANT 21 caught  rs_zero looks at all 32 bits
+  MUTANT 22 caught  flags updated by CMP skipped (C)
+  MUTANT 23 caught  adder result not selected for SUB
+  MUTANT 24 caught  SUB does not add the carry-in
+  MUTANT 25 caught  SUB does not invert the operand
+  MUTANT 26 caught  CMP is not a subtraction
+  MUTANT 27 caught  prefix adder lacks its last level
+  MUTANT 28 caught  prefix adder drops a group propagate
+  MUTANT 29 caught  prefix adder level shifted by the wrong distance
+  mutants caught: 30/30
+RESULT alu_test: PASS

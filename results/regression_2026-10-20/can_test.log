@@ -1,0 +1,51 @@
+Phase 1: engine transmits, bus node + Python decoder check the wire
+  PASS     every DLC 0..8, random ID and data                             9 frames, 706 wire bits
+  PASS     worst-case stuffing: all-dominant and all-recessive frames     4 frames, 344 wire bits
+  PASS     alternating patterns (no stuffing at all)                      3 frames, 255 wire bits
+  PASS     stuff bits at header end, word end, data end, behind the CRC   4 frames, 336 wire bits
+  PASS     DLC 9..15 means 8 data bytes                                   3 frames, 333 wire bits
+  PASS     identifier walking ones / zeros                                22 frames, 1331 wire bits
+  PASS     40 random frames back to back                                  40 frames, 2924 wire bits
+  PASS     no node acknowledges: the ACK slot stays recessive             2 frames, 119 wire bits
+  PASS     bit time 50 clocks (1000 kbit/s)                               2 frames, 193 wire bits
+  PASS     bit time 250 clocks (200 kbit/s)                               2 frames, 193 wire bits
+  PASS     engine 0 sends, engine 1 receives and acknowledges             7 frames
+Phase 2: engine receives frames from a Python waveform
+  PASS     good frames, every DLC 0..8                                    9 frames, 30 words, ACK edges within 30 ns
+  PASS     stuff bits at header end, word end, data end, behind the CRC   4 frames, 10 words, ACK edges within 30 ns
+  PASS     all-dominant / all-recessive frames                            4 frames, 12 words, ACK edges within 30 ns
+  PASS     DLC 9..15 means 8 data bytes                                   2 frames, 8 words, ACK edges within 30 ns
+  PASS     30 random frames at the minimum intermission                   30 frames, 98 words, ACK edges within 30 ns
+  PASS     a flipped CRC bit is detected, not acknowledged, and the next frame is fine 4 frames, 15 words, ACK edges within 30 ns
+  PASS     stuff error (six equal bits) at header, data and later positions 4 frames, 9 words, ACK edges within 30 ns
+  PASS     stuff errors in the middle of long runs, in every data word    7 frames, 15 words, ACK edges within 30 ns
+  PASS     remote and extended frames are reported as unsupported, the bus recovers 3 frames, 5 words, ACK edges within 30 ns
+  PASS     form errors: dominant CRC delimiter / ACK delimiter / EOF bit  4 frames, 12 words, ACK edges within 30 ns
+  PASS     sender clock error -0.15 % (data and ACK slot)                 5 frames, 14 words, ACK edges within 378 ns
+  PASS     sender clock error +0.15 % (data and ACK slot)                 5 frames, 14 words, ACK edges within 318 ns
+  PASS     sender clock error -0.30 % (data only)                         5 frames, 14 words
+  PASS     sender clock error +0.30 % (data only)                         5 frames, 14 words
+  PASS     bit time 50 clocks                                             4 frames, 13 words, ACK edges within 30 ns
+  PASS     bit time 250 clocks                                            4 frames, 13 words, ACK edges within 30 ns
+Phase 3: broken firmware must be caught
+  DETECTED mutant TX: stuffing after 4 equal bits                         11 frames, 987 wire bits
+  DETECTED mutant TX: stuff bits are fed to the CRC                       11 frames, 998 wire bits
+  DETECTED mutant TX: no stuff bit behind the last CRC bit                11 frames, 997 wire bits
+  DETECTED mutant TX: ACK sense inverted                                  11 frames, 997 wire bits
+  DETECTED mutant TX: DLC > 8 not limited                                 11 frames, 986 wire bits
+  DETECTED mutant TX: polynomial 0x4598                                   11 frames, 1003 wire bits
+  DETECTED mutant TX: CRC init 0x7FFF                                     11 frames, 1002 wire bits
+  DETECTED mutant TX: bit time 102 clocks instead of 100                  11 frames, 997 wire bits
+  DETECTED mutant RX: stuffing after 4 equal bits                         15 frames, 48 words
+  DETECTED mutant RX: stuff bit is not checked                            15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: stuff bits are fed to the CRC                       15 frames, 48 words
+  DETECTED mutant RX: never acknowledges                                  15 frames, 48 words
+  DETECTED mutant RX: acknowledges bad frames too                         15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: misses the stuff bit behind the CRC                 15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: DLC > 8 not limited                                 15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: remote / extended frames not detected               15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: CRC result ignored                                  15 frames, 48 words, ACK edges within 30 ns
+  DETECTED mutant RX: polynomial 0x4598                                   15 frames, 48 words
+  DETECTED mutant RX: CRC init 0x7FFF                                     15 frames, 48 words
+  DETECTED mutant RX: sample point 30 clocks late                         15 frames, 48 words, ACK edges within 746 ns
+RESULT can_test: PASS (47/47 cases as expected)

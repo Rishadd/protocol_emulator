@@ -1,0 +1,36 @@
+Phase 1: device -> host
+  PASS     known bytes incl. parity extremes (0x00, 0xFF, 0x55, 0xAA)     12 frames
+  PASS     random bytes                                                   14 frames
+Phase 2: the host inhibits a transmission
+  PASS     inhibit after 1 clocks: stop, release, send the byte again     
+  PASS     inhibit after 5 clocks: stop, release, send the byte again     
+  PASS     inhibit after 8 clocks: stop, release, send the byte again     
+Phase 3: host -> device
+  PASS     host sends 0xFF: acknowledged, captured intact                 
+  PASS     host sends 0x00: acknowledged, captured intact                 
+  PASS     host sends 0xED: acknowledged, captured intact                 
+  PASS     host sends 0x5A: acknowledged, captured intact                 
+  PASS     host sends 0xF4: acknowledged, captured intact                 
+  PASS     wrong parity is flagged (bit 8)                                
+  PASS     missing stop bit is flagged (bit 9)                            
+Phase 4: a keyboard session (commands, scan codes)
+  PASS     command 0xFF answered with ['0xfa', '0xaa']                    
+  PASS     command 0xF2 answered with ['0xfa', '0xab', '0x83']            
+  PASS     command 0xEE answered with ['0xee']                            
+  PASS     command 0xF4 answered with ['0xfa']                            
+  PASS     command 0xA5 answered with ['0xfe']                            
+  PASS     set LEDs: 0xED then 0x05, both acknowledged, LEDs = 5          
+  PASS     key 'A': make 1C, break F0 1C                                  
+  PASS     no timing violation in the whole session                       
+Phase 2: broken firmware must be caught
+  DETECTED mutant: even parity instead of odd                             6 frames
+  DETECTED mutant: bits sent MSB first                                    6 frames
+  DETECTED mutant: clock low 10 us (too fast)                             6 frames
+  DETECTED mutant: no stop bit                                            6 frames
+  DETECTED mutant: keeps clocking when the host inhibits                  
+  DETECTED mutant: does not send the byte again after an inhibit          
+  DETECTED mutant: no acknowledge                                         
+  DETECTED mutant: samples DATA after the clock rose                      
+Phase RTL: the device -> host direction on the RTL (engine testbench, open-drain pads), decoded after the fact
+  PASS     RTL: 8 bytes framed, parity, clock and data timing windows     8 frames
+RESULT ps2_test: PASS (29/29 cases as expected)

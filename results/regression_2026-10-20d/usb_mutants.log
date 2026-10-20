@@ -1,0 +1,19 @@
+  MUTANT  0 caught  address filter off
+  MUTANT  1 caught  endpoint 2 is accepted
+  MUTANT  2 caught  SETUP data CRC16 not checked
+  MUTANT  3 caught  an ACKed packet stays pending
+  MUTANT  4 caught  packet chain not restored after sending (the retransmission is damaged)
+  MUTANT  5 caught  IN answered before the EOP ended
+  MUTANT  6 caught  handshake answered too late (over 7.5 bit times)
+  MUTANT  7 caught  an EOP is taken for a bus reset
+  MUTANT  8 caught  a bus reset is never recognised
+  MUTANT  9 caught  a packet for endpoint 1 is sent on an endpoint 0 token
+  MUTANT 10 caught  wrong SYNC in handshakes
+  MUTANT 11 caught  set-address item ignored
+  MUTANT 12 caught  IN with nothing pending sends garbage instead of NAK
+  MUTANT 13 caught  SETUP data accepted with any PID
+  MUTANT 14 caught  SETUP event words in the wrong order
+  MUTANT 15 caught  bus reset leaves the old address
+  MUTANT 16 caught  IN token compared without its check nibble
+  MUTANT 17 caught  NAK with a wrong PID
+usb firmware mutants caught: 18/18

@@ -1,0 +1,42 @@
+--- transmitter
+  FAIL  tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation'], sent ffffffffffffffff
+  mutant caught   transmitter stuffs after seven ones   (tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff vi)
+--- transmitter
+--- receiver
+  MUTANT MISSED   no stuff bit before the EOP
+--- transmitter
+  FAIL  tx_handshake: bus decodes to  partial=1 errs=[], sent d2
+  mutant caught   NRZI inverted   (tx_handshake: bus decodes to  partial=1 errs=[], sent d2)
+--- transmitter
+  FAIL  tx_token: run J lasts 4.950 bit times
+  mutant caught   fractional bit period ignored   (tx_token: run J lasts 4.950 bit times)
+--- transmitter
+  FAIL  tx_handshake: run J lasts 1.050 bit times
+  mutant caught   data bits one clock too long   (tx_handshake: run J lasts 1.050 bit times)
+--- transmitter
+--- receiver
+  MUTANT MISSED   SE0 one clock too long
+--- transmitter
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 274, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 266, in main
+    return 0 if mutation_check() else 1
+                ^^^^^^^^^^^^^^^^
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 253, in mutation_check
+    run_all(build(d))
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 160, in run_all
+    tx_test(vvp, "tx_token", [U.token("SETUP", 0, 0), U.token("IN", 0x15, 0xE)])
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 108, in tx_test
+    sim = simulate(vvp, name, tx_cmds(packets, period, gap=200), bper=bper, tail=int(dur) + 3000)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/media/rishadd/OS/Data/protocol_emulator/host/line_coder_test.py", line 81, in simulate
+    raise RuntimeError(r.stdout + r.stderr)
+RuntimeError: ERROR watchdog: command stream stalled
+/media/rishadd/OS/Data/protocol_emulator/tb/tb_line_coder.v:40: $finish called at 50000000000 (1ps)
+/media/rishadd/OS/Data/protocol_emulator/tb/tb_line_coder.v:116: Warning: Calling system function $value$plusargs() as a task.
+/media/rishadd/OS/Data/protocol_emulator/tb/tb_line_coder.v:116:          The functions return value will be ignored.
+

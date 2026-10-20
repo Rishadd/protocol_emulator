@@ -1,0 +1,52 @@
+--- phase A: 25 suites
+  PASS alu_test                  0.5 min  RESULT alu_test: PASS
+  PASS smbus_test                0.5 min  RESULT smbus_test: PASS (23/23 cases as expected)
+  PASS crc_test                  0.8 min  RESULT crc_test: PASS
+  PASS jtag_test                 0.2 min  RESULT jtag_test: PASS (21/21 cases as expected)
+  PASS i2c_slave_test            2.8 min  RESULT i2c_slave_test: PASS (45/45 cases as expected)
+  PASS onewire_test              2.4 min  RESULT onewire_test: PASS (18/18 cases as expected)
+  PASS i2c_test                  3.0 min  RESULT i2c_test: PASS (60/60 cases as expected)
+  PASS can_test                  3.0 min  RESULT can_test: PASS (47/47 cases as expected)
+  PASS chip_host_demo            0.4 min  DONE: 574 SPI frames (7 bytes each way per frame), all checks passed
+  PASS ws2812_test               0.3 min  RESULT ws2812_test: PASS (15/15 cases as expected)
+  PASS unit_testbenches          5.3 min  22 testbenches reported; none failed
+  PASS swd_test                  0.1 min  RESULT swd_test: PASS (11/11 cases as expected)
+  PASS line_coder_test           0.1 min  RESULT line_coder_test: PASS (1175/1175 checks)
+  PASS uart_rx_workload          2.8 min  ALL PASS
+  PASS modbus_test               5.4 min  RESULT modbus_test: PASS (26/26 cases as expected)
+  PASS usb_test_model            0.1 min  RESULT usb_test (model): PASS (45/45 checks)
+  PASS uart_workload             3.2 min  2/2 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
+  PASS isa_diff_test             6.3 min  RESULT isa_diff_test: PASS
+  PASS usb_mutants               0.8 min  usb firmware mutants caught: 18/18
+  PASS ps2_test                  2.4 min  RESULT ps2_test: PASS (29/29 cases as expected)
+  PASS spi_test                  8.1 min  RESULT spi_test: PASS (312/312 cases as expected)
+  PASS usb_test_rtl              2.6 min  RESULT usb_test (rtl): PASS (45/45 checks)
+  PASS mgmt_duplex_stress       13.6 min  ALL PASS
+  PASS workload                 19.7 min  RESULT workload: PASS (55/55 cases as expected)
+  FAIL line_coder_mutants       25.5 min  --- transmitter
+--- phase B: 4 suites
+  PASS chip_jtag_test            1.3 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS chip_onewire_test         1.6 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS chip_can_test             2.8 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS chip_modbus_test          4.8 min  RESULT modbus_test: PASS (16/16 cases as expected)
+--- phase C: 6 suites
+  PASS org64_jtag_test           0.1 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS org64_onewire_test        0.9 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS org64_can_test            1.0 min  RESULT can_test: PASS (27/27 cases as expected)
+  PASS org192_i2c_test           3.5 min  RESULT i2c_test: PASS (60/60 cases as expected)
+  PASS org192_modbus_test        3.6 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  PASS org192_spi_test           9.9 min  RESULT spi_test: PASS (312/312 cases as expected)
+--- phase D: 12 suites
+  PASS remap1_onewire_test       1.8 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS remap2_jtag_test          1.9 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS remap2_onewire_test       2.9 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  FAIL remap2_can_test           3.9 min  RESULT can_test: FAIL (24/26 cases as expected)
+  PASS remap3_onewire_test       2.0 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  FAIL remap1_can_test           5.2 min  RESULT can_test: FAIL (25/26 cases as expected)
+  PASS remap3_can_test           4.4 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap2_modbus_test        6.7 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  FAIL remap1_modbus_test        6.8 min  RESULT modbus_test: FAIL (15/16 cases as expected)
+  PASS remap3_modbus_test        6.1 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  FAIL remap3_jtag_test         34.1 min  Phase 1: JTAG controller on the engine, Verilog TAP model on the pins, Python TAP model as oracle
+  FAIL remap1_jtag_test         36.1 min  Phase 1: JTAG controller on the engine, Verilog TAP model on the pins, Python TAP model as oracle
+REGRESSION FAIL: 41 of 47 suites; summary in results/regression_2026-10-20b/summary.md

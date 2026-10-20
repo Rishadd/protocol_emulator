@@ -1,0 +1,42 @@
+RESULT isa_model: PASS
+  batch 0: 150 programs x 600 clocks: 0 mismatching programs
+  batch 1: 150 programs x 600 clocks: 0 mismatching programs
+  batch 2: 150 programs x 600 clocks: 0 mismatching programs
+  batch 3: 150 programs x 600 clocks: 0 mismatching programs
+  coverage: 98783 instructions committed; trap kinds seen: 7; 96/97 coverage points met
+    NOT COVERED enough: ('rget_crc_wait',) saw 17, need 20
+  MUTANT  0 caught  RGET TXF does not stall when the FIFO is empty
+  MUTANT  1 caught  RGET CRC does not wait for the CRC unit
+  MUTANT  2 caught  CRC busy not connected
+  MUTANT  3 caught  RPUT RXF does not stall when full
+  MUTANT  4 caught  JCC GTU is the LEU condition
+  MUTANT  5 caught  JCC C and NC swapped
+  MUTANT  6 caught  WAITR holds even when the register is 0
+  MUTANT  7 caught  ALU source read from operand[2:0] (wrong read port)
+  MUTANT  8 caught  ALU function 13 is legal
+  MUTANT  9 caught  RGET FIFO returns the TX level in both fields
+  MUTANT 10 caught  RGET FIFO stalls like RGET TXF
+  MUTANT 11 caught  LINE operation 6 is legal
+  MUTANT 12 caught  RGET LINE does not wait for the line coder
+  MUTANT 13 caught  LINE TXB does not wait when the queue is full
+  MUTANT 14 caught  RGET LINE does not consume the received byte
+  MUTANT 15 caught  the line coder never takes over its pins
+  MUTANT 16 caught  RGET LINE returns the CRC value
+  MUTANT 17 caught  CRC operation 7 is legal
+  MUTANT 18 caught  opcode 29 is legal
+  MUTANT 19 caught  RPUT OSR also pops the TX FIFO
+  MUTANT 20 caught  RPUT LC loads the operand
+  MUTANT 21 caught  RPUT ISR does nothing
+  MUTANT 22 caught  RGET src field decoded from [5:3]
+  MUTANT 23 caught  RGET PIN reads the unsynchronized pins
+  MUTANT 24 caught  RGET LC returns the load value
+  MUTANT 25 caught  RPUT RXF pushes the ISR
+  MUTANT 26 caught  RPUT OSR loads the TX word
+  MUTANT 27 caught  WAITR delay truncated to 8 bits
+  MUTANT 28 caught  CRC config data is the operand
+  MUTANT 29 caught  CRC byte is rs[15:8]
+  MUTANT 30 caught  RGET data into the register file is the TX word
+  MUTANT 31 caught  RPUT ISR loads zero
+  MUTANT 32 caught  RPUT LC value truncated
+  mutants caught: 33/33
+RESULT isa_diff_test: FAIL

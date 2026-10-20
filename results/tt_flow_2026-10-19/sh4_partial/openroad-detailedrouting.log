@@ -1,0 +1,318 @@
+[WARNING ORD-0032] Invalid thread number specification: None.
+Reading timing models for corner nom_typ_1p20V_25C…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/pdk_tt/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_typ_1p20V_25C.lib'…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/pdk_tt/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/lib/sg13cmos5l_io_typ_1p2V_3p3V_25C.lib'…
+Reading timing library for the 'nom_typ_1p20V_25C' corner at '/home/rishadd/pe_sh4/macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_typ_1p20V_25C.lib'…
+Reading OpenROAD database at '/home/rishadd/pe_sh4/runs/sh4/45-openroad-repairantennas/1-openroad-diodeinsertion/tt_um_protocol_emulator.odb'…
+Reading design constraints file at '/home/rishadd/pe_sh4/src/pnr.sdc'…
+[INFO] Clock uncertainty: setup 0.25 ns, hold 0.1 ns
++ detailed_route -droute_end_iter 64 -or_seed 42 -verbose 1 -output_drc /home/rishadd/pe_sh4/runs/sh4/47-openroad-detailedrouting/drt-run-0/tt_um_protocol_emulator.drc
+[INFO DRT-0149] Reading tech and libs.
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer Cont
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer Via1
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer Via1
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer Via2
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer Via3
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer TopVia1
+[WARNING DRT-0349] LEF58_ENCLOSURE with no CUTCLASS is not supported. Skipping for layer TopVia1
+
+Units:                1000
+Number of layers:     11
+Number of macros:     107
+Number of vias:       55
+Number of viarulegen: 4
+
+[INFO DRT-0150] Reading design.
+
+Design:                   tt_um_protocol_emulator
+Die area:                 ( 0 0 ) ( 1724160 710640 )
+Number of track patterns: 10
+Number of DEF vias:       0
+Number of components:     25837
+Number of terminals:      45
+Number of snets:          2
+Number of nets:           25715
+
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[15] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[15] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[16] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[14] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[14] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[14] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[17] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[17] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[17] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[14] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[18] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[18] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[13] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[19] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[19] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[12] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[11] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[11] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[11] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[20] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[11] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[10] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[10] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[21] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[9] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[9] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[22] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[8] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[8] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[8] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[23] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[23] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[23] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[8] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[24] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[24] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[25] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[25] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[26] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[4] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[4] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[27] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[3] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[3] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[28] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[29] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[29] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[29] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[30] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[30] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DIN[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_DIN[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BM[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_BM[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_DOUT[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DIN[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_DIN[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BM[31] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_BM[31] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DOUT[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_ADDR[0] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_ADDR[1] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_ADDR[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_ADDR[2] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_ADDR[3] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_ADDR[3] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_ADDR[4] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_ADDR[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_ADDR[5] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_ADDR[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_ADDR[6] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_ADDR[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_ADDR[7] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_ADDR[8] has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_CLK has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_WEN has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_MEN has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_REN has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_DLY has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/A_BIST_EN has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_CLK has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_REN has no pins on routing grid
+[WARNING DRT-0418] Term u_imem.u_mem/B_BIST_WEN has no pins on routing grid
+[INFO DRT-0167] List of default vias:
+  Layer Via2
+    default via: Via2_YX
+  Layer Via3
+    default via: Via3_XY
+  Layer TopVia1
+    default via: TopVia1EWNS
+[INFO DRT-0162] Library cell analysis.
+[INFO DRT-0163] Instance analysis.
+[INFO DRT-0164] Number of unique instances = 83.
+[INFO DRT-0168] Init region query.
+[INFO DRT-0024]   Complete GatPoly.
+[INFO DRT-0024]   Complete Cont.
+[INFO DRT-0024]   Complete Metal1.
+[INFO DRT-0024]   Complete Via1.
+[INFO DRT-0024]   Complete Metal2.
+[INFO DRT-0024]   Complete Via2.
+[INFO DRT-0024]   Complete Metal3.
+[INFO DRT-0024]   Complete Via3.
+[INFO DRT-0024]   Complete Metal4.
+[INFO DRT-0024]   Complete TopVia1.
+[INFO DRT-0024]   Complete TopMetal1.
+[INFO DRT-0033] GatPoly shape region query size = 0.
+[INFO DRT-0033] Cont shape region query size = 0.
+[INFO DRT-0033] Metal1 shape region query size = 638308.
+[INFO DRT-0033] Via1 shape region query size = 25905.
+[INFO DRT-0033] Metal2 shape region query size = 11066.
+[INFO DRT-0033] Via2 shape region query size = 25905.
+[INFO DRT-0033] Metal3 shape region query size = 10363.
+[INFO DRT-0033] Via3 shape region query size = 25905.
+[INFO DRT-0033] Metal4 shape region query size = 5605.
+[INFO DRT-0033] TopVia1 shape region query size = 0.
+[INFO DRT-0033] TopMetal1 shape region query size = 0.
+[INFO DRT-0165] Start pin access.
+[INFO DRT-0078]   Complete 814 pins.
+[INFO DRT-0081]   Complete 82 unique inst patterns.
+[INFO DRT-0082]   Complete 10000 groups.
+[INFO DRT-0084]   Complete 13142 groups.
+#scanned instances     = 25837
+#unique  instances     = 83
+#stdCellGenAp          = 3185
+#stdCellValidPlanarAp  = 0
+#stdCellValidViaAp     = 2435
+#stdCellPinNoAp        = 0
+#stdCellPinCnt         = 85774
+#instTermValidViaApCnt = 0
+#macroGenAp            = 786
+#macroValidPlanarAp    = 611
+#macroValidViaAp       = 0
+#macroNoAp             = 0
+[INFO DRT-0166] Complete pin access.
+[INFO DRT-0267] cpu time = 00:03:07, elapsed time = 00:03:07, memory = 240.33 (MB), peak = 253.60 (MB)
+[INFO DRT-0156] guideIn read 100000 guides.
+[INFO DRT-0156] guideIn read 200000 guides.
+
+[INFO DRT-0157] Number of guides:     215975
+
+[INFO DRT-0169] Post process guides.
+[INFO DRT-0176] GCELLGRID X 0 DO 239 STEP 7200 ;
+[INFO DRT-0177] GCELLGRID Y 0 DO 98 STEP 7200 ;
+[INFO DRT-0026]   Complete 100000 origin guides.
+[INFO DRT-0026]   Complete 200000 origin guides.
+[INFO DRT-0028]   Complete GatPoly.
+[INFO DRT-0028]   Complete Cont.
+[INFO DRT-0028]   Complete Metal1.
+[INFO DRT-0028]   Complete Via1.
+[INFO DRT-0028]   Complete Metal2.
+[INFO DRT-0028]   Complete Via2.
+[INFO DRT-0028]   Complete Metal3.
+[INFO DRT-0028]   Complete Via3.
+[INFO DRT-0028]   Complete Metal4.
+[INFO DRT-0028]   Complete TopVia1.
+[INFO DRT-0028]   Complete TopMetal1.
+[INFO DRT-0178] Init guide query.
+[INFO DRT-0035]   Complete GatPoly (guide).
+[INFO DRT-0035]   Complete Cont (guide).
+[INFO DRT-0035]   Complete Metal1 (guide).
+[INFO DRT-0035]   Complete Via1 (guide).
+[INFO DRT-0035]   Complete Metal2 (guide).
+[INFO DRT-0035]   Complete Via2 (guide).
+[INFO DRT-0035]   Complete Metal3 (guide).
+[INFO DRT-0035]   Complete Via3 (guide).
+[INFO DRT-0035]   Complete Metal4 (guide).
+[INFO DRT-0035]   Complete TopVia1 (guide).
+[INFO DRT-0035]   Complete TopMetal1 (guide).
+[INFO DRT-0036] GatPoly guide region query size = 0.
+[INFO DRT-0036] Cont guide region query size = 0.
+[INFO DRT-0036] Metal1 guide region query size = 73473.
+[INFO DRT-0036] Via1 guide region query size = 0.
+[INFO DRT-0036] Metal2 guide region query size = 66605.
+[INFO DRT-0036] Via2 guide region query size = 0.
+[INFO DRT-0036] Metal3 guide region query size = 33872.
+[INFO DRT-0036] Via3 guide region query size = 0.
+[INFO DRT-0036] Metal4 guide region query size = 1136.
+[INFO DRT-0036] TopVia1 guide region query size = 0.
+[INFO DRT-0036] TopMetal1 guide region query size = 0.
+[INFO DRT-0179] Init gr pin query.
+[INFO DRT-0267] cpu time = 00:00:00, elapsed time = 00:00:00, memory = 318.57 (MB), peak = 318.26 (MB)
+[INFO DRT-0245] skipped writing guide updates to database.
+[INFO DRT-0185] Post process initialize RPin region query.
+[INFO DRT-0181] Start track assignment.
+[INFO DRT-0184] Done with 67741 vertical wires in 5 frboxes and 107345 horizontal wires in 2 frboxes.
+[INFO DRT-0186] Done with 26065 vertical wires in 5 frboxes and 14873 horizontal wires in 2 frboxes.
+[INFO DRT-0182] Complete track assignment.
+[INFO DRT-0267] cpu time = 00:00:10, elapsed time = 00:00:10, memory = 689.08 (MB), peak = 688.76 (MB)
+[INFO DRT-0187] Start routing data preparation.
+[INFO DRT-0267] cpu time = 00:00:00, elapsed time = 00:00:00, memory = 689.14 (MB), peak = 688.76 (MB)
+[INFO DRT-0194] Start detail routing.
+[INFO DRT-0195] Start 0th optimization iteration.
+    Completing 10% with 0 violations.
+    elapsed time = 00:02:17, memory = 689.58 (MB).
+    Completing 20% with 0 violations.
+    elapsed time = 00:03:24, memory = 805.43 (MB).
+    Completing 30% with 3890 violations.
+    elapsed time = 00:06:53, memory = 923.39 (MB).
+    Completing 40% with 3890 violations.
+    elapsed time = 00:08:33, memory = 923.39 (MB).

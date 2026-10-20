@@ -1,0 +1,50 @@
+Phase 1: engine = I2C slave at 400 kHz, Verilog master model, model slave 0x50 on the same bus
+  PASS     write 1 byte                                       1 tr 2 B 3 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=66 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     write 16 bytes                                     1 tr 17 B 18 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     read 1 byte                                        1 tr 2 B 3 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=70 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     read 8 bytes                                       1 tr 9 B 10 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=64 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     write pointer, repeated START, read                2 tr 6 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=66 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     address only (no data) then STOP                   1 tr 1 B 2 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=66 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     read after write, two transactions                 2 tr 6 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     not our address: neighbour 0x28                    2 tr 2 B 0 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=375 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     our address then the model slave 0x50              3 tr 8 B 6 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=66 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     two repeated STARTs in a row                       3 tr 6 B 9 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     mixed set (writes, reads, Sr, other addresses)     21 tr 76 B 76 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     address 0x01: ours and 0x00                        3 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     address 0x2A: ours and 0x2B                        3 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     address 0x55: ours and 0x54                        3 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     address 0x7E: ours and 0x7F                        3 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     address 0x7F: ours and 0x7E                        3 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+Phase 2: speeds, rise times
+  PASS     100 kHz mixed set                                  25 tr 83 B 87 ev | low>=6500 high>=4901 su_dat>=5200 hd_dat>=61 hd_sta>=4900 su_sto>=4901 buf>=10100 f<=88kHz
+  PASS     100 kHz mixed set, rise 1000 ns (spec max)         21 tr 70 B 70 ev | low>=7499 high>=4901 su_dat>=5200 hd_dat>=80 hd_sta>=4900 su_sto>=5900 buf>=9101 f<=81kHz
+  PASS     400 kHz mixed set                                  24 tr 78 B 81 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     400 kHz mixed set, rise 300 ns (spec max)          21 tr 70 B 70 ev | low>=2174 high>=1051 su_dat>=1500 hd_dat>=65 hd_sta>=1050 su_sto>=1350 buf>=2251 f<=310kHz
+  PASS     1000 kHz mixed set                                 23 tr 77 B 79 ev | low>=812 high>=401 su_dat>=573 hd_dat>=61 hd_sta>=400 su_sto>=401 buf>=1050 f<=824kHz
+  PASS     1000 kHz mixed set, rise 120 ns (spec max)         20 tr 69 B 68 ev | low>=931 high>=401 su_dat>=638 hd_dat>=62 hd_sta>=400 su_sto>=520 buf>=931 f<=751kHz
+  PASS     400 kHz random stress (403 words)                  83 tr 403 B 486 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  PASS     1000 kHz random stress (400 words)                 80 tr 400 B 480 ev | low>=812 high>=401 su_dat>=572 hd_dat>=61 hd_sta>=400 su_sto>=401 buf>=1050 f<=824kHz
+Phase 3: flow control by clock stretching
+  PASS     RX not drained for 1 ms (14 bytes > 4-word FIFO: SCL held low) 1 tr 15 B 16 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=61 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     RX not drained for 1 ms, 1 MHz                     1 tr 15 B 16 ev | low>=812 high>=401 su_dat>=576 hd_dat>=62 hd_sta>=400 su_sto>=401 buf>=- f<=824kHz
+  PASS     TX words 50 us apart (slave stretches SCL for each read byte) 1 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=20 hd_dat>=63 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     TX first word 300 us late                          1 tr 7 B 8 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=61 hd_sta>=1050 su_sto>=1051 buf>=- f<=342kHz
+  PASS     TX words 20 us apart at 1 MHz                      1 tr 7 B 8 ev | low>=812 high>=401 su_dat>=20 hd_dat>=61 hd_sta>=400 su_sto>=401 buf>=- f<=824kHz
+Phase 4: broken slave firmware must be caught
+  DETECTED mutant: address compare ignores bit 1 (mask 0xFC)  12 tr 23 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: address ACK missing                        10 tr 11 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=64 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: write-data ACK missing                     12 tr 20 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: read data sent LSB first (OSR bit order)   12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: write data not pushed to the host          12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: STOP event missing                         12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: repeated START event missing               12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: master NACK recognised with inverted polarity 12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: no SCL hold after a write byte (flow control gone) 1 tr 12 B 14 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=64 hd_sta>=1050 su_sto>=- buf>=- f<=342kHz
+  DETECTED mutant: session flag never set (no events at the end) 12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: read bits 6..0 not driven                  12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: SDA not released after the address ACK clock 1 tr 4 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=375 hd_sta>=1050 su_sto>=- buf>=- f<=342kHz
+  DETECTED mutant: SDA not released before the master's ACK slot 9 tr 15 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: read/write bit tested on the wrong bit     12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: TX word not fetched for a read byte        12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+  DETECTED mutant: read byte aligned one bit low              12 tr 22 B 20 ev | low>=1875 high>=1051 su_dat>=1500 hd_dat>=62 hd_sta>=1050 su_sto>=1051 buf>=2550 f<=342kHz
+RESULT i2c_slave_test: PASS (45/45 cases as expected)

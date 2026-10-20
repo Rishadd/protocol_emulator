@@ -1,0 +1,19 @@
+Phase 1: engine = I2C slave at 400 kHz, Verilog master model, model slave 0x50 on the same bus
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/media/rishadd/OS/Data/protocol_emulator/host/i2c_slave_test.py", line 288, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/media/rishadd/OS/Data/protocol_emulator/host/i2c_slave_test.py", line 281, in main
+    {"basic": phase_basic, "speeds": phase_speeds, "flow": phase_flow, "mutants": phase_mutants}[p]()
+  File "/media/rishadd/OS/Data/protocol_emulator/host/i2c_slave_test.py", line 190, in phase_basic
+    scenario(name, txs, reads=reads, spec=True)
+  File "/media/rishadd/OS/Data/protocol_emulator/host/i2c_slave_test.py", line 109, in scenario
+    L = it.run_sim("tb_i2c_engine", name, {"HTX": words, "STX": stx, "PROG": prog or ip.slave()}, args, rise)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/media/rishadd/OS/Data/protocol_emulator/host/i2c_test.py", line 230, in run_sim
+    raise RuntimeError(f"{name}: simulation failed\n{r.stdout}{r.stderr}")
+RuntimeError: write 1 byte: simulation failed
+/media/rishadd/OS/Data/protocol_emulator/build/i2c/tb_i2c_engine_r1.vvp:9488: syntax error
+

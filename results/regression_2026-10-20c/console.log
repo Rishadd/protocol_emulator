@@ -1,0 +1,6 @@
+--- phase A: 1 suites
+  FAIL line_coder_mutants        0.3 min  --- transmitter
+--- phase D: 5 suites
+  PASS remap2_can_test           3.1 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap1_can_test           3.2 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap1_modbus_test        5.4 min  RESULT modbus_test: PASS (16/16 cases as expected)

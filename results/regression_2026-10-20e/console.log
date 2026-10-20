@@ -1,0 +1,5 @@
+--- phase A: 3 suites
+  PASS line_coder_mutants        0.4 min  line coder mutants caught: 16/16
+  PASS i2c_slave_test            1.7 min  RESULT i2c_slave_test: PASS (45/45 cases as expected)
+  PASS i2c_test                  2.2 min  RESULT i2c_test: PASS (60/60 cases as expected)
+REGRESSION PASS: 3 of 3 suites; summary in results/regression_2026-10-20e/summary.md

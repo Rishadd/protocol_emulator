@@ -29,3 +29,18 @@ results/tt_flow_2026-10-18/*_images/
 # GitHub Actions artifacts downloaded for inspection
 GDS_logs*.zip
 
+
+# 2026-10-19/20 flow results: big binary views stay local (the flow and GitHub rebuild them); metrics, logs, LEF, json and the
+# candidates' pictures (tt14b_images, results/shared_2026-10-20/sh4_images) are kept
+results/tt_flow_*/*_final/odb/
+results/tt_flow_*/*_final/mag/
+results/tt_flow_*/*_final/mag_gds/
+results/tt_flow_*/*_final/def/
+results/tt_flow_*/*_final/spef/
+results/tt_flow_*/*_final/sdf/
+results/tt_flow_*/*_final/pnl/
+results/tt_flow_*/*_final/spice/
+results/tt_flow_*/*_final/klayout_gds/
+results/tt_flow_*/*_final/gds/
+results/tt_flow_*/*_final/nl/
+results/shared_2026-10-19/*_images/

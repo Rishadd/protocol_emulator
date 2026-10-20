@@ -1,3 +1,6 @@
+# Status 2026-10-20 (native Ubuntu, read this before the rest)
+Done on Ubuntu: Nix, LibreLane 3.1.0.dev3, PDK 2bbec755, tt-support-tools, venvs; full regression 47/47 pass (results/regression_2026-10-20d/e; Linux fixes listed in memory.md); sh4 flow finished: LVS clean, precheck passes, slow-corner setup -1.45 ns at 20 ns (results/tt_flow_2026-10-20/sh4_final). GitHub run 39250627497 (main 8795248) passed gds / precheck / gl_test / viewer. Still open: merge/frame-v2 regression and merge into main (section 4 step 3), the shared-memory decision and software (step 5), the plan after (step 6). Use librelane/flow_variant_linux.sh and precheck_linux.sh instead of the _wsl scripts.
+
 # Handoff: continue on native Ubuntu (written 2026-10-19 evening)
 
 Read this first in the new session. State of the project when the laptop was closed; what is verified, what is half done, what to run next.

@@ -1,0 +1,20 @@
+Phase 1: engine 0 transmits Modbus RTU frames (CRC-16 from the CRC unit)
+  PASS     textbook frame 01 03 00 00 00 0A -> CRC C5 CD              1 frames 8 B | in-frame gap <= 0.0 bits, gap 0.0 bits
+  PASS     one-byte payload                                           1 frames 3 B | in-frame gap <= 0.0 bits, gap 0.0 bits
+  PASS     frames of 2..32 bytes, 115200 baud                         5 frames 73 B | in-frame gap <= 0.0 bits, gap 44.0 bits
+  PASS     32 random frames of 1..12 bytes                            32 frames 302 B | in-frame gap <= 0.0 bits, gap 44.0 bits
+  PASS     19200 baud (cpb 2604)                                      2 frames 13 B | in-frame gap <= 0.0 bits, gap 44.0 bits
+  PASS     all-0x00 and all-0xFF payloads                             2 frames 20 B | in-frame gap <= 0.0 bits, gap 44.0 bits
+Phase 2: engine 1 receives frames from a Python waveform and checks the CRC
+  PASS     good frames of 4..40 bytes, random gaps                    8 frames (0 bad) 143 B
+  PASS     one flipped bit per frame is always detected               10 frames (10 bad) 151 B
+  PASS     mix of good and corrupted frames                           10 frames (5 bad) 148 B
+  PASS     frames shorter than 4 bytes are bad                        4 frames (3 bad) 11 B
+  PASS     gaps of 16 bit times inside a frame stay one frame         3 frames (0 bad) 36 B
+  PASS     frames separated by exactly 40 bit times                   4 frames (0 bad) 32 B
+  PASS     sender baud error -2 %                                     4 frames (0 bad) 40 B
+  PASS     sender baud error +2 %                                     4 frames (0 bad) 40 B
+  PASS     19200 baud                                                 2 frames (0 bad) 13 B
+Phase 3: engine 0 (TX) wired to engine 1 (RX) on pin 0
+  PASS     TX engine -> RX engine, 12 frames, all CRCs good           12 frames 178 B
+RESULT modbus_test: PASS (16/16 cases as expected)

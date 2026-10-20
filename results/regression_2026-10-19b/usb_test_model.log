@@ -1,0 +1,11 @@
+--- enumeration, host bit rate +0.0 %
+--- HID reports on endpoint 1
+--- retransmission and NAK
+--- a pending packet belongs to its endpoint
+--- tokens that must be ignored
+--- SETUP with damaged data, unsupported request, OUT
+--- bus reset
+--- enumeration, host bit rate +1.5 %
+--- enumeration, host bit rate -1.5 %
+45 checks, 0 failed
+RESULT usb_test (model): PASS (45/45 checks)
