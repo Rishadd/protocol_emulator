@@ -206,17 +206,20 @@ def compile_tb(name, rise):
     if key not in _vvp:
         os.makedirs(BUILD, exist_ok=True)
         out = os.path.join(BUILD, f"{name}_r{rise}.vvp")
+        tmp = f"{out}.{os.getpid()}.tmp"                    # suites run in parallel and share this file: compile aside, then rename
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
         subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", f"-P{name}.T_RISE={rise}",
-                        "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", out,
+                        "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", tmp,
                         os.path.join(ROOT, "tb", name + ".v"), os.path.join(ROOT, "tb", "i2c_slave_model.v"),
                         *srcs, *SIM_LIBS], check=True)
+        os.replace(tmp, out)
         _vvp[key] = out
     return _vvp[key]
 
 
 def run_sim(tb, name, files, plus, rise=1):
-    d = os.path.join(BUILD, "".join(c if c.isalnum() or c in "-+=." else "_" for c in name))
+    suite = os.path.splitext(os.path.basename(sys.argv[0]))[0]       # i2c_test / i2c_slave_test: same case names, separate folders
+    d = os.path.join(BUILD, suite, "".join(c if c.isalnum() or c in "-+=." else "_" for c in name))
     os.makedirs(d, exist_ok=True)
     args = []
     for k, words in files.items():

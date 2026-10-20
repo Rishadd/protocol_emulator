@@ -23,7 +23,7 @@ ROOT = os.path.abspath(os.path.join(HERE, ".."))
 PY = sys.executable
 
 A = [
-    ("unit_testbenches", ["powershell", "-NoProfile", "-File", "run_tests.ps1"], {}),
+    ("unit_testbenches", ["powershell", "-NoProfile", "-File", "run_tests.ps1"] if os.name == "nt" else ["bash", "run_tests.sh"], {}),
     ("crc_test", [PY, "host/crc_test.py"], {}),
     ("alu_test", [PY, "host/alu_test.py"], {}),
     ("isa_diff_test", [PY, "host/isa_diff_test.py"], {}),
@@ -43,7 +43,8 @@ A = [
     ("ps2_test", [PY, "host/ps2_test.py", "run", "mutants", "rtl"], {}),
     ("swd_test", [PY, "host/swd_test.py"], {}),
     ("line_coder_test", [PY, "host/line_coder_test.py"], {}),
-    ("line_coder_mutants", [PY, "host/line_coder_test.py", "mutants"], {}, dict(final=r"mutants caught: (\d+)/\1\b")),
+    # every caught mutant prints the testbench's FAIL line, so the verdict is the X/X summary only
+    ("line_coder_mutants", [PY, "host/line_coder_test.py", "mutants"], {}, dict(final=r"mutants caught: (\d+)/\1\b", ignore_bad=True)),
     ("usb_test_model", [PY, "host/usb_test.py", "rate"], {}),
     ("usb_test_rtl", [PY, "host/usb_test.py", "rtl", "rate"], {}),
     ("usb_mutants", [PY, "host/usb_mutants.py"], {}, dict(final=r"mutants caught: (\d+)/\1\b")),
