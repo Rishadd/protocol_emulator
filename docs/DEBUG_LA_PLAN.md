@@ -21,7 +21,7 @@ Out of scope: analog capture, more than 16 channels, compression, streaming capt
 | D1 | New hardware stays off the ALU / fetch critical path: the capture unit reads the synchronised pins and writes its own memory; it never touches fetch. |
 | D2 | **Buffer = a third SRAM macro**, 1P 256x32 (`RM_IHPSG13_1P_256x32_c2_bm_bist`, already in `macro/`, 49.5k um2), placed top centre opposite the shared instruction macro and powered through the same Metal4 stripe bridge. Fallback if it costs timing or routing: a 32x32 flip-flop buffer. |
 | D3 | **Timestamp access is a new opcode, not an `RGET` source**: all eight `RGET` sources are in use (`RG_FIFO` = 7). Opcode 30 `TSTAMP rd` (R[rd] <= 32-bit free-running counter); 31 stays a reserved trap. The model, assembler and differential test get the opcode with it. |
-| D4 | The analyser samples the same 13 input-capable pins the engines see, after the 2-flop synchroniser (so a capture is what the firmware would have seen), plus RUN of both engines and one software-trigger line per engine. |
+| D4 | The analyser samples the same 13 input-capable pins the engines see, after the 2-flop synchroniser (so a capture is what the firmware would have seen): channels 0-7 = `uio[7:0]`, 8-12 = `ui_in[7:3]`, 13 / 14 = RUN of engine 0 / 1, **15 = the OR of the two engines' trigger lines** (a firmware marker shows up in the waveform and is also the software trigger). 16 channels in all. |
 | D5 | Change-mode words are `{values[15:0], delta[15:0]}`; a gap above 65,535 clocks produces an overflow word. Sample mode packs four 8-bit samples per word. |
 | D6 | Engine debug uses frame v2 (CRC-16, sequence numbers): a single step must never execute twice because of a retried frame. |
 
@@ -30,6 +30,9 @@ Out of scope: analog capture, more than 16 channels, compression, streaming capt
 | Aspect | Specification |
 |---|---|
 | Inputs | 16 channels (see D4) |
+
+The exact behaviour (word formats, overflow word, trigger and post-trigger rules, readout order, status) is `host/la_model.py` (Phase 1, done: self-test with 300 random captures); the RTL is checked against that model clock by clock.
+
 | Change mode (default) | one word per change; a UART byte at 115200 baud is about 10 words |
 | Sample mode | every N clocks (N programmable, 1 = every clock), selected 8 channels |
 | Resolution | one clock |
