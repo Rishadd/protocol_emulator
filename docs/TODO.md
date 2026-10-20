@@ -32,3 +32,12 @@ build the logic analyser on top of it. Tick items off as they finish.
 
 ## E. Wrap-up
 - [ ] E1. memory.md, EXECUTION_PLAN, HANDOFF updated; commit; push (repo is private)
+
+## F. User guide (skeleton written 2026-10-20: docs/USER_GUIDE.md and .html)
+- [x] F1. Skeleton: all chapters, subsections, brief placeholder text, contents page, HTML build script
+- [ ] F2. Pico host library `pe_chip` (MicroPython), tested against the simulator; fill chapters 3-7 examples
+- [ ] F3. Logic analyser: registers, host tool `la_capture.py`, GTKWave screenshots and .gtkw (chapter 11)
+- [ ] F4. Engine debug and sniffer (chapter 12); TSTAMP (8.8, 9.5)
+- [ ] F5. Standalone USB (10.13) and Ethernet (10.16) when built; catalogue protocols (10.16)
+- [ ] F6. Final pin map, ratings, power, maximum clock (2.2, 14.2, 15, Appendices B and C); check the links marked "to check" (Appendix G)
+- [ ] F7. Worked recipe template (10.1), first program (8.10), quick-reference card, glossary; remove every PLACEHOLDER marker
