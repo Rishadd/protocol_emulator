@@ -21,6 +21,7 @@ module engine_top #(
     // fetch port of the shared instruction memory: im_addr = next_pc (region relative), im_instr arrives one clock later
     output wire [8:0]  im_addr,
     input  wire [31:0] im_instr,
+    input  wire        im_oob,          // the word lies outside the window: decode TRAP instead (opcode 31, a fault)
     // OP_REGION: window request to imem_shared and the window's lock
     output wire        rg_go,
     output wire [18:0] rg_val,
@@ -87,7 +88,7 @@ module engine_top #(
     // control_unit outputs that reach state outside the reset core (the FIFOs), so they are
     // masked with core_rst_n; everything else sits behind core_rst_n's asynchronous reset.
 `ifdef SHARED_IMEM
-    assign instr   = im_instr;
+    assign instr   = im_oob ? {5'd31, 27'd0} : im_instr;
     assign im_addr = next_pc;
     assign rg_val  = instr[18:0];           // OP_REGION operand (valid only with rg_go)
     wire _unused_imem = &{imem_we, imem_waddr, imem_wdata, INIT_FILE != "", 1'b0};

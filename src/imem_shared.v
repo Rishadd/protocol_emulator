@@ -19,8 +19,10 @@ module imem_shared (
     // fetch ports (physical program counters); data one clock later
     input  wire [8:0]  f_addr0,
     input  wire [8:0]  f_addr1,
-    output wire [31:0] f_instr0,
-    output wire [31:0] f_instr1,
+    output wire [31:0] f_raw0,       // macro output, port B (engine 0); the engine substitutes TRAP when f_oob0 is set
+    output wire [31:0] f_raw1,       // macro output, port A (engine 1)
+    output wire        f_oob0,       // registered: the fetched word lies outside engine 0's window
+    output wire        f_oob1,
     // OP_REGION from the control units: window = {limit[9:0], base[8:0]}, operand fields 18:9 and 8:0
     input  wire        rg_go0,
     input  wire        rg_go1,
@@ -93,8 +95,12 @@ module imem_shared (
     wire [8:0]  addr_a = (port_a && iw_wr) ? iw_addr : f_addr1;
     wire [31:0] dout_a, dout_b;
 
-    assign f_instr0 = oob0 ? TRAP : dout_b;
-    assign f_instr1 = oob1 ? TRAP : dout_a;
+    // The trap substitution (oob ? TRAP : word) is done inside each engine, next to the decode: a gate here sat beside the macro in the
+    // middle of the die and drove the long wire to the engine with a minimum-size cell (about 1 ns of slew in the sh4 run).
+    assign f_raw0 = dout_b;
+    assign f_raw1 = dout_a;
+    assign f_oob0 = oob0;
+    assign f_oob1 = oob1;
 
     RM_IHPSG13_2P_512x32_c2_bm_bist u_mem (
         .A_CLK(clk), .A_MEN(1'b1), .A_WEN(wa), .A_REN(!wa), .A_ADDR(addr_a), .A_DIN(iw_data), .A_DLY(1'b1), .A_DOUT(dout_a),

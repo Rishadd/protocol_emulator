@@ -34,6 +34,7 @@ module tt_um_protocol_emulator (
     wire        imem_ok;
     wire [8:0]  start0, start1;
     wire [31:0] instr0, instr1;
+    wire        oob0, oob1;      // SHARED_IMEM: out-of-window flags (the engines substitute TRAP)
     wire [8:0]  im_addr0, im_addr1;
     wire        rg_go0, rg_go1, rg_locked0, rg_locked1;
     wire [18:0] rg_val0, rg_val1;
@@ -92,7 +93,7 @@ module tt_um_protocol_emulator (
 `ifdef SHARED_IMEM
     imem_shared u_imem (
         .clk(clk), .rst_n(srst_n), .run(eng_run),
-        .f_addr0(im_addr0), .f_addr1(im_addr1), .f_instr0(instr0), .f_instr1(instr1),
+        .f_addr0(im_addr0), .f_addr1(im_addr1), .f_raw0(instr0), .f_raw1(instr1), .f_oob0(oob0), .f_oob1(oob1),
         .rg_go0(rg_go0), .rg_go1(rg_go1), .rg_val0(rg_val0), .rg_val1(rg_val1),
         .locked0(rg_locked0), .locked1(rg_locked1),
         .iw_wr(imem_we[0]), .iw_addr(imem_waddr), .iw_data(imem_wdata), .iw_ok(imem_ok));
@@ -102,7 +103,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(srst_n), .run(eng_run[0]),
         .imem_we(imem_we[0]), .imem_waddr(imem_waddr[7:0]), .imem_wdata(imem_wdata),
 `ifdef SHARED_IMEM
-        .im_addr(im_addr0), .im_instr(instr0),
+        .im_addr(im_addr0), .im_instr(instr0), .im_oob(oob0),
         .rg_go(rg_go0), .rg_val(rg_val0), .rg_locked(rg_locked0), .start_pc(start0),
 `endif
         .tx_wr_en(tx_wr_en[0]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[0]),
@@ -114,7 +115,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(srst_n), .run(eng_run[1]),
         .imem_we(imem_we[1]), .imem_waddr(imem_waddr[7:0]), .imem_wdata(imem_wdata),
 `ifdef SHARED_IMEM
-        .im_addr(im_addr1), .im_instr(instr1),
+        .im_addr(im_addr1), .im_instr(instr1), .im_oob(oob1),
         .rg_go(rg_go1), .rg_val(rg_val1), .rg_locked(rg_locked1), .start_pc(start1),
 `endif
         .tx_wr_en(tx_wr_en[1]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[1]),
