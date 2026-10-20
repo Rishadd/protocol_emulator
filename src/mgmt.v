@@ -230,7 +230,9 @@ module mgmt (
                        (nbytes == 4'd9)  ? sh_data[31:24] :
                        (nbytes == 4'd10) ? txcrc[15:8] :
                        (nbytes == 4'd11) ? txcrc[7:0] : 8'h00;
-    assign tx_byte = (nbytes == 4'd0) ? status_snap :
+    // Byte 0 must be the sample the snapshot takes on the same edge: spi_slave reloads its shift register from tx_byte every clock while CS_N is high,
+    // so sending status_snap here would show the host a STATUS one clock older than the one the v1 accept decision (tx_ok / rx_ok) uses
+    assign tx_byte = (nbytes == 4'd0) ? (active ? status_snap : status) :
                      is_v2            ? tx_v2 :
                      (nbytes == 4'd3) ? rd_word[31:24] :
                      (nbytes == 4'd4) ? rd_word[23:16] :
