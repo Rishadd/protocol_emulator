@@ -27,7 +27,7 @@
 //                              [6:4] debug view used when dbg_en = 0  [31:16] IRQ mask (reset 0)
 //                              [2:0] cannot change while an engine runs
 //   a 49      0x02C4     IRQ   [15:0] status, W1C: [0] RX data e0 [1] RX data e1 [2] halted e0 [3] halted e1
-//                              [4] fault e0 [5] fault e1 [6] management error [7] pin violation  ([15:8] reserved)
+//                              [4] fault e0 [5] fault e1 [6] management error [7] pin violation [8] logic analyser capture done  ([15:9] reserved)
 //   a 50      0x02C8     INPUTS (read only)  [7:0] uio_in  [12:8] ui_in[7:3]  [13] hold active
 // w_hit: the write-port address is a register (readable); w_ok: a write of w_data to it is permitted now.
 // The management controller registers its write strobe one clock after the check (applies only if w_ok was 1).
@@ -55,6 +55,7 @@ module pin_mgr (
     input  wire [5:0]  view,         // debug view bits for uo_out[7:2]
     // status and controls
     input  wire [6:0]  irq_src,      // IRQ status bits [6:0]
+    input  wire        la_done,      // IRQ status bit 8 (one-clock pulse, made sticky here)
     output wire        hold,
     output wire        trig_en,
     output wire [2:0]  view_sel,
@@ -71,14 +72,14 @@ module pin_mgr (
     output reg  [2:0]  misc,         // {dbg_en, trig_en, hold_en}
     output reg  [2:0]  vsel,
     output reg  [15:0] mask,
-    output reg  [7:0]  irq_st
+    output reg  [8:0]  irq_st
 );
     reg [1:0]  hold_s;
 
     assign hold     = misc[0] & hold_s[1];
     assign trig_en  = misc[1];
     assign view_sel = misc[2] ? ui_hi[4:2] : vsel;
-    assign irq      = |(irq_st & mask[7:0]);
+    assign irq      = |(irq_st & mask[8:0]);
 
     // ---------------- outputs
     wire [12:0] in_all = {ui_hi, uio_in};
@@ -144,7 +145,7 @@ module pin_mgr (
                    a_viol ? (w_data[31:16] == 16'd0) :
                    a_isel ? (w_data[31:4] == 28'd0 && w_data[3:0] <= 4'd12 && !run[w_e]) :
                    a_misc ? (w_data[15:7] == 9'd0 && !w_data[3] && (run == 2'b00 || w_data[2:0] == misc)) :
-                   a_irq  ? (w_data[31:16] == 16'd0) : 1'b0;
+                   a_irq  ? (w_data[31:9] == 23'd0) : 1'b0;
 
     // read port (its own address: the management controller reads before the write data has arrived)
     wire [2:0] ri = r_addr[2:0];
@@ -155,12 +156,12 @@ module pin_mgr (
         else if (r_addr[5:3] == 3'd2 && ri != 3'd0)       r_data = {26'd0, oremap[3*ri +: 3], 1'b0, oowner[2*ri +: 2]};
         else if (r_addr[5:4] == 2'd2)                     r_data = {28'd0, r_addr[3] ? isel1_r[4*ri +: 4] : isel0_r[4*ri +: 4]};
         else if (r_addr == 6'd48)                         r_data = {mask, 9'd0, vsel, 1'b0, misc};
-        else if (r_addr == 6'd49)                         r_data = {24'd0, irq_st};
+        else if (r_addr == 6'd49)                         r_data = {23'd0, irq_st};
         else if (r_addr == 6'd50)                         r_data = {18'd0, hold, ui_hi, uio_in};
     end
 
     wire [15:0] viol_clr = (we && a_viol) ? w_data[15:0] : 16'd0;
-    wire [7:0]  irq_clr  = (we && a_irq)  ? w_data[7:0]  : 8'd0;
+    wire [8:0]  irq_clr  = (we && a_irq)  ? w_data[8:0]  : 9'd0;
     integer n;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -177,7 +178,7 @@ module pin_mgr (
             misc    <= 3'b111;
             vsel    <= 3'd0;
             mask    <= 16'd0;
-            irq_st  <= 8'd0;
+            irq_st  <= 9'd0;
             hold_s  <= 2'b00;
         end else begin
             hold_s <= {hold_s[0], ui_hi[0]};
@@ -198,7 +199,7 @@ module pin_mgr (
                 mask <= w_data[31:16];
             end
             viol   <= (viol & ~viol_clr) | {oe1 & ~map1 & {8{run[1]}}, oe0 & ~map0 & {8{run[0]}}};
-            irq_st <= (irq_st & ~irq_clr) | {|viol, irq_src};
+            irq_st <= (irq_st & ~irq_clr) | {la_done, |viol, irq_src};
         end
     end
 endmodule

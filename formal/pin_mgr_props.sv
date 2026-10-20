@@ -22,7 +22,8 @@ module pin_mgr_props (
 
     wire        w_hit, w_ok, hold, trig_en, irq;
     wire [31:0] r_data, isel0, isel1;
-    wire [7:0]  in0, in1, pad_oe, pad_out, od, irq_st;
+    wire [7:0]  in0, in1, pad_oe, pad_out, od;
+    wire [8:0]  irq_st;
     wire [6:0]  uo_hi;
     wire [2:0]  view_sel, misc, vsel;
     wire [15:0] owner, oowner, viol, mask;
@@ -30,7 +31,7 @@ module pin_mgr_props (
     pin_mgr dut (.clk(clk), .rst_n(rst_n), .run(run), .w_addr(w_addr), .w_data(w_data), .w_hit(w_hit), .w_ok(w_ok), .we(we),
                  .r_addr(r_addr), .r_data(r_data), .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
                  .uio_in(uio_in), .ui_hi(ui_hi), .uio_oe(pad_oe), .uio_out(pad_out), .uo_hi(uo_hi), .view(view),
-                 .irq_src(irq_src), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
+                 .irq_src(irq_src), .la_done(1'b0), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
                  .owner(owner), .od(od), .remap(remap), .oowner(oowner), .oremap(oremap), .isel0_r(isel0), .isel1_r(isel1),
                  .viol(viol), .misc(misc), .vsel(vsel), .mask(mask), .irq_st(irq_st));
 
@@ -87,13 +88,13 @@ module pin_mgr_props (
         // P8 HOLD never acts unless enabled; the debug view comes from the DBG_SEL pins unless released
         if (!misc[0]) assert (!hold);
         assert (view_sel == (misc[2] ? ui_hi[4:2] : vsel));
-        assert (irq == |(irq_st & mask[7:0]));       // P9 IRQ = OR of masked status
+        assert (irq == |(irq_st & mask[8:0]));       // P9 IRQ = OR of masked status
     end
 
     // P4 after reset: nothing owned, nothing driven, identity input select, everything enabled, no status
     always @(posedge clk) if (rst_n && $past(init)) begin
         assert (owner == 16'd0 && od == 8'd0 && remap == 24'd0 && oowner == 16'd0 && oremap == 24'd0);
-        assert (pad_oe == 8'd0 && viol == 16'd0 && misc == 3'b111 && mask == 16'd0 && irq_st == 8'd0);
+        assert (pad_oe == 8'd0 && viol == 16'd0 && misc == 3'b111 && mask == 16'd0 && irq_st == 9'd0);
         for (i = 0; i < 8; i = i + 1) assert (isel0[4*i +: 4] == i && isel1[4*i +: 4] == i);
     end
 

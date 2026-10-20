@@ -47,6 +47,16 @@ module tt_um_protocol_emulator (
     wire [2:0]  view_sel;
     wire [5:0]  view;
     wire [6:0]  uo_hi;
+    wire [31:0] ts;
+    wire [1:0]  eng_trig;
+    wire [5:0]  la_view;
+    wire        la_done;
+`ifdef LA
+    wire        la_hit, la_ok, la_we, la_rdq, la_dv, la_busy;
+    wire [31:0] la_rd, la_dout;
+`else
+    assign ts = 32'd0, la_view = 6'd0, la_done = 1'b0;
+`endif
 
     wire [7:0]  out0, oe0, out1, oe1, in0, in1;
     wire [8:0]  pc0, pc1;
@@ -75,7 +85,17 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data),
         .pin_wa(pin_wa), .pin_wd(pin_wd), .pin_hit(pin_hit), .pin_ok(pin_ok), .pin_we(pin_we),
         .pin_ra(pin_ra), .pin_rd(pin_rd), .hold(hold),
+`ifdef LA
+        .la_hit(la_hit), .la_ok(la_ok), .la_we(la_we), .la_rd(la_rd), .la_rdq(la_rdq), .la_dv(la_dv), .la_dout(la_dout), .la_busy(la_busy),
+`endif
         .err(mgmt_err));
+
+`ifdef LA
+    la_block u_la (
+        .clk(clk), .rst_n(srst_n), .pins({ui_in[7:3], uio_in}), .run(eng_run), .eng_trig(eng_trig), .ts(ts),
+        .w_addr(pin_wa), .w_data(pin_wd), .w_hit(la_hit), .w_ok(la_ok), .we(la_we), .r_addr(pin_ra), .r_data(la_rd),
+        .rd_strobe(la_rdq), .dv(la_dv), .dout(la_dout), .busy(la_busy), .done_pulse(la_done), .view(la_view));
+`endif
 
     pin_mgr u_pins (
         .clk(clk), .rst_n(srst_n), .run(eng_run),
@@ -83,14 +103,14 @@ module tt_um_protocol_emulator (
         .r_addr(pin_ra), .r_data(pin_rd),
         .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
         .uio_in(uio_in), .ui_hi(ui_in[7:3]), .uio_oe(uio_oe), .uio_out(uio_out), .uo_hi(uo_hi), .view(view),
-        .irq_src({mgmt_err, fault, halted, ~rx_empty}),
+        .irq_src({mgmt_err, fault, halted, ~rx_empty}), .la_done(la_done),
         .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
         .owner(), .od(), .remap(), .oowner(), .oremap(), .isel0_r(), .isel1_r(), .viol(), .misc(), .vsel(), .mask(), .irq_st());
 
     dbg_view u_dbg (
         .clk(clk), .rst_n(srst_n), .sel(view_sel), .err(mgmt_err), .run(eng_run), .halted(halted), .fault(fault),
         .rx_byte(rx_byte), .byte_valid(byte_valid), .frame_end(frame_end), .frame_clean(frame_clean),
-        .active(spi_active), .ui_hi(ui_in[7:3]), .uio_in(uio_in), .view(view));
+        .active(spi_active), .ui_hi(ui_in[7:3]), .uio_in(uio_in), .la_view(la_view), .view(view));
 
 `ifdef SHARED_IMEM
     imem_shared u_imem (
@@ -112,7 +132,7 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en[0]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[0]),
         .rx_rd_en(rx_rd_en[0]), .rx_rd_data(rx_data0), .rx_empty(rx_empty[0]),
         .pin_in(in0), .pin_out(out0), .pin_oe(oe0),
-        .halted(halted[0]), .fault(fault[0]), .pc(pc0));
+        .halted(halted[0]), .fault(fault[0]), .pc(pc0), .ts(ts), .trig(eng_trig[0]));
 
     engine_top u_eng1 (
         .clk(clk), .rst_n(srst_n), .run(eng_run[1]),
@@ -124,7 +144,7 @@ module tt_um_protocol_emulator (
         .tx_wr_en(tx_wr_en[1]), .tx_wr_data(tx_wr_data), .tx_full(tx_full[1]),
         .rx_rd_en(rx_rd_en[1]), .rx_rd_data(rx_data1), .rx_empty(rx_empty[1]),
         .pin_in(in1), .pin_out(out1), .pin_oe(oe1),
-        .halted(halted[1]), .fault(fault[1]), .pc(pc1));
+        .halted(halted[1]), .fault(fault[1]), .pc(pc1), .ts(ts), .trig(eng_trig[1]));
 
     assign uo_out = {uo_hi, miso};
 

@@ -86,6 +86,17 @@ module mgmt (
     output wire [5:0]  pin_ra,
     input  wire [31:0] pin_rd,
     input  wire        hold,
+`ifdef LA
+    // logic analyser register window 0x0300..0x03FF (la_block.v); shares pin_wa / pin_wd / pin_ra
+    input  wire        la_hit,
+    input  wire        la_ok,
+    output reg         la_we,
+    input  wire [31:0] la_rd,
+    output reg         la_rdq,          // one-clock strobe: read the buffer word at PTR (frame v2 only); the word arrives with la_dv
+    input  wire        la_dv,
+    input  wire [31:0] la_dout,
+    input  wire        la_busy,         // capture running: the buffer cannot be read
+`endif
     // status
     output reg         err          // sticky, cleared by reset or IRQ bit 6 write-one-to-clear
 `ifdef FORMAL
@@ -177,6 +188,12 @@ module mgmt (
     wire hit_region = 1'b0;
     wire imem_rd_ok = 1'b0;
 `endif
+`ifdef LA
+    wire hit_la      = (addr[15:8] == 8'h03) && (addr[1:0] == 2'b00) && la_hit;
+    wire hit_la_data = hit_la && (addr[7:2] == 6'd7);
+`else
+    wire hit_la = 1'b0, hit_la_data = 1'b0;
+`endif
     wire hit_rx   = eng_ok && (addr[11:0] == 12'h204);
     wire hit_tx   = eng_ok && (addr[11:0] == 12'h200);
     wire hit_pin  = (addr[15:8] == 8'h02) && (addr[1:0] == 2'b00) && pin_hit;   // 0x0200..0x02FC
@@ -215,6 +232,9 @@ module mgmt (
     end
     wire [31:0] rd_val   = (ra[15:5] == 11'd0 && ra[1:0] == 2'b00 && ra[4:2] <= 3'd4) ? rd_id :
                            (ra[15:8] == 8'h02 && ra[1:0] == 2'b00) ? pin_rd :
+`ifdef LA
+                           (ra[15:8] == 8'h03 && ra[1:0] == 2'b00) ? la_rd :
+`endif
                            !r_eng_ok ? 32'd0 :
                            (ra[11:0] == 12'h000) ? {15'd0, pc_e, 5'd0, fault[r_eng], halted[r_eng], eng_run[r_eng]} :   // bit 16 = pc[8] (SHARED_IMEM)
                            (ra[11:0] == 12'h204) ? (r_rx_ok ? rx_e : 32'd0) :
@@ -238,6 +258,9 @@ module mgmt (
             else if (hit_region)        code = 8'd4;                            // REGION is read-only
             else if (hit_tx)            code = tx_full[eng] ? 8'd1 : 8'd0;
             else if (hit_pin)           code = pin_ok ? 8'd0 : 8'd4;
+`ifdef LA
+            else if (hit_la)            code = la_ok ? 8'd0 : 8'd4;
+`endif
             else if (hit_scr || hit_cnt) code = 8'd0;
             else if (id_win)            code = 8'd4;                            // ID, VERSION, CAPABILITY are read-only
             else                        code = 8'd2;
@@ -245,6 +268,10 @@ module mgmt (
             if (hit_rx)                 code = rx_empty[eng] ? 8'd1 : 8'd0;
 `ifdef SHARED_IMEM
             else if (hit_imem)          code = imem_rd_ok ? 8'd0 : 8'd4;       // instruction readback needs a held engine
+`endif
+`ifdef LA
+            else if (hit_la_data)       code = la_busy ? 8'd1 : 8'd0;
+            else if (hit_la)            code = 8'd0;
 `endif
             else if (at_ctrl || hit_pin || hit_idr || hit_start || hit_region) code = 8'd0;
             else                        code = 8'd2;
@@ -324,6 +351,10 @@ module mgmt (
             rx_rd_en    <= 2'b00;
             tx_wr_en    <= 2'b00;
             pin_we      <= 1'b0;
+`ifdef LA
+            la_we       <= 1'b0;
+            la_rdq      <= 1'b0;
+`endif
             err         <= 1'b0;
         end else begin
             imem_we  <= 2'b00;
@@ -333,6 +364,10 @@ module mgmt (
             rx_rd_en <= 2'b00;
             tx_wr_en <= 2'b00;
             pin_we   <= 1'b0;
+`ifdef LA
+            la_we    <= 1'b0;
+            la_rdq   <= 1'b0;
+`endif
             cap      <= byte_valid && (nbytes == 4'd2);
             if (!active) begin
                 status_snap <= status;      // same edges spi_slave loads byte 0 on
@@ -363,6 +398,14 @@ module mgmt (
                     pin_we <= 1'b1;
                     if (addr[7:0] == 8'hC4 && data[6]) err <= 1'b0;
                 end
+`ifdef LA
+                else if (go && is_write && hit_la && la_ok)
+                    la_we <= 1'b1;
+                else if (go && is_v2 && is_read && hit_la_data && !la_busy)
+                    la_rdq <= 1'b1;
+                else if (go && is_read && hit_la && !hit_la_data)
+                    ;                                   // plain register read of the logic analyser window
+`endif
                 else if (go && is_write && hit_scr)
                     scratch <= data;
                 else if (go && is_write && hit_cnt) begin
@@ -416,6 +459,9 @@ module mgmt (
 `ifdef SHARED_IMEM
             // instruction readback: the word arrives two clocks after the strobe, long before the next frame shows this result
             if (ir_valid) res_data <= ir_data;
+`endif
+`ifdef LA
+            if (la_dv) res_data <= la_dout;
 `endif
         end
     end
