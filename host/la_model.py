@@ -31,6 +31,7 @@ NCH = 16
 class LogicAnalyser:
     def __init__(self, depth=256):
         self.depth = depth
+        self.buf = [0] * depth                        # not cleared by an arm: words beyond the write pointer are stale, the readout only uses wp / full
         self.cfg = dict(mode="change", div=1, sel=0, trig="manual", mask=0, value=0, chan=0, post_words=0, post_clk=0)
         self.reset()
 
@@ -41,7 +42,6 @@ class LogicAnalyser:
 
     def reset(self):
         self.state = IDLE
-        self.buf = [0] * self.depth
         self.total = 0                  # words written since arming
         self.wp = 0
         self.prev = 0                   # last written value (change mode), last channel vector (edges)
@@ -55,6 +55,7 @@ class LogicAnalyser:
         self.post_c = 0
         self.last_ch = 0
         self.manual_req = False
+        self.wrote = None               # the word written in the last clock, or None
 
     def arm(self):
         self.reset()
@@ -65,6 +66,7 @@ class LogicAnalyser:
 
     # ------------------------------------------------------------------
     def _write(self, word):
+        self.wrote = word & 0xFFFFFFFF
         self.buf[self.wp] = word & 0xFFFFFFFF
         self.wp = (self.wp + 1) % self.depth
         self.total += 1
@@ -89,9 +91,23 @@ class LogicAnalyser:
             return not (old >> 15 & 1) and bool(ch >> 15 & 1)
         raise ValueError(t)
 
+    def clock(self, ch, arm=False, manual=False):
+        """One clock as the registered RTL sees it: the strobes act at the clock they are given, the effect of `arm` starts with the next clock (this
+        clock records nothing, the channel vector is only remembered for edge detection); `manual` is a trigger in this clock and does nothing unless armed."""
+        ch &= 0xFFFF
+        self.wrote = None
+        if arm:
+            self.arm()
+            self.last_ch = ch
+            return self.state
+        if manual and self.state == ARMED:
+            self.manual_req = True
+        return self.step(ch)
+
     def step(self, ch):
         """One clock with channel vector ch (16 bits). Returns the state after the clock."""
         ch &= 0xFFFF
+        self.wrote = None
         if self.state in (IDLE, DONE):
             self.last_ch = ch
             return self.state
@@ -141,6 +157,14 @@ class LogicAnalyser:
     @property
     def wrapped(self):
         return self.total > self.depth
+
+    @property
+    def full(self):
+        return self.total >= self.depth
+
+    @property
+    def trig_wp(self):
+        return None if self.trig_index is None else self.trig_index % self.depth
 
     def words(self):
         """The buffer, oldest word first."""
