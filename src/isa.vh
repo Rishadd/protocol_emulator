@@ -37,6 +37,7 @@
 `define OP_LINE   5'd28  // [26:24] lop, [2:0] rs : line coder operation (see LN_* below, docs/LINE_CODER.md)
 // All others trap.
 `define OP_REGION 5'd29  // [8:0] base, [18:9] limit : shared memory window, once per run (SHARED_IMEM only; traps otherwise)
+`define OP_TSTAMP 5'd30  // rd [2:0] : R[rd] <= 32-bit free-running clock counter (logic analyser timestamp)
 `define OP_LAST_LEGAL 5'd28
 
 // ALU functions (OP_ALU [26:23]); 13..15 trap
@@ -74,11 +75,12 @@
 `define RG_TXF 3'd5
 `define RG_LINE 3'd6   // line coder status and received byte (a read consumes the byte); stalls 1 clock after a LINE instruction
 `define RG_FIFO 3'd7   // FIFO occupancy, never stalls: [2:0] words in the TX FIFO, [5:3] words in the RX FIFO
-// RPUT destinations (OP_RPUT [6:4]); 4..7 trap
+// RPUT destinations (OP_RPUT [6:4]); 5..7 trap
 `define RP_OSR 3'd0
 `define RP_ISR 3'd1
 `define RP_LC  3'd2
 `define RP_RXF 3'd3
+`define RP_TRIG 3'd4   // trigger line to the logic analyser <= R[rs][0] (software trigger / marker, channel 15); low while the engine is held
 // CRC operations (OP_CRC [26:24]); 7 traps
 `define CRC_RST   3'd0
 `define CRC_POLY  3'd1

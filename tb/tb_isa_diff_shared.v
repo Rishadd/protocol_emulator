@@ -33,6 +33,8 @@ module tb_isa_diff_shared;
     wire        txf0, txf1, rxe0, rxe1, hlt0, hlt1, flt0, flt1;
     wire [7:0]  po0, po1, oe0, oe1;
     wire [8:0]  pc0, pc1;
+    reg  [31:0] ts = 0;
+    wire        trg0, trg1;
 
     engine_top e0 (
         .clk(clk), .rst_n(rst_n), .run(run[0]),
@@ -40,14 +42,14 @@ module tb_isa_diff_shared;
         .im_addr(im_addr0), .im_instr(raw0), .im_oob(oob0), .rg_go(rg_go0), .rg_val(rg_val0), .rg_locked(lk0), .start_pc(start0),
         .tx_wr_en(tx_wr0), .tx_wr_data(txd0), .tx_full(txf0),
         .rx_rd_en(rx_rd0), .rx_rd_data(rxd0), .rx_empty(rxe0),
-        .pin_in(pin0), .pin_out(po0), .pin_oe(oe0), .halted(hlt0), .fault(flt0), .pc(pc0));
+        .pin_in(pin0), .pin_out(po0), .pin_oe(oe0), .halted(hlt0), .fault(flt0), .pc(pc0), .ts(ts), .trig(trg0));
     engine_top e1 (
         .clk(clk), .rst_n(rst_n), .run(run[1]),
         .imem_we(1'b0), .imem_waddr(8'd0), .imem_wdata(32'd0),
         .im_addr(im_addr1), .im_instr(raw1), .im_oob(oob1), .rg_go(rg_go1), .rg_val(rg_val1), .rg_locked(lk1), .start_pc(start1),
         .tx_wr_en(tx_wr1), .tx_wr_data(txd1), .tx_full(txf1),
         .rx_rd_en(rx_rd1), .rx_rd_data(rxd1), .rx_empty(rxe1),
-        .pin_in(pin1), .pin_out(po1), .pin_oe(oe1), .halted(hlt1), .fault(flt1), .pc(pc1));
+        .pin_in(pin1), .pin_out(po1), .pin_oe(oe1), .halted(hlt1), .fault(flt1), .pc(pc1), .ts(ts), .trig(trg1));
 
     reg [31:0] img   [0:NTMAX*512-1];
     reg [31:0] strt  [0:NTMAX-1];
@@ -79,20 +81,21 @@ module tb_isa_diff_shared;
             for (a = 0; a < 512; a = a + 1) imem.poke(a, img[t * 512 + a]);
             tick; tick; tick;                      // the held engines re-read their start words
             for (c = 0; c < cyc; c = c + 1) begin
+                ts = c;
                 s0 = stim0[t * cyc + c]; s1 = stim1[t * cyc + c];
                 pin0 = s0[47:40]; tx_wr0 = s0[33]; rx_rd0 = s0[32]; txd0 = s0[31:0];
                 pin1 = s1[47:40]; tx_wr1 = s1[33]; rx_rd1 = s1[32]; txd1 = s1[31:0];
                 run = 2'b11;
                 tick;
-                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b %h %h %h %h %h %h %h %h", pc0, po0, oe0,
+                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b%b %h %h %h %h %h %h %h %h", pc0, po0, oe0,
                           hlt0, flt0, txf0, rxe0, rxe0 ? 32'd0 : rxd0,
                           e0.osr.data, e0.isr.data, e0.lc.count, e0.crc.value,
-                          e0.alu.flag_z, e0.alu.flag_n, e0.alu.flag_c,
+                          e0.alu.flag_z, e0.alu.flag_n, e0.alu.flag_c, trg0,
                           e0.alu.r[0], e0.alu.r[1], e0.alu.r[2], e0.alu.r[3], e0.alu.r[4], e0.alu.r[5], e0.alu.r[6], e0.alu.r[7]);
-                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b %h %h %h %h %h %h %h %h", pc1, po1, oe1,
+                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b%b %h %h %h %h %h %h %h %h", pc1, po1, oe1,
                           hlt1, flt1, txf1, rxe1, rxe1 ? 32'd0 : rxd1,
                           e1.osr.data, e1.isr.data, e1.lc.count, e1.crc.value,
-                          e1.alu.flag_z, e1.alu.flag_n, e1.alu.flag_c,
+                          e1.alu.flag_z, e1.alu.flag_n, e1.alu.flag_c, trg1,
                           e1.alu.r[0], e1.alu.r[1], e1.alu.r[2], e1.alu.r[3], e1.alu.r[4], e1.alu.r[5], e1.alu.r[6], e1.alu.r[7]);
             end
         end

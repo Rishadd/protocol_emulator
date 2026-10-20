@@ -41,6 +41,7 @@ module control_unit (
     output reg         ldi_go,          // LDI commits
     output reg         rget_go,         // RGET commits (engine_top selects the source from operand[6:4])
     output reg         isr_load,        // RPUT ISR: ISR <= R[rs]
+    output reg         trig_wr,         // RPUT TRIG: trigger line <= R[rs][0]
     output reg         osr_from_reg,    // with osr_load: load value is R[rs] (RPUT OSR), not the TX FIFO word
     output reg         lc_from_reg,     // with lc_load: load value is R[rs][15:0] (RPUT LC), not the operand
     output reg         dc_from_reg,     // with dc_load: delay is R[rs] (WAITR), not the operand
@@ -99,16 +100,16 @@ module control_unit (
     wire [2:0]  line_lop = operand[26:24];
     wire sub_ok = (opcode == `OP_ALU)  ? (alu_func <= `ALU_LAST_LEGAL) :
                   (opcode == `OP_RGET) ? (rg_src   <= `RG_FIFO) :
-                  (opcode == `OP_RPUT) ? (rp_dst   <= `RP_RXF) :
+                  (opcode == `OP_RPUT) ? (rp_dst   <= `RP_TRIG) :
                   (opcode == `OP_CRC)  ? (crc_cop  <= `CRC_BYTE) :
                   (opcode == `OP_LINE) ? (line_lop <= `LN_RESET) : 1'b1;
 `ifdef SHARED_IMEM
     // OP_REGION is legal once per run, with a non-empty window inside the 512-word memory
     wire rg_legal = (opcode != `OP_REGION) ||
                     (!region_locked && ({1'b0, operand[8:0]} < operand[18:9]) && (operand[18:9] <= 10'd512));
-    wire legal    = ((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_REGION)) && sub_ok && rg_legal;
+    wire legal    = ((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_REGION) || (opcode == `OP_TSTAMP)) && sub_ok && rg_legal;
 `else
-    wire legal      = (opcode <= `OP_LAST_LEGAL) && sub_ok;   // opcodes above OP_LAST_LEGAL, or a reserved sub-field, trap
+    wire legal      = ((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_TSTAMP)) && sub_ok;   // opcodes above OP_LAST_LEGAL, or a reserved sub-field, trap
 `endif
     wire jp_taken   = (pin_in[operand[10:8]] == (opcode == `OP_JPH));  // JPH/JPL: pin in [10:8], addr in [7:0]
     wire timed      = (opcode == `OP_WAIT) || (opcode == `OP_OUT1) || (opcode == `OP_IN1);  // instructions that require holding for a condition
@@ -193,6 +194,7 @@ module control_unit (
         ldi_go     = 1'b0;
         rget_go    = 1'b0;
         isr_load   = 1'b0;
+        trig_wr    = 1'b0;
         osr_from_reg = 1'b0;
         lc_from_reg  = 1'b0;
         dc_from_reg  = 1'b0;
@@ -301,11 +303,16 @@ module control_unit (
                             tx_rd_en   = (rg_src == `RG_TXF);
                             pc_advance = 1'b1;
                         end
+                        `OP_TSTAMP: begin
+                            rget_go    = 1'b1;                  // engine_top puts the counter on rget_data
+                            pc_advance = 1'b1;
+                        end
                         `OP_RPUT: begin
                             case (rp_dst)
                                 `RP_OSR: begin osr_load = 1'b1; osr_from_reg = 1'b1; end
                                 `RP_ISR: isr_load = 1'b1;
                                 `RP_LC:  begin lc_load = 1'b1; lc_from_reg = 1'b1; end
+                                `RP_TRIG: trig_wr = 1'b1;
                                 default: begin rx_wr_en = 1'b1; push_reg = 1'b1; end   // RP_RXF
                             endcase
                             pc_advance = 1'b1;

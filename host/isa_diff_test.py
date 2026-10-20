@@ -33,7 +33,7 @@ LINE_FOCUS = False                                   # inside a line-coder-focus
 WEIGHTS = [("NOP", 2), ("WAIT", 3), ("JMP", 3), ("HALT", 0.6), ("SETL", 4), ("DJNZ", 5), ("PULL", 3), ("PUSH", 3),
            ("OUT1", 4), ("IN1", 4), ("SETH", 3), ("SETLO", 3), ("DIRO", 2), ("DIRI", 2), ("WAITH", 2), ("WAITL", 2),
            ("CFG", 3), ("JPH", 3), ("JPL", 3), ("JPO", 3), ("PUSHI", 3), ("LDI", 6), ("ALU", 14), ("JCC", 8),
-           ("RGET", 6), ("RPUT", 6), ("WAITR", 3), ("CRC", 12), ("LINE", 8), ("BAD", 0.9),
+           ("RGET", 6), ("RPUT", 7), ("TSTAMP", 3), ("WAITR", 3), ("CRC", 12), ("LINE", 8), ("BAD", 0.9),
            ("XSELF", 2.5), ("NOTI", 2.5)]       # idioms that make Z=1 and N=1 common enough to cover every JCC condition both ways
 
 
@@ -45,8 +45,8 @@ def rnd_word(rnd, L):
         return rnd.randrange(L)
 
     if n == "BAD":                                  # every reserved encoding gets its share
-        op, extra = rnd.choice([(29, 0), (30, 0), (31, 0), ("ALU", 13), ("ALU", 14), ("ALU", 15),
-                                ("RPUT", 4), ("RPUT", 5), ("RPUT", 6), ("RPUT", 7), ("CRC", 7), ("LINE", 6), ("LINE", 7)])
+        op, extra = rnd.choice([(29, 0), (31, 0), ("ALU", 13), ("ALU", 14), ("ALU", 15),
+                                ("RPUT", 5), ("RPUT", 6), ("RPUT", 7), ("CRC", 7), ("LINE", 6), ("LINE", 7)])
         if isinstance(op, int):
             return op << 27 | rnd.getrandbits(27)
         if op == "ALU":
@@ -97,8 +97,10 @@ def rnd_word(rnd, L):
         if LINE_FOCUS:
             return A.enc_rget(rnd.randrange(8), 6 if rnd.random() < 0.8 else rnd.randrange(8))
         return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.50 else 5 if rnd.random() < 0.25 else 6 if rnd.random() < 0.2 else rnd.randrange(8))   # CRC (wait coverage), TX FIFO (needs its own share), LINE
+    if n == "TSTAMP":
+        return A.word("TSTAMP", rnd.randrange(8) | (rnd.getrandbits(24) << 3 if rnd.random() < 0.3 else 0))
     if n == "RPUT":
-        return A.enc_rput(rnd.randrange(4), rnd.randrange(8))
+        return A.enc_rput(rnd.randrange(5), rnd.randrange(8))
     if n == "WAITR":
         return A.word("WAITR", rnd.randrange(8))
     if n == "LINE":
@@ -270,12 +272,12 @@ def make_tests(seed, n):
     return [make_test(rnd) for _ in range(n)]
 
 
-REQUIRED = [("op", n, 40) for n in A.OPCODE if n not in ("HALT",)] + [("op", "HALT", 5)] + \
+REQUIRED = [("op", n, 40) for n in A.OPCODE if n not in ("HALT", "REGION")] + [("op", "HALT", 5)] + \
            [("alu", f, 30) for f in range(13)] + \
            [("jcc", c, t, 15) for c in range(8) for t in (0, 1)] + \
            [("rget", s, 30) for s in range(8)] + [("line", k, 30) for k in range(6)] + [("rget_line_wait", 10), ("line_full_wait", 10)] + \
            [("lineev", k, 20) for k in ("tx_bit", "tx_stuff", "tx_eop", "rx_sync", "rx_byte", "rx_eop", "rx_destuff")] + \
-           [("lineev", k, 3) for k in ("underrun", "rx_partial", "rx_serr", "rx_ovr")] + [("rput", d, 30) for d in range(4)] + [("crc", k, 30) for k in range(7)] + \
+           [("lineev", k, 3) for k in ("underrun", "rx_partial", "rx_serr", "rx_ovr")] + [("rput", d, 30) for d in range(5)] + [("crc", k, 30) for k in range(7)] + \
            [("rget_crc_wait", 20)]
 
 
@@ -317,7 +319,12 @@ ENGINE_MUTANTS = [
     ("engine_top.v", "the line coder never takes over its pins", "assign pin_oe[gi]  = pin_oe_c[gi] | is_dp | is_dm;", "assign pin_oe[gi]  = pin_oe_c[gi];"),
     ("engine_top.v", "RGET LINE returns the CRC value", "(instr[6:4] == `RG_LINE) ? line_status :", "(instr[6:4] == `RG_LINE) ? crc_value :"),
     ("control_unit.v", "CRC operation 7 is legal", "(crc_cop  <= `CRC_BYTE)", "(crc_cop  <= 3'd7)"),
-    ("control_unit.v", "opcode 29 is legal", "(opcode <= `OP_LAST_LEGAL) && sub_ok", "(opcode <= 5'd29) && sub_ok"),
+    ("control_unit.v", "opcode 29 is legal", "((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_TSTAMP)) && sub_ok", "((opcode <= 5'd29) || (opcode == `OP_TSTAMP)) && sub_ok"),
+    ("engine_top.v", "TSTAMP returns zero", "assign rget_data = is_ts ? ts :", "assign rget_data = is_ts ? 32'd0 :"),
+    ("engine_top.v", "TSTAMP reads the ts bus one bit shifted", "assign rget_data = is_ts ? ts :", "assign rget_data = is_ts ? {ts[30:0], 1'b0} :"),
+    ("control_unit.v", "TSTAMP traps", "wire legal      = ((opcode <= `OP_LAST_LEGAL) || (opcode == `OP_TSTAMP)) && sub_ok;", "wire legal      = ((opcode <= `OP_LAST_LEGAL) || 1'b0) && sub_ok;"),
+    ("control_unit.v", "RPUT TRIG does nothing", "`RP_TRIG: trig_wr = 1'b1;", "`RP_TRIG: ;"),
+    ("engine_top.v", "trigger line takes bit 1 of the register", "else if (trig_wr) trig <= rs_val[0];", "else if (trig_wr) trig <= rs_val[1];"),
     ("control_unit.v", "RPUT OSR also pops the TX FIFO", "`RP_OSR: begin osr_load = 1'b1; osr_from_reg = 1'b1; end",
      "`RP_OSR: begin osr_load = 1'b1; osr_from_reg = 1'b1; tx_rd_en = 1'b1; end"),
     ("control_unit.v", "RPUT LC loads the operand", "`RP_LC:  begin lc_load = 1'b1; lc_from_reg = 1'b1; end",

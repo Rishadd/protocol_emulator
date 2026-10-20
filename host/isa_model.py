@@ -59,6 +59,7 @@ class CrcUnit:
 
 
 TRAP_WORD = 31 << 27            # opcode 31: illegal, faults the engine (what imem_shared.v returns outside a window)
+TSTAMP_OP = 30                  # TSTAMP rd: R[rd] <= the free-running clock counter (the cycle number, 0 at the first clock of the model)
 REGION_OP = 29                  # OP_REGION (SHARED_IMEM only): [8:0] base, [18:9] limit, once per run
 
 
@@ -89,6 +90,8 @@ class Engine:
             self.mem = shared.mem
         self.tx, self.rx = [], []
         self.sync0 = self.sync1 = 0
+        self.cycle = 0                         # clocks executed since construction: the value TSTAMP reads
+        self.trig = 0                          # trigger line (RPUT TRIG)
         self.cov = collections.Counter()       # what was executed (for coverage reports), not part of the architecture
         self.core_reset()
 
@@ -101,6 +104,7 @@ class Engine:
 
     def core_reset(self):
         self.pc, self.hold, self.halted, self.fault = self.start, False, False, False
+        self.trig = 0
         self.win, self.locked = (0, SharedImem.SIZE), False      # shared mode: the whole memory until OP_REGION (src/imem_shared.v)
         self.dc, self.lc = 0, 0
         self.osr, self.isr = 0, 0
@@ -169,11 +173,11 @@ class Engine:
         if op == REGION_OP:
             base, limit = operand & 0x1FF, operand >> 9 & 0x3FF
             return self.shared is not None and not self.locked and base < limit <= SharedImem.SIZE
-        if op > A.LAST_LEGAL:
+        if op > A.LAST_LEGAL and op != TSTAMP_OP:
             return False
         if op == A.OPCODE["ALU"] and operand >> 23 > 12:
             return False
-        if op == A.OPCODE["RPUT"] and (operand >> 4 & 7) > 3:
+        if op == A.OPCODE["RPUT"] and (operand >> 4 & 7) > 4:
             return False
         if op == A.OPCODE["CRC"] and (operand >> 24 & 7) > 6:
             return False
@@ -233,7 +237,7 @@ class Engine:
                 self.halted = True
                 self.cov[("op", "HALT")] += 1
             else:
-                name = "REGION" if op == REGION_OP else A.NAME[op]
+                name = "REGION" if op == REGION_OP else "TSTAMP" if op == TSTAMP_OP else A.NAME[op]
                 stall = {
                     "PULL": tx_empty,
                     "PUSH": rx_full, "PUSHI": rx_full,
@@ -344,9 +348,13 @@ class Engine:
                         if src == 6:
                             line_pop = True
                         self.r[operand & 7] = val & MASK32
+                    elif name == "TSTAMP":
+                        self.r[operand & 7] = self.cycle & MASK32
                     elif name == "RPUT":
                         dst = operand >> 4 & 7
-                        if dst == 0:
+                        if dst == 4:
+                            self.trig = rs & 1
+                        elif dst == 0:
                             self.osr = rs
                         elif dst == 1:
                             self.isr = rs
@@ -383,6 +391,7 @@ class Engine:
             self.rx.pop(0)
         if push_rx is not None and len(self.rx) < FIFO_DEPTH and not rx_full_before(rx_full):
             self.rx.append(push_rx & MASK32)
+        self.cycle += 1
         # pin synchronizer
         self.sync1 = self.sync0
         self.sync0 = pin_in & 0xFF
@@ -403,12 +412,12 @@ class Engine:
         return dict(pc=self.pc, pin_out=pin_out, pin_oe=pin_oe, halted=int(self.halted), fault=int(self.fault),
                     tx_full=int(len(self.tx) >= FIFO_DEPTH), rx_empty=int(not self.rx),
                     rx_head=self.rx[0] if self.rx else 0, osr=self.osr, isr=self.isr, lc=self.lc,
-                    crc=self.crc.value(), z=self.z, n=self.n, c=self.c, r=list(self.r))
+                    crc=self.crc.value(), z=self.z, n=self.n, c=self.c, trig=self.trig, r=list(self.r))
 
     def trace_line(self):
         s = self.snapshot()
         return (f"{s['pc']:02x} {s['pin_out']:02x} {s['pin_oe']:02x} {s['halted']}{s['fault']}{s['tx_full']}{s['rx_empty']} "
-                f"{s['rx_head']:08x} {s['osr']:08x} {s['isr']:08x} {s['lc']:04x} {s['crc']:08x} {s['z']}{s['n']}{s['c']} "
+                f"{s['rx_head']:08x} {s['osr']:08x} {s['isr']:08x} {s['lc']:04x} {s['crc']:08x} {s['z']}{s['n']}{s['c']}{s['trig']} "
                 + " ".join(f"{x:08x}" for x in s["r"]))
 
 
@@ -477,7 +486,7 @@ def selftest():
         check(f"RGET CRC {'one instruction after' if gap else 'directly after'} CRC BYTE: pc {pcs}",
               pcs == want_pcs and e.rx == [cm.CRC(32, 0x04C11DB7, 0xFFFFFFFF, True, True, 0xFFFFFFFF).of(b"1")])
     # trap on a reserved opcode / sub-field
-    for w in (29 << 27, A.enc_alu(13, 0, imm=1), A.word("RPUT", 4 << 4), A.word("CRC", 7 << 24), A.word("LINE", 6 << 24)):
+    for w in (29 << 27, A.enc_alu(13, 0, imm=1), A.word("RPUT", 5 << 4), A.word("CRC", 7 << 24), A.word("LINE", 6 << 24)):
         e = Engine([w])
         e.step()
         check(f"trap {w:08x}", e.halted and e.fault and e.pc == 0)

@@ -44,7 +44,10 @@ module engine_top #(
     // status
     output wire        halted,
     output wire        fault,
-    output wire [8:0]  pc               // bit 8 is 0 unless SHARED_IMEM
+    output wire [8:0]  pc,              // bit 8 is 0 unless SHARED_IMEM
+    // logic analyser: free-running clock counter (TSTAMP) and this engine's trigger line (RPUT TRIG; marker on channel 15)
+    input  wire [31:0] ts,
+    output reg         trig
 );
 `ifdef SHARED_IMEM
     localparam PC_W = 9;
@@ -65,6 +68,7 @@ module engine_top #(
     wire        rx_full, rx_wr_en, push_imm, push_reg;
     // register file / ALU / CRC extension
     wire        flag_z, flag_n, flag_c, rs_zero;
+    wire        trig_wr;
     wire        alu_go, ldi_go, rget_go, isr_load, osr_from_reg, lc_from_reg, dc_from_reg;
     wire        crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte, crc_busy;
     wire        line_go, line_full, line_busy, line_oe, line_dp, line_dm;
@@ -122,13 +126,19 @@ module engine_top #(
     assign dc_load_value  = dc_from_reg ? rs_val[26:0] : dc_load_value_cu;
     assign lc_load_value  = lc_from_reg ? rs_val[15:0] : lc_load_value_cu;
     assign osr_load_value = osr_from_reg ? rs_val : tx_rd_data;
-    assign rget_data = (instr[6:4] == `RG_OSR) ? osr_data :
+    wire is_ts = (instr[31:27] == `OP_TSTAMP);
+    assign rget_data = is_ts ? ts :
+                       (instr[6:4] == `RG_OSR) ? osr_data :
                        (instr[6:4] == `RG_ISR) ? isr_data :
                        (instr[6:4] == `RG_LC)  ? {16'd0, lc_count} :
                        (instr[6:4] == `RG_PIN) ? {24'd0, pin_in_sync} :
                        (instr[6:4] == `RG_CRC) ? crc_value :
                        (instr[6:4] == `RG_LINE) ? line_status :
                        (instr[6:4] == `RG_FIFO) ? {26'd0, rx_level, tx_level} : tx_rd_data;   // RG_TXF
+
+    always @(posedge clk or negedge core_rst_n)
+        if (!core_rst_n) trig <= 1'b0;
+        else if (trig_wr) trig <= rs_val[0];
 
     alu_unit alu (
         .clk       (clk),
@@ -306,6 +316,7 @@ module engine_top #(
         .ldi_go        (ldi_go),
         .rget_go       (rget_go),
         .isr_load      (isr_load),
+        .trig_wr       (trig_wr),
         .osr_from_reg  (osr_from_reg),
         .lc_from_reg   (lc_from_reg),
         .dc_from_reg   (dc_from_reg),
