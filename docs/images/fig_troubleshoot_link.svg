@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 620" width="640" height="620"><title>No response on the management link</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="638.5" height="618.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="180" y="20" width="280" height="50" rx="8" fill="#fbdcdc" stroke="#b32d2d" stroke-width="1.5"/>
+<text x="320" y="42" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">No answer on MISO</text>
+<text x="320" y="57" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">(always 0, or unchanged)</text>
+<line x1="320" y1="70" x2="320" y2="92" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<polygon points="320,92 450,130 320,168 190,130" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="320" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">clk present at the</text>
+<text x="320" y="140" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">chip pin?</text>
+<line x1="320" y1="168" x2="320" y2="196" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="332" y="188" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="start" font-weight="normal" fill="#5c6670">yes</text>
+<polygon points="320,196 450,234 320,272 190,234" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="320" y="230" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">rst_n released</text>
+<text x="320" y="244" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">(high)?</text>
+<line x1="320" y1="272" x2="320" y2="300" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="332" y="292" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="start" font-weight="normal" fill="#5c6670">yes</text>
+<polygon points="320,300 450,338 320,376 190,338" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="320" y="334" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">SPI mode 0, SCLK &lt;</text>
+<text x="320" y="348" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">clk / 16, CS_N active low?</text>
+<line x1="320" y1="376" x2="320" y2="404" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="332" y="396" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="start" font-weight="normal" fill="#5c6670">yes</text>
+<polygon points="320,404 450,442 320,480 190,442" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="320" y="438" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">wiring: SCLK, MOSI,</text>
+<text x="320" y="452" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">MISO, CS_N on the</text>
+<text x="320" y="466" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">right pins?</text>
+<line x1="320" y1="480" x2="320" y2="510" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="332" y="502" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="start" font-weight="normal" fill="#5c6670">yes</text>
+<rect x="180" y="510" width="280" height="50" rx="8" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="320" y="532" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">read ID (0x0000):</text>
+<text x="320" y="547" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">expect PEM1</text>
+<line x1="190" y1="130" x2="100" y2="130" stroke="#b32d2d" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="145" y="124" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#b32d2d">no</text>
+<line x1="190" y1="234" x2="100" y2="234" stroke="#b32d2d" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="145" y="228" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#b32d2d">no</text>
+<line x1="190" y1="338" x2="100" y2="338" stroke="#b32d2d" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="145" y="332" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#b32d2d">no</text>
+<line x1="190" y1="442" x2="100" y2="442" stroke="#b32d2d" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="145" y="436" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#b32d2d">no</text>
+<rect x="10" y="120" width="90" height="340" rx="8" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="55" y="280" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">fix it</text>
+<text x="55" y="296" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">(clock,</text>
+<text x="55" y="312" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">reset,</text>
+<text x="55" y="328" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">mode,</text>
+<text x="55" y="344" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">speed,</text>
+<text x="55" y="360" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">wiring)</text>
+<text x="55" y="376" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">and retry</text>
+</svg>

@@ -38,6 +38,10 @@ The clickable contents list is generated from the headings below (see the HTML v
 - Part III, Reference: 14 Clock and timing, 15 Electrical and timing limits, 16 Troubleshooting and debug, 17 How the chip was verified
 - Appendices: A Register map, B Opcode table, C Pin tables, D Result codes and error flags, E Script index, F Glossary, G References, H Quick-reference card
 
+
+## List of figures
+
+The list is generated in the HTML version; in this file the figures are the `![...]` lines.
 ## How to read this guide
 
 ### Conventions
@@ -82,8 +86,12 @@ are programs you load rather than fixed circuits.
 ### 1.2 What you can do with it
 Speak and listen to UART, SPI, I2C, CAN, USB low speed and many other protocols, from one chip, by loading a different program. **[PLACEHOLDER]** overview figure.
 
+![The Raspberry Pi Pico drives the chip over a four-wire SPI link plus a clock and a reset; the chip speaks to the devices you connect, and captures can be viewed in GTKWave.](images/fig_system_context.svg)
+
 ### 1.3 Block diagram
 **[PLACEHOLDER]** figure: management link, pin manager, two engines, shared instruction memory, FIFOs, helper units.
+
+![Inside the chip: the management link, the shared instruction memory, two engines with their helper units, the pin manager and the logic analyser.](images/fig_block_diagram.svg)
 
 ### 1.4 Specifications at a glance
 **[PLACEHOLDER]** table: clock up to 50 MHz, two engines, 512-word shared instruction memory (32-bit words), 4-word FIFOs, 8 protocol pins per engine, 3.3 V logic.
@@ -117,6 +125,8 @@ The chip has a clock, a reset, a management SPI link and a set of programmable p
 
 > **[PLACEHOLDER]** confirm every name and the default functions against the final pin map (Appendix C).
 
+![The chip pins by group: clock and reset, the management link, protocol inputs and outputs, and the eight bidirectional protocol pins.](images/fig_pin_groups.svg)
+
 ### 2.3 Power supply
 **[PLACEHOLDER]** supply voltage, current, decoupling.
 
@@ -129,6 +139,10 @@ A clock up to 50 MHz on `clk`; the Pico can generate it (4.3). Any slower clock 
 ### 2.6 Connecting a Raspberry Pi Pico
 **[PLACEHOLDER]** wiring table and diagram: Pico SPI0 (SCK, TX, RX, CS) to the management link, a Pico clock output pin to `clk`, a GPIO to `rst_n`, optional GPIO to HOLD and the interrupt output.
 See the [Pico pinout](https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf) and the [RP2040 datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf).
+
+![Suggested wiring between a Raspberry Pi Pico and the chip (Pico SPI0 for the management link, a clock output, a reset line and two optional signals).](images/fig_pico_wiring.svg)
+
+![Raspberry Pi Pico pinout by Vishnu Mohanan, CIRCUITSTATE Electronics (revision 0.3), CC BY-SA 4.0, unchanged: use it to find the pins named in the wiring figure. See Appendix I.](images/third_party/pico-pinout-r0.3-circuitstate.png)
 
 ### 2.7 Voltage levels and protection
 Both sides are 3.3 V. Add series resistors (about 100 ohm) on the management link if the wires are long.
@@ -148,6 +162,8 @@ Wiring checked against 2.6, 3.3 V only, clock source ready, nothing on the proto
 ### 3.2 Applying power and reset
 Power the board, start the clock, release `rst_n`. The chip comes up with both engines held and every protocol pin undriven.
 
+![Power-up sequence: start the clock, release reset, then send the first management frame.](images/fig_power_up.svg)
+
 ### 3.3 Reading the identity registers
 Read ID (0x0000) = `0x50454D31` ('PEM1'), VERSION (0x0004), CAPABILITY (0x0008): engines, instruction words (512), FIFO depth (4). **[PLACEHOLDER]** Pico code.
 
@@ -165,6 +181,8 @@ ID reads 'PEM1', the scratch value comes back, the test program's word arrives, 
 
 ### 3.8 If something fails
 Go to 16.1 and 16.2.
+
+![First power-on flow: three checks and a test program decide whether the chip is ready for chapter 5.](images/fig_bringup_flow.svg)
 
 ## 4. The Raspberry Pi Pico as host
 *Status: **[PLACEHOLDER]** the Pico library does not exist yet; the PC library `host/chip_host.py` is verified in simulation.*
@@ -207,11 +225,15 @@ Seven bytes, big endian: operation (0x01 write, 0x02 read), 16-bit address, 32-b
 ### 5.3 Frame format v2
 Twelve bytes with a sequence number and CRC-16/CCITT-FALSE in both directions: use it on real wiring. Operations 0x80 (no-op), 0x81 (write), 0x82 (read).
 
+![The four management frame formats. Byte numbers count from the first byte on the wire.](images/fig_frame_formats.svg)
+
 ### 5.4 Commands: write and read
 **[PLACEHOLDER]** worked examples with bytes on the wire (see `host/chip_host_demo.py` for a guided tour).
 
 ### 5.5 The STATUS byte and flow control
 Bit 7 alive, bit 6 error, bits 5:4 RUN of engines 1 and 0, bits 3:2 TX FIFO full, bits 1:0 RX FIFO has data. v1 writes to a full FIFO are dropped and must be resent.
+
+![The STATUS byte returned in every frame.](images/fig_status_byte.svg)
 
 ### 5.6 Retries and exactly-once behaviour
 In v2 a repeated frame never runs twice and the older result is returned again. **[PLACEHOLDER]** retry loop for the Pico.
@@ -222,8 +244,12 @@ OK, BUSY, BAD_ADDR, BAD_VALUE, NOT_ALLOWED, BAD_OP (Appendix D).
 ### 5.8 Timing and maximum SPI speed
 SCLK high and low at least 8 chip clocks (about 3 MHz at 50 MHz); chip select set up 4 clocks before the first edge.
 
+![Management link timing (SPI mode 0): chip-select set-up, minimum clock phases, sampling on the rising edge.](images/fig_spi_mode0.svg)
+
 ### 5.9 Address map
 Summary in Appendix A: identity registers at 0x0000, pin window 0x0200, instruction memory window 0x0400, engine 0 at 0x1000, engine 1 at 0x2000.
+
+![The management address map. Addresses between the blocks are unmapped.](images/fig_address_map.svg)
 
 ### 5.10 Pico code examples
 **[PLACEHOLDER]** read, write, retry, burst (needs the Pico library).
@@ -234,6 +260,8 @@ Summary in Appendix A: identity registers at 0x0000, pin window 0x0200, instruct
 ### 6.1 Pin ownership
 A protocol pin is driven only by the engine that owns it; claims are refused while that engine runs.
 
+![Outputs pass through the pin manager (owner, remap, open-drain); inputs pass through the input select.](images/fig_pin_ownership.svg)
+
 ### 6.2 Output remapping
 Any logical pin of an engine can be placed on any output pin. **[PLACEHOLDER]** register recipe.
 
@@ -242,6 +270,8 @@ Each logical input can be taken from any input pin.
 
 ### 6.4 Open-drain mode
 For I2C, 1-Wire and other shared buses: the pin is driven low or released, never high.
+
+![Push-pull and open-drain pins.](images/fig_open_drain.svg)
 
 ### 6.5 The HOLD pin
 Raising HOLD stops both engines and releases every driven pin within a clock; useful as an emergency stop.
@@ -273,8 +303,12 @@ A program's first instruction states which words it may fetch (`OP_REGION`); fet
 ### 7.4 Choosing origins and planning images
 Place images so that images that run together do not overlap. The host layer checks this.
 
+![The shared instruction memory with two programs, their windows and START addresses, and the rules the chip enforces.](images/fig_memory_windows.svg)
+
 ### 7.5 Loading and verifying an image
 Write the words with the engines held and read them back (frame v2). **[PLACEHOLDER]** Pico code.
+
+![The load-and-run sequence between the host and the chip.](images/fig_load_sequence.svg)
 
 ### 7.6 START, RUN and HOLD
 Write START to the program's first word, then set RUN. Clearing RUN holds the engine and clears its window.
@@ -294,17 +328,23 @@ The host pushes words into an engine's TX FIFO and reads its RX FIFO (base + 0x2
 ### 7.11 Fault handling
 A fault stops the engine and sets its flag (illegal instruction, fetch outside the window, bad window); stop, fix, reload.
 
+![Engine states: held, running, halted and fault.](images/fig_engine_states.svg)
+
 ## 8. Instruction set and assembler
 *Status: verified in simulation.*
 
 ### 8.1 Programming model
 Eight 32-bit registers R0-R7, flags Z N C, output and input shift registers, a loop counter, one instruction per clock.
 
+![One engine: registers, shifters, FIFOs, pin block and helper units.](images/fig_programming_model.svg)
+
 ### 8.2 Instruction summary
 **[PLACEHOLDER]** table of all instructions (full table in Appendix B and in the repository file `instructions.md`).
 
 ### 8.3 Timing rules
 Every instruction takes one clock except the waits (WAIT d, OUT1 d, IN1 d take d + 1) and the stalls on empty or full FIFOs.
+
+![Instruction timing: one clock per instruction, plus d clocks for the waiting forms.](images/fig_instruction_timing.svg)
 
 ### 8.4 Pin instructions
 SETH, SETLO, DIRO, DIRI, OUT1, IN1, WAITH, WAITL.
@@ -345,6 +385,8 @@ A programmable CRC of 1 to 32 bits (CRC-5, CRC-16, CRC-32 and others), one byte 
 ### 9.4 Line coder
 Sends and receives bytes with NRZI coding, bit stuffing and an end-of-packet, used for USB.
 
+![The line coder stages for a USB-style packet: bit stuffing, then NRZI coding, then the line.](images/fig_usb_stages.svg)
+
 ### 9.5 Timestamp counter
 **[PLACEHOLDER]** free-running counter read with TSTAMP, planned.
 
@@ -360,14 +402,26 @@ Each recipe lists: wiring, pins to claim, firmware generator script, host steps,
 ### 10.2 UART
 Transmit, receive and full duplex; scripts `uart_workload.py`, `uart_rx_prog.py`. Verified on a development FPGA board as well.
 
+![UART wiring.](images/fig_wire_uart.svg)
+
+![A UART frame: start bit, eight data bits least significant first, stop bit.](images/fig_uart_frame.svg)
+
 ### 10.3 SPI master
 Modes 0 to 3, script `spi_prog.py`.
+
+![SPI master wiring.](images/fig_wire_spi_master.svg)
 
 ### 10.4 SPI slave
 Modes 0 and 1 (and the others), script `spi_prog.py`; the host must keep the FIFOs served.
 
+![SPI slave wiring.](images/fig_wire_spi_slave.svg)
+
 ### 10.5 I2C master
 100, 400 and 1000 kHz with clock stretching, script `i2c_prog.py`; open-drain pins and external pull-ups.
+
+![I2C wiring with pull-ups (also used for SMBus).](images/fig_wire_i2c.svg)
+
+![An I2C write transfer: start, address, acknowledge, data, acknowledge, stop.](images/fig_i2c_transfer.svg)
 
 ### 10.6 I2C slave
 Host decides the address match; the slave stretches the clock while waiting for the host. See the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
@@ -378,26 +432,48 @@ I2C with packet error checking (CRC-8), script `i2c_prog.py` (PEC variant).
 ### 10.8 Modbus RTU
 Master and slave with CRC-16, script `modbus_prog.py`; needs an RS-485 transceiver ([Modbus serial line specification](https://modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)).
 
+![Modbus RTU wiring through an RS-485 transceiver.](images/fig_wire_modbus.svg)
+
 ### 10.9 1-Wire
 Reset, presence, bit and byte transfers, script `onewire_prog.py`.
+
+![1-Wire wiring.](images/fig_wire_onewire.svg)
 
 ### 10.10 JTAG
 TAP master, IDCODE read and shifts, script `jtag_prog.py`.
 
+![JTAG wiring.](images/fig_wire_jtag.svg)
+
 ### 10.11 SWD
 Host side with DP and memory access, script `swd_prog.py`.
+
+![SWD wiring.](images/fig_wire_swd.svg)
 
 ### 10.12 CAN
 CAN 2.0A transmit and receive (no arbitration or error frames), script `can_prog.py`; needs a CAN transceiver.
 
+![CAN wiring through a transceiver.](images/fig_wire_can.svg)
+
+![The fields of a CAN 2.0A data frame.](images/fig_can_frame.svg)
+
 ### 10.13 USB low speed
 Today: a packet-relay firmware (`usb_prog.py`) with descriptors supplied by host software. **[PLACEHOLDER]** the standalone device with descriptors on the chip, planned. See the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification).
+
+![USB low-speed wiring.](images/fig_wire_usb.svg)
+
+![A USB low-speed packet and its SYNC pattern.](images/fig_usb_packet.svg)
 
 ### 10.14 WS2812
 Addressable LED strips, script `ws2812_prog.py`.
 
+![WS2812 wiring with a level shifter.](images/fig_wire_ws2812.svg)
+
+![WS2812 bit timing.](images/fig_ws2812_bits.svg)
+
 ### 10.15 PS/2
 Device link layer, script `ps2_prog.py`.
+
+![PS/2 wiring with a level shifter.](images/fig_wire_ps2.svg)
 
 ### 10.16 Other protocols
 **[PLACEHOLDER]** the catalogue of further protocols (`docs/PROTOCOL_CATALOGUE.md`): MIDI, DMX512, LIN, DShot, I2S, IR remotes and more, firmware only; Ethernet (10BASE-T) transmit, planned.
@@ -411,8 +487,12 @@ One protocol per engine, on separate pins; example: SPI master on engine 0 and I
 ### 11.1 What it does
 Records what the pins do, with the time of every change, around an event you choose, and gives it to you as a waveform file.
 
+![Logic analyser workflow, from configuration to the waveform on screen.](images/fig_la_workflow.svg)
+
 ### 11.2 Channels
 Sixteen: channels 0-7 are `uio[7:0]`, 8-12 are `ui_in[7:3]`, 13 and 14 are RUN of engines 0 and 1, 15 is a marker line set by firmware.
+
+![The sixteen analyser channels.](images/fig_la_channels.svg)
 
 ### 11.3 Setting up a capture
 **[PLACEHOLDER]** choose mode, trigger, post-trigger amount (registers and host calls to be defined in logic analyser Phase 3).
@@ -423,17 +503,27 @@ Manual, pattern (mask and value), rising edge, falling edge, firmware marker.
 ### 11.5 Change mode and sample mode
 Change mode stores one word per change with the clocks since the last one (idle time costs nothing); sample mode stores 8 channels every N clocks.
 
+![The three kinds of buffer word.](images/fig_la_words.svg)
+
 ### 11.6 Arming and waiting
 Arm, then wait for the interrupt or poll the state (idle, armed, triggered, done). Re-arming restarts the capture.
 
+![Logic analyser states.](images/fig_la_states.svg)
+
 ### 11.7 Reading the buffer
 The buffer is a ring of 256 words, read oldest first after the capture has stopped. **[PLACEHOLDER]** read procedure.
+
+![The ring buffer, the trigger position and the read order.](images/fig_la_ring.svg)
 
 ### 11.8 Exporting a VCD file
 `host/la_model.py` already contains the decoder and VCD writer used by the tests; **[PLACEHOLDER]** the host tool `la_capture.py` that reads the chip and writes the file.
 
 ### 11.9 Viewing the capture in GTKWave
-Open the file with `gtkwave capture.vcd`, add the signals from the left tree, zoom to fit, and use markers to measure times; one VCD tick is one chip clock. See the [GTKWave site](https://gtkwave.sourceforge.net/). **[PLACEHOLDER]** screenshots and the save-file (.gtkw) with names and colours for the 16 channels.
+Open the file with `gtkwave capture.vcd` (try the sample `docs/images/example_capture.vcd` first), add the signals from the left tree, zoom to fit, and use markers to measure times; one VCD tick is one chip clock. See the [GTKWave site](https://gtkwave.sourceforge.net/). **[PLACEHOLDER]** screenshots and the save-file (.gtkw) with names and colours for the 16 channels.
+
+![The GTKWave window: the five steps to see a capture.](images/fig_gtkwave_layout.svg)
+
+![Example capture of one UART byte (0x41) with a firmware marker, produced by the logic analyser model and drawn in the style of GTKWave. The matching file is images/example_capture.vcd: open it with gtkwave to try the steps above.](images/fig_la_capture_example.png)
 
 ### 11.10 Marking events from firmware
 Firmware sets the marker line (channel 15) at the moment of interest; it shows up in the waveform and can be the trigger.
@@ -449,6 +539,8 @@ Firmware sets the marker line (channel 15) at the moment of interest; it shows u
 
 ### 12.1 Overview
 A sniffer is a program that watches a bus without driving it; engine debug lets you stop and inspect an engine.
+
+![Engine debug and the sniffer (planned).](images/fig_debug_overview.svg)
 
 ### 12.2 Protocol sniffer images
 **[PLACEHOLDER]** I2C, SPI, UART, CAN and USB monitors: how to load and read them.
@@ -509,6 +601,8 @@ The chip meets timing at 50 MHz in the worst case. **[PLACEHOLDER]** final figur
 ### 14.3 Rescaling firmware for another clock
 Times are counts of clocks, so regenerate the firmware with the new clock frequency; logic does not change.
 
+![Time of one instruction at different clock frequencies.](images/fig_clock_scaling.svg)
+
 ### 14.4 Rates and limits per protocol
 **[PLACEHOLDER]** table of clocks per bit and maximum rate at 50, 46.6, 43.4 and 40 MHz (see `docs/CLOCK_SPEED_EFFECTS.md`).
 
@@ -544,6 +638,8 @@ Power, ground, 3.3 V, clock present, `rst_n` released, wires on the right pins.
 ### 16.2 No response on the link
 MISO stays low: check CS_N polarity, SPI mode 0, SCLK speed, clock running.
 
+![Checks when the management link does not answer.](images/fig_troubleshoot_link.svg)
+
 ### 16.3 Wrong or garbled data
 Use frame v2 (CRC); check the SPI speed against 5.8 and the wire length.
 
@@ -570,6 +666,8 @@ Appendix D.
 
 ### 17.1 What was tested
 Every instruction against an independent model, every protocol against an independent peer model, planted-bug checks on the tests, and formal proofs of the pin and memory safety rules.
+
+![The layers of verification.](images/fig_verification_layers.svg)
 
 ### 17.2 Running the checks yourself
 `python3 host/regress.py` runs the whole regression on a PC; **[PLACEHOLDER]** a short self-test for a connected chip.
@@ -652,3 +750,15 @@ Links marked ✔ answered when checked; the others were not reachable from the c
 
 ## Appendix H. Quick-reference card
 **[PLACEHOLDER]** one page: frame formats, STATUS bits, address map, the load-and-run sequence, and the pin-claim sequence.
+
+
+## Appendix I. Figure credits
+
+Every diagram in this guide is drawn for it and regenerated by `python3 docs/images/make_images.py` (SVG, plus the capture example from `host/la_model.py`).
+One image comes from outside:
+
+| Figure | Author and source | Licence |
+|---|---|---|
+| Raspberry Pi Pico pinout (section 2.6) | Vishnu Mohanan, CIRCUITSTATE Electronics, revision 0.3, https://www.circuitstate.com/pinouts/raspberry-pi-pico-rp2040-microcontroller-board-pinout-diagrams/ | CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), unchanged; see `docs/images/third_party/ATTRIBUTION.md` |
+
+Check pin functions against the official [Pico pinout](https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf) and the [RP2040 datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf).

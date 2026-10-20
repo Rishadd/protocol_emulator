@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 410" width="860" height="410"><title>Engine states</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="858.5" height="408.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="60" y="150" width="180" height="80" rx="8" fill="#eef0f3" stroke="#5c6670" stroke-width="1.5"/>
+<text x="150.0" y="188.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Held</text>
+<text x="150.0" y="204.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">RUN = 0, window cleared</text>
+<rect x="340" y="150" width="180" height="80" rx="8" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="430.0" y="188.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Running</text>
+<text x="430.0" y="204.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">fetching and executing</text>
+<rect x="640" y="40" width="180" height="80" rx="8" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="730.0" y="78.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Halted</text>
+<text x="730.0" y="94.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">HALT instruction</text>
+<rect x="640" y="260" width="180" height="80" rx="8" fill="#fbdcdc" stroke="#b32d2d" stroke-width="1.5"/>
+<text x="730.0" y="298.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Fault</text>
+<text x="730.0" y="314.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">stopped, flag set</text>
+<line x1="240" y1="175" x2="340" y2="175" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="290" y="166" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">RUN = 1</text>
+<line x1="340" y1="205" x2="240" y2="205" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="290" y="224" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#1c2733">RUN = 0 or HOLD</text>
+<line x1="520" y1="165" x2="640" y2="100" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="600" y="120" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="end" font-weight="normal" fill="#1c2733">HALT</text>
+<line x1="520" y1="215" x2="640" y2="280" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="590" y="262" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#1c2733">illegal instruction,</text>
+<text x="590" y="274" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#1c2733">fetch outside window,</text>
+<text x="590" y="286" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#1c2733">bad OP_REGION</text>
+<path d="M 730 120 L 730 132 L 150 132 L 150 150" stroke="#5c6670" stroke-width="1.4" fill="none" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+<path d="M 730 340 L 730 352 L 150 352 L 150 230" stroke="#5c6670" stroke-width="1.4" fill="none" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+<text x="330" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">RUN = 0 from the host: back to held</text>
+<text x="440" y="346" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">RUN = 0 from the host: back to held</text>
+<text x="430" y="385" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">load images and write START only while held</text>
+</svg>

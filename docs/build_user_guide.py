@@ -2,7 +2,9 @@
 """Build docs/USER_GUIDE.html from docs/USER_GUIDE.md (no dependencies):  python3 docs/build_user_guide.py
 One self-contained HTML file: a fixed contents sidebar (clickable, follows the scroll position, filterable), the full contents list under the "Contents"
 heading, tables, code blocks, links, and a highlighted style for the [PLACEHOLDER] markers. Edit the Markdown, never the HTML."""
+import base64
 import html
+import mimetypes
 import os
 import re
 import sys
@@ -41,9 +43,19 @@ def inline(text):
     return re.sub(r"\x00(\d+)\x00", lambda m: toks[int(m.group(1))], text)
 
 
+def img_src(path):
+    """Local images are embedded (data URI) so the HTML is one self-contained file; web images stay links."""
+    if path.startswith("http"):
+        return html.escape(path)
+    full = os.path.join(HERE, path)
+    mime = mimetypes.guess_type(full)[0] or "application/octet-stream"
+    with open(full, "rb") as f:
+        return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
+
+
 def parse(md):
     lines = md.split("\n")
-    body, toc, used = [], [], set()
+    body, toc, used, figs = [], [], set(), []
     i, title = 0, None
     while i < len(lines):
         ln = lines[i]
@@ -68,6 +80,8 @@ def parse(md):
                 body.append(f'<h{lvl} id="{hid}"><a class="anchor" href="#{hid}">#</a>{html.escape(text)}</h{lvl}>')
                 if lvl == 2 and text == "Contents":
                     body.append("<!--TOC-->")
+                if lvl == 2 and text == "List of figures":
+                    body.append("<!--FIGS-->")
             i += 1
             continue
         if ln.startswith("|") and i + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|$", lines[i + 1]):
@@ -82,6 +96,15 @@ def parse(md):
                 t += "<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>"
             body.append(t + "</tbody></table></div>")
             i = j
+            continue
+        fm = re.match(r"^!\[(.*)\]\(([^)]+)\)\s*$", ln)
+        if fm:
+            cap, path = fm.group(1), fm.group(2)
+            n = len(figs) + 1
+            fid = f"fig-{n}"
+            figs.append((n, cap, fid))
+            body.append(f'<figure id="{fid}"><img src="{img_src(path)}" alt="{html.escape(cap)}" loading="lazy"><figcaption><b>Figure {n}.</b> {inline(cap)}</figcaption></figure>')
+            i += 1
             continue
         if ln.startswith("> "):
             j, q = i, []
@@ -113,7 +136,7 @@ def parse(md):
             para, j = [ln.strip()], i + 1
         body.append(f"<p>{inline(' '.join(para))}</p>")
         i = j
-    return title or "User Guide", body, toc
+    return title or "User Guide", body, toc, figs
 
 
 def build_toc(toc):
@@ -186,7 +209,9 @@ blockquote{margin:.8em 0;padding:.5em 1em;background:var(--ph);border-left:4px s
 .ph{background:var(--phb);color:#000;font-size:.72em;font-weight:700;padding:.1em .45em;border-radius:4px;letter-spacing:.03em;vertical-align:.1em}
 .contents{columns:2;column-gap:40px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 24px}
 .contents ul{margin:.2em 0 .5em;padding-left:1.1em}.contents li{break-inside:avoid;font-size:.95em}.contents h4{break-after:avoid;color:var(--mut)}
-@media(max-width:900px){nav#side{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line);max-height:50vh}main{margin-left:0;padding:16px}.contents{columns:1}}
+figure{margin:1.2em 0;text-align:center}figure img{max-width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}figcaption{font-size:.9em;color:var(--mut);margin-top:.4em}
+.figlist{columns:2;column-gap:40px;font-size:.93em}.figlist li{break-inside:avoid;margin:.15em 0}
+@media(max-width:900px){nav#side{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line);max-height:50vh}main{margin-left:0;padding:16px}.contents{columns:1}.figlist{columns:1}}
 """
 
 JS = """
@@ -206,16 +231,17 @@ document.getElementById('flt').addEventListener('input',e=>{const q=e.target.val
 
 def main():
     md = open(SRC, encoding="utf8").read()
-    title, body, toc = parse(md)
+    title, body, toc, figs = parse(md)
     groups = build_toc(toc)
-    page = "\n".join(body).replace("<!--TOC-->", contents_html(groups))
+    fl = '<ol class="figlist">' + "".join(f'<li><a href="#{fid}">{inline(cap)}</a></li>' for n, cap, fid in figs) + "</ol>"
+    page = "\n".join(body).replace("<!--TOC-->", contents_html(groups)).replace("<!--FIGS-->", fl)
     doc = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
            f"<title>{html.escape(title)}</title><style>{CSS}</style></head><body>"
            f'<nav id="side"><div class="brand">{html.escape(title)}</div><input id="flt" type="search" placeholder="Filter contents...">{nav_html(groups)}</nav>'
            f"<main>{page}</main><script>{JS}</script></body></html>")
     open(OUT, "w", encoding="utf8").write(doc)
     heads = sum(1 for _ in toc)
-    print(f"wrote {OUT}: {len(doc) // 1024} KB, {heads} headings, {sum(len(g['chapters']) for g in groups)} chapters")
+    print(f"wrote {OUT}: {len(doc) // 1024} KB, {heads} headings, {sum(len(g['chapters']) for g in groups)} chapters, {len(figs)} figures")
 
 
 if __name__ == "__main__":

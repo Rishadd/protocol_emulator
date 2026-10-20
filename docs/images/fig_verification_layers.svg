@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="900" height="400"><title>How the chip was verified</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="398.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="300.0" y="30" width="300" height="56" rx="8" fill="#ece0f7" stroke="#7a3fb0" stroke-width="1.5"/>
+<text x="450" y="56" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Formal proofs</text>
+<text x="450" y="74" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">pin ownership, memory window and lock rules hold for every input</text>
+<rect x="250.0" y="96" width="400" height="56" rx="8" fill="#fbdcdc" stroke="#b32d2d" stroke-width="1.5"/>
+<text x="450" y="122" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Planted-bug checks</text>
+<text x="450" y="140" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">bugs are inserted on purpose: every test must fail</text>
+<rect x="200.0" y="162" width="500" height="56" rx="8" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="450" y="188" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Differential tests</text>
+<text x="450" y="206" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">random programs: the chip logic against a cycle-exact model</text>
+<rect x="150.0" y="228" width="600" height="56" rx="8" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="450" y="254" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Peer-model protocol tests</text>
+<text x="450" y="272" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">every protocol against an independently written other side</text>
+<rect x="100.0" y="294" width="700" height="56" rx="8" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="450" y="320" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Unit tests</text>
+<text x="450" y="338" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">each block on its own</text>
+<text x="450" y="378" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">each layer checks something the others cannot</text>
+</svg>

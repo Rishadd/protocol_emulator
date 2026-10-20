@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420"><title>Ring buffer and trigger position</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="418.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<path d="M 260.0 55.0 A 160 160 0 0 1 316.8 65.4 L 288.4 140.2 A 80 80 0 0 0 260.0 135.0 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 321.2 67.2 A 160 160 0 0 1 369.7 98.5 L 314.8 156.8 A 80 80 0 0 0 290.6 141.1 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 373.1 101.9 A 160 160 0 0 1 405.9 149.4 L 333.0 182.2 A 80 80 0 0 0 316.6 158.4 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 407.8 153.8 A 160 160 0 0 1 419.9 210.2 L 340.0 212.6 A 80 80 0 0 0 333.9 184.4 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 420.0 215.0 A 160 160 0 0 1 409.6 271.8 L 334.8 243.4 A 80 80 0 0 0 340.0 215.0 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 407.8 276.2 A 160 160 0 0 1 376.5 324.7 L 318.2 269.8 A 80 80 0 0 0 333.9 245.6 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 373.1 328.1 A 160 160 0 0 1 325.6 360.9 L 292.8 288.0 A 80 80 0 0 0 316.6 271.6 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 321.2 362.8 A 160 160 0 0 1 264.8 374.9 L 262.4 295.0 A 80 80 0 0 0 290.6 288.9 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 260.0 375.0 A 160 160 0 0 1 203.2 364.6 L 231.6 289.8 A 80 80 0 0 0 260.0 295.0 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 198.8 362.8 A 160 160 0 0 1 150.3 331.5 L 205.2 273.2 A 80 80 0 0 0 229.4 288.9 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 146.9 328.1 A 160 160 0 0 1 114.1 280.6 L 187.0 247.8 A 80 80 0 0 0 203.4 271.6 Z" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.4"/>
+<path d="M 112.2 276.2 A 160 160 0 0 1 100.1 219.8 L 180.0 217.4 A 80 80 0 0 0 186.1 245.6 Z" fill="#fde8d0" stroke="#c46a12" stroke-width="1.4"/>
+<path d="M 100.0 215.0 A 160 160 0 0 1 110.4 158.2 L 185.2 186.6 A 80 80 0 0 0 180.0 215.0 Z" fill="#fde8d0" stroke="#c46a12" stroke-width="1.4"/>
+<path d="M 112.2 153.8 A 160 160 0 0 1 143.5 105.3 L 201.8 160.2 A 80 80 0 0 0 186.1 184.4 Z" fill="#fde8d0" stroke="#c46a12" stroke-width="1.4"/>
+<path d="M 146.9 101.9 A 160 160 0 0 1 194.4 69.1 L 227.2 142.0 A 80 80 0 0 0 203.4 158.4 Z" fill="#fde8d0" stroke="#c46a12" stroke-width="1.4"/>
+<path d="M 198.8 67.2 A 160 160 0 0 1 255.2 55.1 L 257.6 135.0 A 80 80 0 0 0 229.4 141.1 Z" fill="#fde8d0" stroke="#c46a12" stroke-width="1.4"/>
+<text x="260" y="209" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">256 words</text>
+<text x="260" y="229" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">(ring)</text>
+<line x1="195.32843272420996" y1="241.78784026555633" x2="84.46288882285558" y2="287.7098521493672" stroke="#b32d2d" stroke-width="2.4"/>
+<text x="62.28978004258468" y="300.8942545261293" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#b32d2d">trigger</text>
+<text x="560" y="70" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="start" font-weight="bold" fill="#1c2733">how to read it</text>
+<text x="560" y="100" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">Blue: words recorded before the trigger (history).</text>
+<text x="560" y="121" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">Orange: words recorded after the trigger.</text>
+<text x="560" y="142" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">The write pointer moves round the ring; when it is full,</text>
+<text x="560" y="163" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">the oldest words are overwritten.</text>
+<text x="560" y="184" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733"></text>
+<text x="560" y="205" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">Status gives: write pointer, whether the ring wrapped,</text>
+<text x="560" y="226" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">the trigger word index and the clocks since the</text>
+<text x="560" y="247" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#1c2733">previous word at the trigger.</text>
+<text x="560" y="330" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="bold" fill="#1c2733">read the buffer oldest first:</text>
+<text x="560" y="352" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#5c6670">if it wrapped, start at the write pointer;</text>
+<text x="560" y="371" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="normal" fill="#5c6670">if not, start at word 0</text>
+</svg>

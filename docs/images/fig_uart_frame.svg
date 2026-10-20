@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 250" width="900" height="250"><title>UART frame</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="248.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<path d="M120,70 L176,70 L176,110 L232,110 L232,70 L288,70 L288,110 L568,110 L568,70 L624,70 L624,110 L680,110 L680,70 L792,70" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<text x="112" y="94.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">TX</text>
+<text x="148.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">idle</text>
+<line x1="120" y1="56" x2="120" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="204.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">start</text>
+<line x1="176" y1="56" x2="176" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="260.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D0</text>
+<line x1="232" y1="56" x2="232" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="316.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D1</text>
+<line x1="288" y1="56" x2="288" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="372.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D2</text>
+<line x1="344" y1="56" x2="344" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="428.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D3</text>
+<line x1="400" y1="56" x2="400" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="484.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D4</text>
+<line x1="456" y1="56" x2="456" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="540.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D5</text>
+<line x1="512" y1="56" x2="512" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="596.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D6</text>
+<line x1="568" y1="56" x2="568" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="652.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">D7</text>
+<line x1="624" y1="56" x2="624" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="708.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">stop</text>
+<line x1="680" y1="56" x2="680" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="764.0" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">idle</text>
+<line x1="736" y1="56" x2="736" y2="150" stroke="#d5dbe1" stroke-width="1"/>
+<text x="450" y="180" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">0x41 (&#x27;A&#x27;) sent least significant bit first, 8 data bits, no parity, 1 stop bit</text>
+<text x="450" y="204" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">one bit = 1 / baud rate: 8.68 us at 115200 baud = 434 clocks at 50 MHz</text>
+</svg>

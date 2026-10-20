@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360"><title>Management link: SPI mode 0</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="358.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<path d="M130,36 L186,36 L186,60 L802,60 L802,36 L858,36" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<text x="122" y="52.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">CS_N</text>
+<path d="M130,120 L270,120 L270,96 L298,96 L298,120 L326,120 L326,96 L354,96 L354,120 L382,120 L382,96 L410,96 L410,120 L438,120 L438,96 L466,96 L466,120 L494,120 L494,96 L522,96 L522,120 L550,120 L550,96 L578,96 L578,120 L606,120 L606,96 L634,96 L634,120 L662,120 L662,96 L690,96 L690,120 L858,120" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<text x="122" y="112.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">SCLK</text>
+<path d="M130,180 L242,180 L242,156 L298,156 L298,180 L354,180 L354,156 L410,156 L410,180 L522,180 L522,156 L578,156 L578,180 L634,180 L634,156 L690,156 L690,180 L858,180" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<text x="122" y="172.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">MOSI</text>
+<path d="M130,240 L298,240 L298,216 L410,216 L410,240 L466,240 L466,216 L522,216 L522,240 L634,240 L634,216 L690,216 L690,240 L858,240" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<text x="122" y="232.0" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">MISO</text>
+<text x="270" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">7</text>
+<line x1="270" y1="36" x2="270" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="326" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">6</text>
+<line x1="326" y1="36" x2="326" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="382" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">5</text>
+<line x1="382" y1="36" x2="382" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="438" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">4</text>
+<line x1="438" y1="36" x2="438" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="494" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">3</text>
+<line x1="494" y1="36" x2="494" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="550" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">2</text>
+<line x1="550" y1="36" x2="550" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="606" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">1</text>
+<line x1="606" y1="36" x2="606" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="662" y="276" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">0</text>
+<line x1="662" y1="36" x2="662" y2="262" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="284.0" y="296" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="start" font-weight="normal" fill="#5c6670">bits are sampled on the rising edge, most significant bit first</text>
+<line x1="186" y1="24" x2="270" y2="24" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<text x="228.0" y="18" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#1c2733">CS_N low to first edge: &gt;= 4 clocks</text>
+<line x1="270" y1="98" x2="326" y2="98" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<text x="298" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#1c2733">each phase &gt;= 8 clocks</text>
+<text x="450" y="336" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">chip clocks, not SCLK periods: at 50 MHz SCLK can be up to about 3 MHz</text>
+</svg>

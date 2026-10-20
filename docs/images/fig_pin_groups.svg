@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 460" width="820" height="460"><title>Chip pin groups</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="818.5" height="458.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="280" y="60" width="260" height="300" rx="8" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="410.0" y="215.6" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#1c2733">Protocol emulator</text>
+<line x1="240" y1="90" x2="280" y2="90" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="94" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">clk</text>
+<text x="24" y="94" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">system clock, up to 50 MHz</text>
+<line x1="240" y1="122" x2="280" y2="122" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">rst_n</text>
+<text x="24" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">reset, active low</text>
+<line x1="240" y1="154" x2="280" y2="154" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="158" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ena</text>
+<text x="24" y="158" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">enable</text>
+<line x1="240" y1="186" x2="280" y2="186" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="190" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ui_in[0]</text>
+<text x="24" y="190" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">management SCLK</text>
+<line x1="240" y1="218" x2="280" y2="218" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="222" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ui_in[1]</text>
+<text x="24" y="222" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">management MOSI</text>
+<line x1="240" y1="250" x2="280" y2="250" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="254" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ui_in[2]</text>
+<text x="24" y="254" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">management CS_N</text>
+<line x1="240" y1="282" x2="280" y2="282" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="286" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ui_in[3]</text>
+<text x="24" y="286" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">HOLD (or protocol input)</text>
+<line x1="240" y1="314" x2="280" y2="314" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="236" y="318" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">ui_in[7:4]</text>
+<text x="24" y="318" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">protocol inputs</text>
+<line x1="540" y1="90" x2="580" y2="90" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="584" y="94" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="bold" fill="#1c2733">uo_out[0]</text>
+<text x="584" y="108" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">management MISO</text>
+<line x1="540" y1="130" x2="580" y2="130" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="584" y="134" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="bold" fill="#1c2733">uo_out[1]</text>
+<text x="584" y="148" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">interrupt (default)</text>
+<line x1="540" y1="170" x2="580" y2="170" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="584" y="174" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="start" font-weight="bold" fill="#1c2733">uo_out[7:2]</text>
+<text x="584" y="188" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" fill="#5c6670">debug views (default), or outputs</text>
+<rect x="280" y="360" width="260" height="6" rx="2" fill="#eef0f3" stroke="#5c6670" stroke-width="1.5"/>
+<line x1="296" y1="360" x2="296" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="296" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">7</text>
+<line x1="327" y1="360" x2="327" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="327" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">6</text>
+<line x1="358" y1="360" x2="358" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="358" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">5</text>
+<line x1="389" y1="360" x2="389" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="389" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">4</text>
+<line x1="420" y1="360" x2="420" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="420" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">3</text>
+<line x1="451" y1="360" x2="451" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="451" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">2</text>
+<line x1="482" y1="360" x2="482" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="482" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">1</text>
+<line x1="513" y1="360" x2="513" y2="395" stroke="#2b3a4a" stroke-width="1.6"/>
+<text x="513" y="410" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">0</text>
+<text x="410" y="432" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">uio[7:0]: bidirectional protocol pins</text>
+</svg>

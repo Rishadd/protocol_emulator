@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" width="900" height="330"><title>Instruction timing</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="328.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<text x="130" y="40" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">clock</text>
+<path d="M150.0,34 L179.0,34 L179.0,52 L208.0,52 L208.0,34 L237.0,34 L237.0,52 L266.0,52 L266.0,34 L295.0,34 L295.0,52 L324.0,52 L324.0,34 L353.0,34 L353.0,52 L382.0,52 L382.0,34 L411.0,34 L411.0,52 L440.0,52 L440.0,34 L469.0,34 L469.0,52 L498.0,52 L498.0,34 L527.0,34 L527.0,52 L556.0,52 L556.0,34 L585.0,34 L585.0,52 L614.0,52 L614.0,34 L643.0,34 L643.0,52 L672.0,52 L672.0,34 L701.0,34 L701.0,52 L730.0,52 L730.0,34 L759.0,34 L759.0,52 L788.0,52 L788.0,34 L817.0,34 L817.0,52 L846.0,52" stroke="#1f5fbf" stroke-width="2.0" fill="none"/>
+<line x1="150" y1="62" x2="150" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="208" y1="62" x2="208" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="266" y1="62" x2="266" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="324" y1="62" x2="324" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="382" y1="62" x2="382" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="440" y1="62" x2="440" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="498" y1="62" x2="498" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="556" y1="62" x2="556" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="614" y1="62" x2="614" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="672" y1="62" x2="672" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="730" y1="62" x2="730" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="788" y1="62" x2="788" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<line x1="846" y1="62" x2="846" y2="300" stroke="#d5dbe1" stroke-width="1"/>
+<rect x="152" y="90" width="54" height="46" rx="4" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="179.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="bold" fill="#1c2733">SETH p</text>
+<text x="179.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">1 clock</text>
+<rect x="210" y="90" width="54" height="46" rx="4" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="237.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="bold" fill="#1c2733">OUT1 d=0</text>
+<text x="237.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">1 clock</text>
+<rect x="268" y="90" width="170" height="46" rx="4" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="353.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" fill="#1c2733">OUT1 d=2</text>
+<text x="353.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">3 clocks</text>
+<rect x="442" y="90" width="228" height="46" rx="4" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="556.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" fill="#1c2733">WAIT d=3</text>
+<text x="556.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">4 clocks</text>
+<rect x="674" y="90" width="54" height="46" rx="4" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="701.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="bold" fill="#1c2733">DJNZ</text>
+<text x="701.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">1 clock</text>
+<rect x="732" y="90" width="54" height="46" rx="4" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="759.0" y="110" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="bold" fill="#1c2733">RGET</text>
+<text x="759.0" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">1 clock</text>
+<text x="130" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="end" font-weight="bold" fill="#1c2733">instruction</text>
+<text x="450" y="190" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#1c2733">every instruction takes one clock; the delay of WAIT, OUT1 and IN1 adds d clocks</text>
+<text x="450" y="214" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">a pin written at clock 5 is seen by the target after the pin&#x27;s own delay; a pin read is two clocks old (input synchroniser)</text>
+<text x="450" y="262" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">at 50 MHz one clock = 20 ns; at 40 MHz = 25 ns</text>
+</svg>

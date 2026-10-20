@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 230" width="980" height="230"><title>Logic analyser channels</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="978.5" height="228.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="20" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="47" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch0</text>
+<rect x="79" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="106" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch1</text>
+<rect x="138" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="165" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch2</text>
+<rect x="197" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="224" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch3</text>
+<rect x="256" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="283" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch4</text>
+<rect x="315" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="342" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch5</text>
+<rect x="374" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="401" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch6</text>
+<rect x="433" y="70" width="54" height="70" rx="5" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="460" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch7</text>
+<rect x="492" y="70" width="54" height="70" rx="5" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="519" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch8</text>
+<rect x="551" y="70" width="54" height="70" rx="5" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="578" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch9</text>
+<rect x="610" y="70" width="54" height="70" rx="5" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="637" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch10</text>
+<rect x="669" y="70" width="54" height="70" rx="5" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="696" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch11</text>
+<rect x="728" y="70" width="54" height="70" rx="5" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="755" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch12</text>
+<rect x="787" y="70" width="54" height="70" rx="5" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="814" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch13</text>
+<rect x="846" y="70" width="54" height="70" rx="5" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="873" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch14</text>
+<rect x="905" y="70" width="54" height="70" rx="5" fill="#fff3c4" stroke="#b38f00" stroke-width="1.5"/>
+<text x="932" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#1c2733">ch15</text>
+<text x="47" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[0]</text>
+<text x="106" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[1]</text>
+<text x="165" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[2]</text>
+<text x="224" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[3]</text>
+<text x="283" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[4]</text>
+<text x="342" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[5]</text>
+<text x="401" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[6]</text>
+<text x="460" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">uio[7]</text>
+<text x="519" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ui_in[3]</text>
+<text x="578" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ui_in[4]</text>
+<text x="637" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ui_in[5]</text>
+<text x="696" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ui_in[6]</text>
+<text x="755" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ui_in[7]</text>
+<text x="814" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">RUN 0</text>
+<text x="873" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">RUN 1</text>
+<text x="932" y="112" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">marker</text>
+<text x="932" y="126" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" fill="#5c6670">(firmware)</text>
+<text x="490" y="40" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="bold" fill="#1c2733">16 channels, one clock wide, sampled after the same two-flop synchroniser the engines use</text>
+<text x="490" y="180" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="normal" fill="#5c6670">13 pins + the RUN state of both engines + one marker line that firmware can set to flag an event in the waveform</text>
+</svg>
