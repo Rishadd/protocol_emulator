@@ -3,6 +3,7 @@
 // (host/chip_host.py) can talk to the RTL like a microcontroller would talk to the real chip. Run with vvp -n.
 // One command per line, one reply line per command (stdout is flushed after every reply):
 //   F <14 hex>        one 7-byte SPI frame (MSB first, mode 0): replies  F <14 hex>  with the 7 bytes seen on MISO
+//   X <bits> <hex>    one frame of any length up to 128 bits (MSB first, the value right-aligned): replies  X <32 hex>  with the last 128 bits seen on MISO
 //   I <hex> <hex>     set the pins   ui_in[7:3] (5 bits), uio_in (8 bits)                     replies  OK
 //   W <dec>           advance the system clock by that many cycles                              replies  OK
 //   G                 sample the pins                          replies  G <uo_out> <uio_out> <uio_oe> <time ns>
@@ -42,6 +43,7 @@ module tb_host_bridge;
     reg [1:0]   lvl;
     reg [8*8-1:0] cmd;
     reg [55:0]  w;
+    reg [127:0] wide;
 
     initial begin
         repeat (3) @(posedge clk); #1 rst_n = 1; repeat (4) @(posedge clk);
@@ -52,6 +54,10 @@ module tb_host_bridge;
                 r = $fscanf(stdin, "%h", w);
                 spi_begin; spi_bits({72'd0, w}, 56); spi_end;
                 $display("F %014h", spi_rx[55:0]);
+            end else if (cmd == "X") begin
+                r = $fscanf(stdin, "%d %h", a, wide);
+                spi_begin; spi_bits(wide, a); spi_end;
+                $display("X %032h", spi_rx);
             end else if (cmd == "I") begin
                 r = $fscanf(stdin, "%h %h", a, b);
                 ui_hi = a[4:0]; uio_in = b[7:0];
