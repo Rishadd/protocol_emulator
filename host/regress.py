@@ -80,6 +80,20 @@ E = [(n.replace("chip_", "shared_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, c
     [(n.replace("remap2_", "sharedremap2_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in D if n.startswith("remap2_")] + \
     [("shared_spi_chip", [PY, "host/spi_test.py", "chip"], {"PROTO_SHARED": "1"}),      # SPI master on engine 0, slave on engine 1 (word 256)
      ("shared_i2c_chip", [PY, "host/i2c_test.py", "chip"], {"PROTO_SHARED": "1"})]
+# F: management frame v2, the shared-memory software (host rules, models, differential test, chip level) and the logic analyser (model, capture unit
+# against the model, chip level through the SPI link); every *_mutants run must catch all its planted bugs
+F = [
+    ("mgmt_v2_test", [PY, "host/mgmt_v2_test.py"], {}),
+    ("mgmt_v2_mutants", [PY, "host/mgmt_v2_mutants.py"], {}),
+    ("shmem_test", [PY, "host/shmem_test.py"], {}),
+    ("shmem_chip_test", [PY, "host/shmem_chip_test.py"], {}),
+    ("isa_diff_shared", [PY, "host/isa_diff_shared.py", "run"], {}),
+    ("isa_diff_shared_mutants", [PY, "host/isa_diff_shared.py", "mutants"], {}),
+    ("la_model", [PY, "host/la_model.py"], {}),
+    ("la_rtl_test", [PY, "host/la_rtl_test.py", "run"], {}),
+    ("la_rtl_mutants", [PY, "host/la_rtl_test.py", "mutants"], {}),
+    ("la_chip_test", [PY, "host/la_chip_test.py"], {}),
+]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 
 
@@ -123,7 +137,7 @@ def main():
     for chip in (False, True):                                   # compile the shared protocol benches once, before anything runs in parallel
         pl.compile_tb(chip=chip)
     rows = []
-    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D), ("E", E)):
+    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D), ("E", E), ("F", F)):
         items = [i for i in phase if (not only or i[0] in only) and i[0] not in skip]
         if not items:
             continue
