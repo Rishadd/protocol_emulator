@@ -74,6 +74,10 @@ D = [(f"remap{s}_{n}", [PY, "host/" + script, *args], {"PROTO_CHIP": "1", "PROTO
                                     ("jtag_test", "jtag_test.py", ["run"], {"PROTO_REMAP_UO": "0x38"}),
                                     ("onewire_test", "onewire_test.py", ["run"], {}),
                                     ("modbus_test", "modbus_test.py", ["tx", "rx", "loop"], {}))]
+# E: the shared 512-word instruction memory (PROTO_SHARED=1, -DSHARED_IMEM): the chip-level protocol suites with engine 0's image at word 0 and engine 1's at word 256
+# (absolute 9-bit jump targets, START register), plain and with the pins of seed 2 placed at random
+E = [(n.replace("chip_", "shared_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in B] + \
+    [(n.replace("remap2_", "sharedremap2_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in D if n.startswith("remap2_")]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 
 
@@ -117,7 +121,7 @@ def main():
     for chip in (False, True):                                   # compile the shared protocol benches once, before anything runs in parallel
         pl.compile_tb(chip=chip)
     rows = []
-    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D)):
+    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D), ("E", E)):
         items = [i for i in phase if (not only or i[0] in only) and i[0] not in skip]
         if not items:
             continue

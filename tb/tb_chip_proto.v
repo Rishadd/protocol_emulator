@@ -97,7 +97,13 @@ module tb_chip_proto;
         reg [15:0] base;
         begin
             base = eng ? 16'h2000 : 16'h1000;
+`ifdef SHARED_IMEM
+            // shared memory: physical words, engine 0's image at 0, engine 1's at 256 (host/proto_lib.py relocates its jump targets)
+            for (k = 0; k < last; k = k + 1) frame(OP_WR, 16'h0400 + 4 * ((eng ? 256 : 0) + k), eng ? img1[k] : img0[k]);
+            if (eng) frame(OP_WR, base + 16'h00C, 32'd256);                  // START: the program counter's reset value
+`else
             for (k = 0; k < last; k = k + 1) frame(OP_WR, base + 16'h400 + 4 * k, eng ? img1[k] : img0[k]);
+`endif
         end
     endtask
 
