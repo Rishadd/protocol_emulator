@@ -1,0 +1,25 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal -D SYNTHESIS -D SHARED_IMEM alu_unit.v control_unit.v crc_unit.v delay_counter.v engine_top.v fifo.v line_coder.v loop_counter.v pc_reg.v pin_block.v shift_reg.v
+read -formal region_go_props.sv
+prep -top region_go_props
+
+[files]
+../src/isa.vh
+../src/alu_unit.v
+../src/control_unit.v
+../src/crc_unit.v
+../src/delay_counter.v
+../src/engine_top.v
+../src/fifo.v
+../src/line_coder.v
+../src/loop_counter.v
+../src/pc_reg.v
+../src/pin_block.v
+../src/shift_reg.v
+region_go_props.sv

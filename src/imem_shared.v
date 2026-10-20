@@ -41,7 +41,12 @@ module imem_shared (
     output reg         ir_valid,
     // the windows the engines hold, for the host's REGION read: {6'd0, limit[9:0], 7'd0, base[8:0]}
     output wire [31:0] region0,
-    output wire [31:0] region1
+    output wire [31:0] region1,
+    // what reaches the macro, for the formal proofs (formal/imem_shared_props.sv); unconnected in the chip
+    output wire        m_wa,
+    output wire        m_wb,
+    output wire [8:0]  m_aa,
+    output wire [8:0]  m_ab
 );
     localparam [31:0] TRAP = {5'd31, 27'd0};
 
@@ -121,6 +126,8 @@ module imem_shared (
     assign f_raw1 = dout_a;
     assign f_oob0 = oob0;
     assign f_oob1 = oob1;
+
+    assign m_wa = wa;  assign m_wb = wb;  assign m_aa = addr_a;  assign m_ab = addr_b;
 
     RM_IHPSG13_2P_512x32_c2_bm_bist u_mem (
         .A_CLK(clk), .A_MEN(1'b1), .A_WEN(wa), .A_REN(!wa), .A_ADDR(addr_a), .A_DIN(iw_data), .A_DLY(1'b1), .A_DOUT(dout_a),

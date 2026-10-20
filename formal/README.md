@@ -19,3 +19,17 @@ Together: **a pad is only ever driven by a running engine that owns it, as confi
 open-drain pad is never driven high**, for any SPI input and any program.
 
 No SMT solver is installed (only the `abc` engines), so there are no cover traces yet.
+
+## Shared instruction memory (branch shared/on-v2, built with SHARED_IMEM)
+
+| Proof | Statement |
+|---|---|
+| `imem_shared.sby` (P1) | a running engine only decodes a word (not the TRAP substitute) that was fetched from an address inside the window in force in that clock |
+| `imem_shared.sby` (P2) | no host write reaches the macro through a running engine's port, none lands inside a running engine's window, and with both engines running nothing is written |
+| `imem_shared.sby` (P3) | while an engine runs with a locked window, the lock and the window are constant; a held engine's window is the whole memory and unlocked one clock later; the first OP_REGION of a run sets exactly the window it names and the lock |
+| `region_go.sby` | the control unit passes an OP_REGION on (`rg_go`) only when the engine is not locked and the window is valid (base < limit <= 512): the assumption P3 uses |
+
+The memory macro is replaced by `sram2p_free.v` (arbitrary read data), the environment is otherwise free (any run / fetch / host write sequence).
+`imem_shared` exports the macro's write strobes and addresses (`m_wa m_wb m_aa m_ab`) for these properties: Yosys does not resolve hierarchical references into a submodule.
+Run on Linux: `bash formal/run_formal_linux.sh` (sby, yosys, yices, boolector from the Nix profile); mutants: `python3 formal/formal_mutants.py imem_shared region_go`
+(13 planted bugs, 13 caught). Total: 6 proofs.

@@ -1,0 +1,16 @@
+[options]
+mode prove
+
+[engines]
+abc pdr
+
+[script]
+read -formal sram2p_free.v
+read -formal -D SYNTHESIS -D SHARED_IMEM imem_shared.v
+read -formal imem_shared_props.sv
+prep -top imem_shared_props
+
+[files]
+sram2p_free.v
+../src/imem_shared.v
+imem_shared_props.sv
