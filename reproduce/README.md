@@ -65,6 +65,7 @@ made with `git bundle create reproduce/branches.bundle <branches> ^main`). `02_s
   but different layout (about 3 % fewer cells with the older PDK, `docs/LIBRELANE_RESULTS.md`). The numbers in `docs/TT_FLOW_RESULTS.md` for those runs are the recorded ones.
 * **tt14b** is rebuilt from commit e3846c3 (its floorplan commit; its merged configuration was compared with tt14b's key by key, no differences), with the release tools; the run itself was
   made with the working tree just before that commit.
+* **Line endings:** the archived inputs of sh4-sh5c (and their macro files) were CRLF files copied from the Windows machine; git stores them with LF endings, so a fresh clone has LF. Verilog, JSON and Liberty/LEF text is whitespace-insensitive, so the results are expected to be the same, but only the LF-based family (sh6-sh9b, made on Linux) was rechecked by the sh8 rerun.
 * **GitHub Actions results** (gds, precheck, gl_test, viewer jobs of run 39250627497) are on GitHub; the same tools run locally in `05_run_flow.sh` and `06_precheck_and_reports.sh`.
 * **Determinism of the flow:** the check is `compare_flow.py`; a partial rerun of sh8 matched the original in all 29 completed steps (HOW_TO_REPRODUCE.md, section 5). The record is in
   `memory.md` (entry "reproduce/ folder check") and below.
