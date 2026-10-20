@@ -1,0 +1,60 @@
+PASS  run_tests                    RESULT tb_instr_mem: PASS; RESULT tb_pc_reg: PASS; RESULT tb_delay_counter: PASS; RESULT tb_loop_counter: PASS; RESULT tb_fifo: PASS; RESULT tb_shift_
+PASS  run_tests NO_L2              RESULT tb_instr_mem: PASS; RESULT tb_pc_reg: PASS; RESULT tb_delay_counter: PASS; RESULT tb_loop_counter: PASS; RESULT tb_fifo: PASS; RESULT tb_shift_
+PASS  test_isa                     RESULT test_isa: PASS
+FAIL  formal fv_l2_arb             no RESULT line
+FAIL  formal fv_mgmt               no RESULT line
+PASS  tb_fetch_equiv seed 2        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 3        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 4        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 5        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 6        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 7        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 8        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 9        RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 10       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 11       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 12       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 13       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 14       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 15       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 16       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 17       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 18       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 19       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 20       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv seed 21       RESULT tb_fetch_equiv: PASS
+PASS  tb_fetch_equiv_v2 seed 2     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 3     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 4     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 5     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 6     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 7     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 8     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 9     RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 10    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 11    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 12    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 13    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 14    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 15    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 16    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 17    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 18    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 19    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 20    RESULT tb_fetch_equiv_v2: PASS
+PASS  tb_fetch_equiv_v2 seed 21    RESULT tb_fetch_equiv_v2: PASS
+PASS  spi_test                     RESULT spi_test: PASS (312/312 cases as expected) | identical to baseline (584 lines)
+PASS  i2c_test                     RESULT i2c_test: PASS (60/60 cases as expected) | identical to baseline (96 lines)
+FAIL  mgmt_duplex_stress           no RESULT line
+FAIL  eqy E2 (NO_L2 chip == tt-phase1 chip) RESULT eqy E2: FAIL
+FAIL  workload uart                no RESULT line
+PASS  workload uartlimits          RESULT workload: PASS (0/0 cases as expected) | identical to baseline (12 lines)
+PASS  workload spi i2c combo       RESULT workload: PASS (42/42 cases as expected) | identical to baseline (142 lines)
+PASS  mutants                      RESULT mutate: PASS (16/16 mutants detected)
+RESULT regress tier 1: FAIL (5 jobs)  (logs: C:\Data\pe_p2\results\two_tier_2026-10-13\tier1)
+ULT eqy E2: FAIL
+FAIL  workload uart                no RESULT line
+FAIL  workload uartlimits          no RESULT line
+FAIL  workload spi i2c combo       no RESULT line
+PASS  mutants                      RESULT mutate: PASS (16/16 mutants detected)
+RESULT regress tier 1: FAIL (5 jobs)  (logs: C:\Data\pe_p2\results\two_tier_2026-10-13\tier1)
