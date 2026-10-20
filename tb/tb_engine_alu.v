@@ -186,8 +186,8 @@ module tb_engine_alu;
         prog[0] = I(`OP_RGET, {3'd7, 1'b0, 3'd0}); prog[1] = RPUT(`RP_RXF, 0); prog[2] = I(`OP_HALT, 0);
         load_prog(3); tx_push(32'h1); tx_push(32'h2); tx_push(32'h3); tx_push(32'h4); go(100);
         `CHECK(nrx == 1 && rx[0] == {26'd0, 3'd0, 3'd4}, "T8 a full TX FIFO reads 4")
-        prog[0] = I(`OP_RPUT, {3'd4, 1'b0, 3'd0}); load_prog(1); go(10);
-        `CHECK(halted && fault, "T8 RPUT destination 4 traps")
+        prog[0] = I(`OP_RPUT, {3'd5, 1'b0, 3'd0}); load_prog(1); go(10);
+        `CHECK(halted && fault, "T8 RPUT destination 5 traps")
         prog[0] = I(`OP_CRC, {3'd7, 24'd0}); load_prog(1); go(10);
         `CHECK(halted && fault, "T8 CRC operation 7 traps")
         prog[0] = I(5'd29, 0); load_prog(1); go(10);

@@ -20,6 +20,7 @@ module tb_control_unit;
     // register / ALU / CRC extension
     reg         flag_z = 0, flag_n = 0, flag_c = 0, rs_zero = 0, crc_busy = 0, line_full = 0, line_busy = 0;
     wire        line_go;
+    wire        trig_wr;
     wire        push_reg, alu_go, ldi_go, rget_go, isr_load, osr_from_reg, lc_from_reg, dc_from_reg;
     wire        crc_rst, crc_set_poly, crc_set_init, crc_set_xor, crc_set_fmt, crc_feed_bit, crc_feed_byte;
 
@@ -32,7 +33,7 @@ module tb_control_unit;
         .lc_load(lc_load), .lc_dec(lc_dec), .lc_load_value(lc_load_value), .lc_count(lc_count),
         .tx_empty(tx_empty), .tx_rd_en(tx_rd_en), .rx_full(rx_full), .rx_wr_en(rx_wr_en), .push_imm(push_imm), .push_reg(push_reg),
         .flag_z(flag_z), .flag_n(flag_n), .flag_c(flag_c), .rs_zero(rs_zero),
-        .alu_go(alu_go), .ldi_go(ldi_go), .rget_go(rget_go), .isr_load(isr_load), .osr_from_reg(osr_from_reg),
+        .alu_go(alu_go), .ldi_go(ldi_go), .rget_go(rget_go), .isr_load(isr_load), .trig_wr(trig_wr), .osr_from_reg(osr_from_reg),
         .lc_from_reg(lc_from_reg), .dc_from_reg(dc_from_reg),
         .crc_rst(crc_rst), .crc_set_poly(crc_set_poly), .crc_set_init(crc_set_init), .crc_set_xor(crc_set_xor),
         .crc_set_fmt(crc_set_fmt), .crc_feed_bit(crc_feed_bit), .crc_feed_byte(crc_feed_byte), .crc_busy(crc_busy),
@@ -284,9 +285,11 @@ module tb_control_unit;
         `CHECK(ctl == NONE, "B7 RPUT RXF stalls on full, no side effects") tick;
         rx_full = 0; #1;
         `CHECK(ctl == (ADV | RXW | X_PSR) && push_imm == 0, "B7 RPUT RXF pushes the register") tick;
-        for (k = 4; k <= 7; k = k + 1) begin
+        do_reset; set(`OP_RPUT, {20'd0, 3'd4, 1'b0, 3'd1}); #1;
+        `CHECK(ctl == ADV && trig_wr == 1 && halted == 0, "B7 RPUT TRIG: strobe, no other side effect") tick;
+        for (k = 5; k <= 7; k = k + 1) begin
             do_reset; set(`OP_RPUT, {20'd0, k[2:0], 1'b0, 3'd1}); tick;
-            `CHECK(halted == 1 && fault == 1, "B7 RPUT destination 4..7 traps")
+            `CHECK(halted == 1 && fault == 1, "B7 RPUT destination 5..7 traps")
         end
         do_reset;
 
@@ -335,10 +338,12 @@ module tb_control_unit;
         end
 
         // reserved opcodes trap (21..28 are legal now)
-        for (k = 29; k <= 31; k = k + 1) begin
+        do_reset; set(`OP_TSTAMP, 27'd0); #1;
+        `CHECK(ctl == (ADV | X_RGET), "A7 TSTAMP commits like RGET (engine_top puts the counter on the data)") tick;
+        for (k = 29; k <= 31; k = k + 2) begin
             do_reset; set(k[4:0], 27'd0);
             `CHECK(ctl == NONE, "A7 reserved opcode: no strobes") tick;
-            `CHECK(halted == 1 && fault == 1, "A7 opcodes 29..31 trap")
+            `CHECK(halted == 1 && fault == 1, "A7 opcodes 29 and 31 trap")
         end
         set(`OP_NOP, 0);
         `CHECK(ctl == NONE, "A7 faulted engine ignores NOP")
