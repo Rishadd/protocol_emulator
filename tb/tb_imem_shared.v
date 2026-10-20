@@ -8,7 +8,11 @@ module tb_imem_shared;
 
     reg  [1:0]  run = 2'b00;
     reg  [8:0]  f_addr0 = 0, f_addr1 = 0;
-    wire [31:0] f_instr0, f_instr1;
+    wire [31:0] f_raw0, f_raw1;
+    wire        f_oob0, f_oob1;
+    // the engines substitute TRAP (opcode 31) for an out-of-window word; the bench applies the same rule to keep checking the word the engine would decode
+    wire [31:0] f_instr0 = f_oob0 ? {5'd31, 27'd0} : f_raw0;
+    wire [31:0] f_instr1 = f_oob1 ? {5'd31, 27'd0} : f_raw1;
     reg         rg_go0 = 0, rg_go1 = 0;
     reg  [18:0] rg_val0 = 0, rg_val1 = 0;
     wire        locked0, locked1;
@@ -19,7 +23,7 @@ module tb_imem_shared;
 
     imem_shared dut (
         .clk(clk), .rst_n(rst_n), .run(run),
-        .f_addr0(f_addr0), .f_addr1(f_addr1), .f_instr0(f_instr0), .f_instr1(f_instr1),
+        .f_addr0(f_addr0), .f_addr1(f_addr1), .f_raw0(f_raw0), .f_raw1(f_raw1), .f_oob0(f_oob0), .f_oob1(f_oob1),
         .rg_go0(rg_go0), .rg_go1(rg_go1), .rg_val0(rg_val0), .rg_val1(rg_val1),
         .locked0(locked0), .locked1(locked1),
         .iw_wr(iw_wr), .iw_addr(iw_addr), .iw_data(iw_data), .iw_ok(iw_ok));
