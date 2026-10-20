@@ -50,14 +50,16 @@ def compile_tb(extra_srcs=(), tag=None, chip=None):
     os.makedirs(BUILD, exist_ok=True)
     out = os.path.join(BUILD, tag + ("_shared" if shared else "") + ".vvp")
     if not os.path.exists(out) or os.path.getmtime(out) < _newest_input():
+        tmp = out + f".{os.getpid()}.tmp"
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v"))) + (SIM_LIBS_SHARED if shared else SIM_LIBS) + sorted(
             glob.glob(os.path.join(ROOT, "tb", "peer_*.v"))) + list(extra_srcs)
         r = subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if shared else []) +
                            ["-I", os.path.join(ROOT, "src"),
-                            "-I", os.path.join(ROOT, "tb"), "-o", out, os.path.join(ROOT, "tb", tag + ".v")] + srcs,
+                            "-I", os.path.join(ROOT, "tb"), "-o", tmp, os.path.join(ROOT, "tb", tag + ".v")] + srcs,
                            capture_output=True, text=True)
         if r.returncode:
             raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+        os.replace(tmp, out)             # atomic: suites that start together (regress phases) never read a half-written file
     return out
 
 
