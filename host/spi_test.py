@@ -157,7 +157,8 @@ _vvp = {}
 
 SHARED = os.environ.get("PROTO_SHARED", "") == "1"      # the chip-level test bench on the shared 512-word memory (-DSHARED_IMEM); engine 1's image at word 256
 SIM_LIBS_SHARED = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v")]
+                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v",
+                    "RM_IHPSG13_1P_256x32_c2_bm_bist.v", "RM_IHPSG13_1P_core_behavioral_bm_bist.v")]
 
 
 def compile_tb(name):

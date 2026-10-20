@@ -30,7 +30,8 @@ EV = 1 << 26
 CHIP = os.environ.get("PROTO_CHIP", "") == "1"
 SHARED = os.environ.get("PROTO_SHARED", "") == "1"      # chip-level runs on the shared 512-word memory (-DSHARED_IMEM): engine 0 at word 0, engine 1 at word 256
 SIM_LIBS_SHARED = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
-                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v")]
+                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v",
+                    "RM_IHPSG13_1P_256x32_c2_bm_bist.v", "RM_IHPSG13_1P_core_behavioral_bm_bist.v")]
 JUMP_OPS = (2, 5, 17, 18, 19, 23)                       # JMP DJNZ JPH JPL JPO JCC: operand [7:0] is a program address; shared mode: bit 11 is address bit 8
 _vvp = None
 
