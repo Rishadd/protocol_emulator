@@ -63,6 +63,42 @@ class HostError(Exception):
     pass
 
 
+def crc16(data, crc=0xFFFF):
+    """CRC-16/CCITT-FALSE (poly 0x1021, init 0xFFFF, no reflection, no final XOR) as used by frame v2."""
+    for b in data:
+        crc ^= b << 8
+        for _ in range(8):
+            crc = (crc << 1 ^ 0x1021) & 0xFFFF if crc & 0x8000 else (crc << 1) & 0xFFFF
+    return crc
+
+
+OP2_NOP, OP2_WRITE, OP2_READ = 0x80, 0x81, 0x82
+CODE_NAMES = {0: "OK", 1: "BUSY", 2: "BAD_ADDR", 3: "BAD_VALUE", 4: "NOT_ALLOWED", 6: "BAD_OP"}
+ID_ADDR, VERSION_ADDR, CAP_ADDR, SCRATCH_ADDR, ERRCNT_ADDR = 0x0000, 0x0004, 0x0008, 0x000C, 0x0010
+
+
+class Result:
+    """The 12 bytes the chip returns in a v2 frame: STATUS, the last accepted command's seq, and the result of the previous command."""
+
+    def __init__(self, raw):
+        self.raw = bytes(raw)
+        self.crc_ok = len(raw) == 12 and crc16(raw[:10]) == int.from_bytes(raw[10:12], "big")
+        self.status = Status(raw[0])
+        self.last_seq = raw[1]
+        self.seq = raw[2]
+        self.code = raw[3]
+        self.addr = raw[4] | raw[5] << 8
+        self.data = int.from_bytes(raw[6:10], "little")
+
+    @property
+    def code_name(self):
+        return CODE_NAMES.get(self.code, f"code {self.code}")
+
+    def __repr__(self):
+        return (f"Result(crc_ok={int(self.crc_ok)} seq={self.seq} {self.code_name} addr=0x{self.addr:04X} data=0x{self.data:08X} "
+                f"last_seq={self.last_seq} {self.status})")
+
+
 class Status:
     """The STATUS byte (byte 0 of every reply)."""
 
@@ -119,6 +155,7 @@ class ChipHost:
         self.log = log if log is not None else []     # (op, addr, data, reply Status, read data)
         self.frames = 0
         self.last_status = None
+        self.cmd_seq = None                          # frame v2: sequence number of the last command sent (None: the chip may take any first one)
 
     # ------------------------------------------------------------------ frames
     def frame(self, op, addr, data=0):
@@ -161,6 +198,99 @@ class ChipHost:
 
     def clear_err(self):
         self.frame(OP_WRITE, IRQ, 1 << 6)             # IRQ status bit 6 = management error, write-one-to-clear; also clears err
+
+    # ------------------------------------------------------------------ frame v2: CRC-16, sequence numbers, pipelined results
+    @staticmethod
+    def frame2_bytes(op, seq, addr=0, data=0, rsv=0):
+        """The 12 request bytes: op, seq, address (LE), payload (LE), reserved (2), CRC-16 (high byte first) over the first 10."""
+        body = bytes([op, seq & 0xFF, addr & 0xFF, addr >> 8 & 0xFF]) + (data & 0xFFFFFFFF).to_bytes(4, "little") + (rsv & 0xFFFF).to_bytes(2, "little")
+        return body + crc16(body).to_bytes(2, "big")
+
+    def exchange2(self, raw12):
+        """Send 12 bytes (a frame built by frame2_bytes, or any damaged variant), return the parsed Result (crc_ok tells whether the chip's answer is intact)."""
+        r = Result(self.link.transfer(raw12))
+        self.frames += 1
+        self.last_status = r.status
+        if self.trace:
+            print(f"  [{self.frames:4d}] v2 MOSI {raw12.hex(' ')}\n         MISO {r.raw.hex(' ')}  {r}")
+        return r
+
+    def new_seq2(self):
+        """The sequence number of the next command: the chip accepts a command only as last + 1 (any value as the very first)."""
+        return 0 if self.cmd_seq is None else (self.cmd_seq + 1) & 0xFF
+
+    def nop2(self):
+        """A NOP frame: it only fetches the latest result. Its seq differs from the last command's (a NOP must not look like a retry)."""
+        return self.frame2_bytes(OP2_NOP, self.new_seq2())
+
+    def resync2(self):
+        """Forget the numbering and learn the chip's: after an abandoned command, or when another host talked to the chip before."""
+        for _ in range(8):
+            r = self.exchange2(self.frame2_bytes(OP2_NOP, 0x55))
+            if r.crc_ok:
+                self.cmd_seq = r.last_seq
+                return r
+        raise HostError("frame v2: no intact answer from the chip")
+
+    def fetch2(self, seq, tries=8):
+        """NOPs until the chip shows the result of command `seq`; returns it, or None if the chip never accepted that command."""
+        for _ in range(tries):
+            r = self.exchange2(self.nop2())
+            if r.crc_ok:
+                return r if r.seq == seq else None
+        raise HostError("frame v2: no intact answer from the chip")
+
+    def cmd2(self, op, addr=0, data=0, tries=6):
+        """One WRITE / READ with exactly-once semantics, through a damaged link too: send, fetch the result with a NOP, resend the identical
+        frame if the chip did not accept it. Returns the Result of this command (code, data)."""
+        seq = self.new_seq2()
+        frame = self.frame2_bytes(op, seq, addr, data)
+        self.cmd_seq = seq
+        for _ in range(tries):
+            self.exchange2(frame)
+            r = self.fetch2(seq)
+            if r is not None:
+                return r
+        raise HostError(f"frame v2: command seq {seq} never accepted (resync2() learns the chip's numbering)")
+
+    def write2(self, addr, data):
+        r = self.cmd2(OP2_WRITE, addr, data)
+        if r.code not in (0, 1):
+            raise HostError(f"write 0x{addr:04X} <- 0x{data:X}: {r.code_name}")
+        return r
+
+    def read2(self, addr):
+        r = self.cmd2(OP2_READ, addr)
+        if r.code not in (0, 1):
+            raise HostError(f"read 0x{addr:04X}: {r.code_name}")
+        return r.data
+
+    def pipeline2(self, commands):
+        """commands: [(op, addr, data)]. One frame per command: each frame carries the next command and returns the previous one's result, so a
+        stream of FIFO transfers costs one frame per word. Returns the Results in order. A damaged frame is sent again (identical, so no command
+        runs twice and no result is lost)."""
+        frames = []                                      # the exact frame of every command, kept for resending
+        for op, addr, data in commands:
+            seq = self.new_seq2()
+            self.cmd_seq = seq
+            frames.append((seq, self.frame2_bytes(op, seq, addr, data)))
+        results = []
+        i = 0
+        while i <= len(frames):
+            seq, frame = frames[i] if i < len(frames) else (None, self.nop2())
+            for _ in range(8):
+                r = self.exchange2(frame)
+                if r.crc_ok:
+                    break
+            else:
+                raise HostError("frame v2: no intact answer from the chip")
+            if i > 0 and r.seq != frames[i - 1][0]:
+                i -= 1                                       # the previous frame never arrived (the chip refused this one as a gap): again from there
+                continue
+            if i > 0 and len(results) == i - 1:              # (after stepping back the result is already recorded)
+                results.append(r)
+            i += 1
+        return results
 
     # ------------------------------------------------------------------ engines
     def ctrl(self, eng):
@@ -302,15 +432,20 @@ class SimLink:
     def __init__(self, half_ns=200, cs_ns=100, rebuild=None, shared=False):
         """shared=True: the chip with the shared 512-word instruction memory (-DSHARED_IMEM, docs/SHARED_IMEM_PLAN.md)."""
         self.shared = shared
-        self.vvp = os.path.join(ROOT, "build", "host", "bridge_shared.vvp" if shared else "bridge.vvp")
+        # PE_SRC_DIR=<dir> simulates another copy of src/ (used by the planted-bug checks), built into its own file
+        self.src = os.environ.get("PE_SRC_DIR") or os.path.join(ROOT, "src")
+        name = "bridge_shared" if shared else "bridge"
+        if "PE_SRC_DIR" in os.environ:
+            name += "_" + os.path.basename(os.path.normpath(self.src))
+        self.vvp = os.path.join(ROOT, "build", "host", name + ".vvp")
         self._build(rebuild)
         self.p = subprocess.Popen(["vvp", "-n", self.vvp], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1,
                                   cwd=ROOT)
         self._cmd(f"T {int(half_ns)} {int(cs_ns)}")
 
     def _build(self, rebuild):
-        srcs = sorted(f for f in os.listdir(os.path.join(ROOT, "src")) if f.endswith(".v"))
-        deps = [os.path.join(ROOT, "src", f) for f in srcs] + [os.path.join(ROOT, "tb", "tb_host_bridge.v"),
+        srcs = sorted(f for f in os.listdir(self.src) if f.endswith(".v"))
+        deps = [os.path.join(self.src, f) for f in srcs] + [os.path.join(ROOT, "tb", "tb_host_bridge.v"),
                                                               os.path.join(ROOT, "tb", "spi_master.vh")]
         stale = not os.path.exists(self.vvp) or max(os.path.getmtime(d) for d in deps) > os.path.getmtime(self.vvp)
         if rebuild or (rebuild is None and stale):
@@ -318,7 +453,7 @@ class SimLink:
             if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
                 os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
             r = subprocess.run(["iverilog", "-g2012", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if self.shared else []) +
-                               ["-I", os.path.join(ROOT, "src"), "-I",
+                               ["-I", self.src, "-I",
                                 os.path.join(ROOT, "tb"), "-o", self.vvp, os.path.join(ROOT, "tb", "tb_host_bridge.v")] +
                                [d for d in deps if d.endswith(".v") and "tb_host_bridge" not in d] +
                                [os.path.join(ROOT, s) for s in (self.SRCS_SHARED if self.shared else self.SRCS)],
@@ -335,9 +470,16 @@ class SimLink:
         return reply
 
     def transfer(self, mosi):
-        assert len(mosi) == 7
-        reply = self._cmd("F " + mosi.hex())
-        return bytes.fromhex(reply.split()[1])
+        """One frame of any length up to 16 bytes (7 bytes = frame v1, 12 bytes = frame v2)."""
+        if len(mosi) == 7:
+            reply = self._cmd("F " + mosi.hex())
+            return bytes.fromhex(reply.split()[1])
+        return self.transfer_bits(8 * len(mosi), int.from_bytes(mosi, "big")).to_bytes(len(mosi), "big")
+
+    def transfer_bits(self, nbits, value):
+        """A frame of nbits (up to 128, may be cut mid-byte to test the chip's reaction); returns the nbits seen on MISO as an integer."""
+        reply = self._cmd(f"X {nbits} {value:x}")
+        return int(reply.split()[1], 16) & ((1 << nbits) - 1)
 
     def set_inputs(self, uio_in=0, ui_in_7_3=0):
         self._cmd(f"I {ui_in_7_3 & 0x1F:x} {uio_in & 0xFF:x}")

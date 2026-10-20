@@ -7,8 +7,8 @@ project:
   language:     "Verilog"
   clock_hz:     50000000
 
-  # Jane Street protocol emulator competition: 6x4 tiles
-  tiles: "6x4"
+  # Jane Street protocol emulator competition: 8x4 tiles (the 6x4 die does not route with pin mapping, line coder and the extra logic: run tt14a)
+  tiles: "8x4"
 
   top_module:  "tt_um_protocol_emulator"
 

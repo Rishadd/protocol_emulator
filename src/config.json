@@ -20,11 +20,12 @@
   "SYNTH_HIERARCHY_MODE": "deferred_flatten",
   "//": "The IHP CMOS5L LibreLane default is SYNTH_STRATEGY DELAY 4, which makes the netlist about 35 % larger (21.5k instead of 15.7k cells with the ALU/CRC units) and unroutable on four metal layers; the 20 ns clock has several ns of slack, so optimise for area",
   "SYNTH_STRATEGY": "AREA 0",
+  "//": "Three-column floorplan on 8x4 tiles (run tt14b: routes, 0 DRC, LVS clean, slow-corner setup +1.69 ns at 20 ns): engine 0 | common logic | engine 1; SRAM 1 moved to x = 1228.96 (149.92 + 24 stripe pitches of 44.96), fences in floorplan_engines_tri.json",
   "//": "Floorplan (compact symmetric, run tt10c; docs/TEST_RESULTS.md 8.4): both SRAM macros on the bottom edge, mirrored (FS) so their signal pins face up into the core, at x = 149.92 and 689.44 (whole stripe pitches of 44.96 um from the proven x = 60: a shift by 2 x 11.24 put a stripe into the macro's middle section, Metal4 spacing error M4.b in tt8b). The SRAM blocks Metal1-3 and we block Metal4 over it, so with only Metal2-Metal4 for signals a macro is a wall: it must not sit under the chip pins (top edge, x 30-191) or leave pockets of cells. y = 13.78 leaves no cell rows below the macro (vertical halo 10 um); the horizontal halo of 17 um leaves no sliver rows (tt8b: 42 rows 1.9 um wide broke the precheck pin check)",
   "FP_MACRO_HORIZONTAL_HALO": 17,
-  "ROUTING_OBSTRUCTIONS": [["Metal4", 148.92, 12.78, 567.56, 133.56], ["Metal4", 688.44, 12.78, 1107.08, 133.56]],
+  "ROUTING_OBSTRUCTIONS": [["Metal4", 148.92, 12.78, 567.56, 133.56], ["Metal4", 1227.96, 12.78, 1646.6, 133.56]],
   "//": "Engine fences (step Project.ModuleRegions, package librelane_plugin_project): each engine in a column the width of its SRAM plus halo, management / SPI / pin manager in the 89 um gap between them; removed after global placement. Timing-driven placement with fence regions needs PL_KEEP_RESIZE_BELOW_OVERFLOW 0 (else GPL-0316 crash: buffers the resizer adds during the timing-driven iterations have no place in the regions' bin grids)",
-  "MODULE_BOXES": "dir::floorplan_engines_compact.json",
+  "MODULE_BOXES": "dir::floorplan_engines_tri.json",
   "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
   "//": "Magic DRC reports about 116k errors that come from the SRAM macros' own layout (docs/TT_FLOW_RESULTS.md); the foundry KLayout DRC of the TT precheck is the real check",
   "RUN_MAGIC_DRC": false,
@@ -126,7 +127,7 @@
         },
         "u_eng1.imem.u_mem": {
           "location": [
-            689.44,
+            1228.96,
             13.78
           ],
           "orientation": "FS"

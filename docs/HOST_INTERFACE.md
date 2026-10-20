@@ -152,7 +152,57 @@ class HwLink:
 Keep the hardware SPI clock at or below ~3 MHz (section 1) and CS_N low for exactly the 7 bytes. The simulator-only calls (`set_inputs`, `pins`, `wait`, `reset`) have no
 hardware equivalent; they are the pins the real board would let you drive and sample.
 
-## 9. What is not built yet
+## 9. Frame v2: CRC-16, sequence numbers, results that survive a bad wire
 
-Frame v2 (sequence number and CRC-16, `MGMT_PLAN.md`) would let the host detect a corrupted frame instead of trusting the wire; frame v1 relies on the clean-frame
-rule and on read-back. The SRAM self-test (view 4), the logic analyser (view 6) and USB/other firmware add registers in the same window, not new framing.
+Frame v1 trusts the wire. Frame v2 (selected by bit 7 of the first byte, so both live side by side; v1 is for bring-up and simple tools) adds integrity and
+exactly-once semantics, which is what a host needs when the SPI link runs over cables and connectors. `ChipHost` does all of it for you
+(`read2`, `write2`, `cmd2`, `pipeline2`); this section is the wire format and the rules behind it.
+
+```
+ byte        0     1     2   3        4   5   6   7        8   9        10   11
+ MOSI        op    seq   address      payload                reserved     CRC-16 of bytes 0..9
+                         (little endian)                     (zero)       (high byte first)
+ MISO        STATUS  seq of the     result   address of the   result data           CRC-16 of bytes 0..9
+                     last accepted  seq      result code      (little endian)
+                     command
+```
+
+| op | |
+|---|---|
+| `0x80` NOP | changes nothing; it only fetches the result |
+| `0x81` WRITE, `0x82` READ | as in v1, fields little endian; the result of the **previous** accepted command comes back |
+
+CRC-16/CCITT-FALSE: polynomial 0x1021, initial value 0xFFFF, no reflection, no final XOR (`chip_host.crc16`). The chip also CRC-protects what it sends.
+
+**Pipelined results.** The answer to a command is in the *next* frame, so a response never depends on a request that has not been checked yet. To read a register:
+send the READ, then any frame (a NOP) carries the value. A stream of FIFO transfers costs one frame per word (`pipeline2`): each frame issues the next command and
+returns the previous result.
+
+**Result code** (MISO byte 3): 0 OK; 1 BUSY (TX FIFO full / RX FIFO empty: nothing was done, send it again later); 2 bad address; 3 bad value or nonzero reserved bytes;
+4 not allowed (instruction write to a running engine, pin claim refused, RUN while HOLD, write to a read-only register); 6 bad op.
+
+**A damaged frame never executes.** The chip accepts a frame only if it has exactly 12 whole bytes and the CRC is right. Otherwise nothing happens, the sticky `err` flag
+goes up and the error counters count it (ERRCNT register 0x0010: CRC errors, length errors, sequence errors, saturating at 255; any write clears them). The host sees
+that the result's seq is not the one it sent, and sends the frame again. Formal proof: no state change without an intact frame (`formal/mgmt_props.sv`, M3, with an independently
+written CRC); 100 random single and multi-bit flips in the test never executed.
+
+**Exactly once.** Commands carry a sequence number and are **in order**: a new WRITE / READ is accepted only if its seq is the last accepted seq + 1 (any value as the very first
+one after reset). A gap means a frame was lost; the chip refuses the command (counted) so a later command can never overtake it - important for FIFO streams, where
+swapped words would be silent corruption. A frame with the **same seq and the same CRC** as the last accepted command is a retry: it is not executed again, and it shows the
+**same older result again**, so a response that was corrupted on the way back is simply recovered by sending the identical frame (the chip keeps two results, the latest and
+the one the last frame was shown). The same seq with different content is refused. NOPs take no part in the numbering: they use any seq other than the last command's.
+
+The host algorithm (`cmd2`): build the frame once; send it; fetch the result with NOPs until `result seq == seq`; if the chip never took the command, send the identical frame
+again. `resync2()` learns the chip's numbering after an abandoned command or when another host has talked to the chip.
+
+**New registers** (in v1 frames too): `0x0000` ID ('PEM1'), `0x0004` VERSION (frame versions supported, ISA/ABI), `0x0008` CAPABILITY (engines, instruction words, FIFO depth),
+`0x000C` SCRATCH (32-bit read/write, for link tests), `0x0010` ERRCNT.
+
+Tested in `host/mgmt_v2_test.py` on the RTL (identification and walking-ones scratch echo, v1 and v2 mixed, random bit flips, truncated / over-long / cut frames, retry of a
+pop that does not pop twice, gap and conflict refusal, every result code, a program loaded and a FIFO stream moved with pipelined frames) and by 20 planted bugs in the
+controller (`host/mgmt_v2_mutants.py`).
+
+## 10. What is not built yet
+
+The SRAM self-test (view 4) and the logic analyser (view 6) add registers in the same window, not new framing. The v2 byte rate: a 12-byte frame at 3 MHz takes 32 us;
+with pipelining one FIFO word per frame is about 125 kB/s of payload.

@@ -301,3 +301,13 @@ Full numbers: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) section 8.4. Runs and
   SWD host (161 words; reactive ADIv5 target with DP, MEM-AP, memory; IDCODE, power-up, word / block transfers, WAIT retry, FAULT + ABORT, parity;
   11 cases / 4 mutants). New helpers: host/bus_model.py (wired-AND bus around the engine model). Protocol count: UART, SPI, I2C master + slave, SMBus,
   Modbus, 1-Wire, JTAG, CAN, USB LS, WS2812, PS/2, SWD = 13 verified (the plan's target for week 5, reached in week 1).
+- 2026-10-19 **tt14b (three-column 8x4, release tools): routes.** Detailed routing reached 0 DRC; LVS circuits match uniquely; slow-corner setup +1.69 ns at 20 ns
+  (hold +0.10 ns at the fast corner, 0 setup/hold violations in all three corners); 24,867 std cells, 356k um2 (32 % of the die) + 2 macros 99k; 9.3 mW.
+  One antenna violation (1 net / 1 pin), 50 max-slew and 12 max-cap violations left (earlier runs had similar counts and passed the precheck).
+  main now uses it: info.yaml tiles 8x4, src/config.json SRAM 1 at x = 1228.96, MODULE_BOXES = floorplan_engines_tri.json (checked key by key against the tt14b run).
+  GitHub status before this push: main 70d332d gds failed (placement divergence, fixed by PL_MAX_PHI_COEFFICIENT 1.03 which passed gds/precheck/gl_test on ci/gpl-phi);
+  only the viewer job fails (GitHub Pages not enabled). Nothing had run on GitHub since 2026-10-18.
+- 2026-10-19 **shared 512-word memory (branch feat/shared-imem, worktree ../protocol_emulator_shmem)**: one 2P 512x32 macro, physical PC, per-engine window by OP_REGION
+  (once per run, lock), START register, host writes through a held engine's port. Chip-level test passes on the RTL; flow variant `shared` runs (run sh2, in detailed
+  routing at the time of writing). See docs/SHARED_IMEM_PLAN.md.
+- 2026-10-19 environment: real Python 3.12.10 installed machine-wide (C:\Program Files\Python312); WSL VM shuts down when idle/asleep and kills its jobs; run each flow in its own visible WSL window.

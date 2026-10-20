@@ -31,24 +31,31 @@ module tb_chip_proto;
     reg  [4:0] ui_hi_v;                       // ui_in[7:3] nodes
     reg  [3:0] oc, ic;
     integer    lg;
+    // built in temporaries and assigned once: zeroing the nodes first would glitch the chip's inputs in zero time, and
+    // with Icarus 13 that glitch re-triggers this block through the pin manager forever (remapped JTAG hung at 10 ns)
+    reg  [7:0] t_low, t_hi, t_uio;
+    reg  [4:0] t_ui;
     always @* begin
-        ch_low = 8'd0; ch_hi = 8'd0; uio_in_v = 8'd0; ui_hi_v = 5'd0;
+        t_low = 8'd0; t_hi = 8'd0; t_uio = 8'd0; t_ui = 5'd0;
         for (lg = 0; lg < 8; lg = lg + 1) begin
             if (oloc[4*lg +: 4] < 8) begin
-                ch_low[lg] = uio_oe[oloc[4*lg +: 4]] & ~uio_out[oloc[4*lg +: 4]];
-                ch_hi[lg]  = uio_oe[oloc[4*lg +: 4]] & uio_out[oloc[4*lg +: 4]];
-                uio_in_v[oloc[4*lg +: 4]] = pad[lg];
+                t_low[lg] = uio_oe[oloc[4*lg +: 4]] & ~uio_out[oloc[4*lg +: 4]];
+                t_hi[lg]  = uio_oe[oloc[4*lg +: 4]] & uio_out[oloc[4*lg +: 4]];
+                t_uio[oloc[4*lg +: 4]] = pad[lg];
             end else if (oloc[4*lg +: 4] < 15) begin     // uo_out has no output enable: the pin shows oe & out of the engine
-                ch_low[lg] = ~uo_out[oloc[4*lg +: 4] - 7];
-                ch_hi[lg]  = uo_out[oloc[4*lg +: 4] - 7];
+                t_low[lg] = ~uo_out[oloc[4*lg +: 4] - 7];
+                t_hi[lg]  = uo_out[oloc[4*lg +: 4] - 7];
             end
-            if (iloc[4*lg +: 4] < 8) uio_in_v[iloc[4*lg +: 4]] = pad[lg];
-            else if (iloc[4*lg +: 4] < 13) ui_hi_v[iloc[4*lg +: 4] - 8] = pad[lg];
+            if (iloc[4*lg +: 4] < 8) t_uio[iloc[4*lg +: 4]] = pad[lg];
+            else if (iloc[4*lg +: 4] < 13) t_ui[iloc[4*lg +: 4] - 8] = pad[lg];
         end
+        ch_low = t_low; ch_hi = t_hi; uio_in_v = t_uio; ui_hi_v = t_ui;
     end
     wire [7:0] low_any = ch_low | peer_low;
     wire [7:0] hi_any  = ch_hi;
-    assign pad = (ext_mask & ext_val) | (~ext_mask & ~low_any & (ext_val | ~wand_mask));
+    // 1 ns on the pad net: a pin wired back to another pin (uo_out to ui_in in the remapped runs) closes a loop through the chip's debug view
+    // select (ui_in[7:5]) while the pins are still unclaimed; without a delay Icarus 13 spins in zero time at 10 ns
+    assign #1 pad = (ext_mask & ext_val) | (~ext_mask & ~low_any & (ext_val | ~wand_mask));
     always @(pad) if ((hi_any & low_any & ~ext_mask) != 0) contend = contend + 1;
 
     tt_um_protocol_emulator dut (

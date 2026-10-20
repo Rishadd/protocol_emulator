@@ -36,6 +36,8 @@ module tb_line_coder;
                   .tx_oe(b_oe), .tx_dp(b_dp), .tx_dm(b_dm));
 
     always #10 clk = ~clk;
+    // watchdog: a command stream that never drains (a broken transmitter) must end the run, not hang it
+    initial begin #50000000; $display("ERROR watchdog: command stream stalled"); $finish; end
 
     integer fd, cf, sf, n, k, t0;
     reg [8*256-1:0] outf, cmdf, stimf;

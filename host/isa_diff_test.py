@@ -33,7 +33,7 @@ LINE_FOCUS = False                                   # inside a line-coder-focus
 WEIGHTS = [("NOP", 2), ("WAIT", 3), ("JMP", 3), ("HALT", 0.6), ("SETL", 4), ("DJNZ", 5), ("PULL", 3), ("PUSH", 3),
            ("OUT1", 4), ("IN1", 4), ("SETH", 3), ("SETLO", 3), ("DIRO", 2), ("DIRI", 2), ("WAITH", 2), ("WAITL", 2),
            ("CFG", 3), ("JPH", 3), ("JPL", 3), ("JPO", 3), ("PUSHI", 3), ("LDI", 6), ("ALU", 14), ("JCC", 8),
-           ("RGET", 6), ("RPUT", 6), ("WAITR", 3), ("CRC", 9), ("LINE", 8), ("BAD", 0.9),
+           ("RGET", 6), ("RPUT", 6), ("WAITR", 3), ("CRC", 12), ("LINE", 8), ("BAD", 0.9),
            ("XSELF", 2.5), ("NOTI", 2.5)]       # idioms that make Z=1 and N=1 common enough to cover every JCC condition both ways
 
 
@@ -96,7 +96,7 @@ def rnd_word(rnd, L):
     if n == "RGET":     # CRC source favoured: RGET CRC right after a CRC instruction (the 1-clock wait) must come up often
         if LINE_FOCUS:
             return A.enc_rget(rnd.randrange(8), 6 if rnd.random() < 0.8 else rnd.randrange(8))
-        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.45 else 6 if rnd.random() < 0.2 else rnd.randrange(8))
+        return A.enc_rget(rnd.randrange(8), 4 if rnd.random() < 0.50 else 5 if rnd.random() < 0.25 else 6 if rnd.random() < 0.2 else rnd.randrange(8))   # CRC (wait coverage), TX FIFO (needs its own share), LINE
     if n == "RPUT":
         return A.enc_rput(rnd.randrange(4), rnd.randrange(8))
     if n == "WAITR":
