@@ -17,5 +17,6 @@ Slow corner = 1.08 V, 125 C. Achieved period = constraint minus worst setup slac
 | `sh8` | candidate RTL, constraint 17 ns + margin 0.5 (the sh5a settings) | CLOCK_PERIOD=17, PL_RESIZER_SETUP_SLACK_MARGIN=0.5 | -2.64 | 19.64 (50.9 MHz) | 402k | 0 | 0 | 1504k |
 | `sh9a` | candidate RTL, constraint 20 ns (the real clock) + margin 0.5 | PL_RESIZER_SETUP_SLACK_MARGIN=0.5 | -0.45 | 20.45 (48.9 MHz) | 403k | 0 | 0 | 1532k |
 | `sh9b` | candidate RTL, constraint 20 ns + margin 1.0 (result identical to sh9a in all 190 metrics) | PL_RESIZER_SETUP_SLACK_MARGIN=1.0 | -0.45 | 20.45 (48.9 MHz) | 403k | 0 | 0 | 1532k |
+| `sh10` | the pushed check version: current RTL (TSTAMP, trigger line), sh8 recipe, WITHOUT the logic analyser (no LA define) | CLOCK_PERIOD=17, PL_RESIZER_SETUP_SLACK_MARGIN=0.5 | -2.71 | 19.71 (50.7 MHz) | 405k | 0 | 0 | 1517k |
 
 Results folders with pictures: `results/shared_2026-10-20/<tag>_images/index.html`; the sh4 final files: `results/tt_flow_2026-10-20/sh4_final/`.

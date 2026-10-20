@@ -16,6 +16,7 @@ WHAT = {
     "sh8": "candidate RTL, constraint 17 ns + margin 0.5 (the sh5a settings)",
     "sh9a": "candidate RTL, constraint 20 ns (the real clock) + margin 0.5",
     "sh9b": "candidate RTL, constraint 20 ns + margin 1.0 (result identical to sh9a in all 190 metrics)",
+    "sh10": "the pushed check version: current RTL (TSTAMP, trigger line), sh8 recipe, WITHOUT the logic analyser (no LA define)",
 }
 base = json.load(open(os.path.join(FL, "sh4", "config_merged.json")))
 rows = []

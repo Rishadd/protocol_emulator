@@ -8,6 +8,7 @@ Read in this order if you are new to the project. "Decisions" documents say what
 | 2 | [PROTOCOL_EMULATOR_ARCHITECTURE.md](PROTOCOL_EMULATOR_ARCHITECTURE.md) | architecture: engines, FIFOs, pin manager, management link |
 | 3 | [../instructions.md](../instructions.md) | the instruction set (28 opcodes) and the firmware of every protocol |
 | 4 | [TEST_RESULTS.md](TEST_RESULTS.md) | **all test and flow results in tables** |
+| 4b | [PROGRESS_REPORT_2026-10-18_to_2026-10-20.md](PROGRESS_REPORT_2026-10-18_to_2026-10-20.md) | **detailed report of the last three days: flows, architecture changes, tests, logic analyser** |
 | 5 | [EXECUTION_PLAN.md](EXECUTION_PLAN.md) | project plan and status |
 | 6 | [CHALLENGE_CHECK.md](CHALLENGE_CHECK.md) | the challenge rules against what exists |
 | 7 | [HOST_INTERFACE.md](HOST_INTERFACE.md) | **every host-chip exchange**: SPI frame, STATUS, address map, flow control; Python host `host/chip_host.py` |
