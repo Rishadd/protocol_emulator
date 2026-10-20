@@ -291,7 +291,7 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
     if "mutants" in args.phase:
-        return mutants_phase(args.seed, min(args.tests, 150))
+        return mutants_phase(args.seed, min(args.tests, 300))
     tests = make_tests(args.seed, args.tests)
     lines, err = run_rtl(tests, f"s{args.seed}")
     if lines is None:
