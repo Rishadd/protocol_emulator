@@ -77,7 +77,9 @@ D = [(f"remap{s}_{n}", [PY, "host/" + script, *args], {"PROTO_CHIP": "1", "PROTO
 # E: the shared 512-word instruction memory (PROTO_SHARED=1, -DSHARED_IMEM): the chip-level protocol suites with engine 0's image at word 0 and engine 1's at word 256
 # (absolute 9-bit jump targets, START register), plain and with the pins of seed 2 placed at random
 E = [(n.replace("chip_", "shared_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in B] + \
-    [(n.replace("remap2_", "sharedremap2_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in D if n.startswith("remap2_")]
+    [(n.replace("remap2_", "sharedremap2_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in D if n.startswith("remap2_")] + \
+    [("shared_spi_chip", [PY, "host/spi_test.py", "chip"], {"PROTO_SHARED": "1"}),      # SPI master on engine 0, slave on engine 1 (word 256)
+     ("shared_i2c_chip", [PY, "host/i2c_test.py", "chip"], {"PROTO_SHARED": "1"})]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 
 
