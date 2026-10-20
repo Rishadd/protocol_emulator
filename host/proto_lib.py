@@ -105,7 +105,9 @@ def run(name, progs=None, htx=None, od=0, ext=0, stim=None, dur_ns=1_000_000, pe
         own_m.update(own or {})
         oloc, iloc = pin_map(remap, own_m[0] | own_m[1], od, uo_ok)
         plus = dict(plus or {}, OLOC=oloc, ILOC=iloc)
-    d = os.path.join(BUILD, _safe(name) + ("_chip" if chip else ""))
+    # one folder per (case, chip, pin seed, firmware origin): regression suites run in parallel and must not share files
+    tag = ("_chip" if chip else "") + (f"_r{remap}" if chip and remap else "") + (f"_o{os.environ['FW_ORG']}" if os.environ.get("FW_ORG") else "")
+    d = os.path.join(BUILD, _safe(name) + tag)
     os.makedirs(d, exist_ok=True)
     args = []
     for e, words in (progs or {}).items():

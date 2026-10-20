@@ -111,11 +111,14 @@ def tx_test(vvp, name, packets, period=P_LS, bper=None, stuff_run=6):
     for (d, partial, errs), p in zip(got, packets):
         check(d == bytes(p) and partial == 0 and not errs, f"{name}: bus decodes to {d.hex()} partial={partial} errs={errs}, sent {bytes(p).hex()}")
     # every run must be a whole number of bit times to within 1.5 clocks (the ends of a run are two clock-quantised edges)
-    for p in U.runs_from_events(sim["L"], T):
+    for p, pkt in zip(U.runs_from_events(sim["L"], T), packets):
         for s, n in p:
             check(abs(n - round(n)) * T <= 1.5 * CLK, f"{name}: run {s} lasts {n:.3f} bit times")
         eop = [x for x in p if x[0] == "0"]
         check(len(eop) == 1 and round(eop[0][1]) == 2, f"{name}: EOP SE0 lasts {eop}")
+        # the symbols themselves, stuff bits included (the decoder above recovers the same bytes even when a stuff bit before the EOP is missing)
+        want = U.runs(U.packet_symbols(pkt)[:-1])                       # the final J of the EOP is not part of the SE0 runs
+        check([(s, round(n)) for s, n in p] == want, f"{name}: symbol runs {[(s, round(n)) for s, n in p]} differ from the expected {want}")
     expect = b"".join(bytes(p) for p in packets)
     rx = bytes(b for _, b in sim["R"])
     check(rx == expect, f"{name}: receiver B got {rx.hex()}, expected {expect.hex()}")
@@ -161,7 +164,8 @@ def run_all(vvp):
     tx_test(vvp, "tx_data", [U.data_packet("DATA1", bytes(range(8))), U.data_packet("DATA0", b"")])
     tx_test(vvp, "tx_all_ones", [b"\xFF" * 8, b"\xFF\xFF\x7F", b"\x3F"])            # long runs of ones: stuffing, also before the EOP
     tx_test(vvp, "tx_all_zeros", [b"\x00" * 6])
-    tx_test(vvp, "tx_stuff_before_eop", [b"\x3F", b"\xFC\x03\x7E\x1F"])             # a final run of six ones needs its stuff bit before the EOP
+    # bytes go out LSB first, so a packet ends in a run of six ones when its last byte has bits 7..2 set (0xFC): the stuff bit comes before the EOP
+    tx_test(vvp, "tx_stuff_before_eop", [b"\xFC", b"\x03\x7E\xFC", b"\xFF\xFF\xFC"])
     tx_test(vvp, "tx_rx_fast_B", [U.data_packet("DATA1", bytes(rng.randrange(256) for _ in range(8)))], bper=int(P_LS * 0.985))
     tx_test(vvp, "tx_rx_slow_B", [U.data_packet("DATA1", bytes(rng.randrange(256) for _ in range(8)))], bper=int(P_LS * 1.015))
     tx_test(vvp, "tx_period_32", [U.data_packet("DATA0", b"\x12\x34")], period=0x2000)  # 32 clocks per bit
@@ -236,14 +240,22 @@ MUTANTS = [
 ]
 
 
+# Mutants the checks cannot tell from the real design. The run-length check allows 1.5 clocks (both ends of a run are clock-quantised),
+# so a change of exactly one clock is below the measurement resolution; a 20 ns longer SE0 is also inside the USB low-speed EOP window
+# (1.25 to 1.5 us, nominal 1.333 us). Listed, run and reported, but not counted against the result.
+EQUIVALENT = {"SE0 one clock too long"}
+
+
 def mutation_check():
     global fast_fail
     src = open(os.path.join(ROOT, "src", "line_coder.v")).read()
     d = os.path.join(BUILD, "mut_src")
     caught = 0
+    counted = 0
     for old, new, desc in MUTANTS:
         if src.count(old) != 1:
             print(f"  MUTANT INVALID ({src.count(old)} matches): {desc}")
+            counted += desc not in EQUIVALENT
             continue
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d)
@@ -251,14 +263,19 @@ def mutation_check():
         fast_fail = True
         try:
             run_all(build(d))
-            print(f"  MUTANT MISSED   {desc}")
-        except FailFast as e:
-            caught += 1
+            if desc in EQUIVALENT:
+                print(f"  mutant equivalent (below the checks' resolution, not counted)   {desc}")
+            else:
+                counted += 1
+                print(f"  MUTANT MISSED   {desc}")
+        except (FailFast, RuntimeError) as e:                          # RuntimeError: the testbench watchdog ended a stalled run (a broken transmitter)
+            counted += desc not in EQUIVALENT
+            caught += desc not in EQUIVALENT
             print(f"  mutant caught   {desc}   ({str(e)[:70]})")
         finally:
             fast_fail = False
-    print(f"line coder mutants caught: {caught}/{len(MUTANTS)}")
-    return caught == len(MUTANTS)
+    print(f"line coder mutants caught: {caught}/{counted}")
+    return caught == counted
 
 
 def main():
