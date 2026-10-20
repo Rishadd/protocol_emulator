@@ -34,7 +34,14 @@ module imem_shared (
     input  wire        iw_wr,
     input  wire [8:0]  iw_addr,
     input  wire [31:0] iw_data,
-    output wire        iw_ok
+    output wire        iw_ok,
+    // host read (mgmt): a one-clock strobe reads word iw_addr through a held engine's port; ir_valid pulses two clocks later with the word in ir_data
+    input  wire        ir_rd,
+    output reg  [31:0] ir_data,
+    output reg         ir_valid,
+    // the windows the engines hold, for the host's REGION read: {6'd0, limit[9:0], 7'd0, base[8:0]}
+    output wire [31:0] region0,
+    output wire [31:0] region1
 );
     localparam [31:0] TRAP = {5'd31, 27'd0};
 
@@ -91,9 +98,22 @@ module imem_shared (
     // ------------------------------------------------------------------ the macro
     // the host's address is on the held engine's port only during its own write: in every other clock the held engine keeps
     // reading its start word, so it has its first instruction ready in the clock RUN rises
-    wire [8:0]  addr_b = (port_b && iw_wr) ? iw_addr : f_addr0;
-    wire [8:0]  addr_a = (port_a && iw_wr) ? iw_addr : f_addr1;
+    wire [8:0]  addr_b = (port_b && (iw_wr || ir_rd)) ? iw_addr : f_addr0;
+    wire [8:0]  addr_a = (port_a && (iw_wr || ir_rd)) ? iw_addr : f_addr1;
     wire [31:0] dout_a, dout_b;
+
+    // host read: the address is on the held engine's port during the strobe clock, the macro answers one clock later (the same latency as a fetch)
+    reg ir_q, ir_pb;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            ir_q <= 1'b0; ir_pb <= 1'b0; ir_valid <= 1'b0; ir_data <= 32'd0;
+        end else begin
+            ir_q <= ir_rd; ir_pb <= port_b; ir_valid <= ir_q;
+            if (ir_q) ir_data <= ir_pb ? dout_b : dout_a;
+        end
+    end
+    assign region0 = {6'd0, limit0, 7'd0, base0};
+    assign region1 = {6'd0, limit1, 7'd0, base1};
 
     // The trap substitution (oob ? TRAP : word) is done inside each engine, next to the decode: a gate here sat beside the macro in the
     // middle of the die and drove the long wire to the engine with a minimum-size cell (about 1 ns of slew in the sh4 run).

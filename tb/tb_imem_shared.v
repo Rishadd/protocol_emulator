@@ -20,13 +20,17 @@ module tb_imem_shared;
     reg  [8:0]  iw_addr = 0;
     reg  [31:0] iw_data = 0;
     wire        iw_ok;
+    reg         ir_rd = 0;
+    wire [31:0] ir_data, region0, region1;
+    wire        ir_valid;
 
     imem_shared dut (
         .clk(clk), .rst_n(rst_n), .run(run),
         .f_addr0(f_addr0), .f_addr1(f_addr1), .f_raw0(f_raw0), .f_raw1(f_raw1), .f_oob0(f_oob0), .f_oob1(f_oob1),
         .rg_go0(rg_go0), .rg_go1(rg_go1), .rg_val0(rg_val0), .rg_val1(rg_val1),
         .locked0(locked0), .locked1(locked1),
-        .iw_wr(iw_wr), .iw_addr(iw_addr), .iw_data(iw_data), .iw_ok(iw_ok));
+        .iw_wr(iw_wr), .iw_addr(iw_addr), .iw_data(iw_data), .iw_ok(iw_ok),
+        .ir_rd(ir_rd), .ir_data(ir_data), .ir_valid(ir_valid), .region0(region0), .region1(region1));
 
     integer fails = 0, checks = 0;
     task check(input ok, input [8*56-1:0] what);
@@ -64,6 +68,21 @@ module tb_imem_shared;
             else        begin rg_go1 = 1; rg_val1 = {limit, base}; end
             @(negedge clk);
             rg_go0 = 0; rg_go1 = 0;
+        end
+    endtask
+
+    // host read of one word: strobe for one clock; the word and ir_valid arrive two clocks after the strobe clock and ir_valid lasts one clock
+    reg        v_early, v_on, v_late;
+    task host_read(input [8:0] a, output [31:0] w);
+        begin
+            @(negedge clk);
+            iw_addr = a; ir_rd = 1;
+            @(negedge clk);
+            ir_rd = 0; v_early = ir_valid;
+            @(negedge clk);
+            w = ir_data; v_on = ir_valid;
+            @(negedge clk);
+            v_late = ir_valid;
         end
     endtask
 
@@ -126,6 +145,35 @@ module tb_imem_shared;
         run = 2'b10; @(negedge clk); #1;
         iw_addr = 9'd300; #1;
         check(iw_ok == 1'b0, "engine 1 running with the full window refuses every host write");
+
+        // G. instruction readback with both engines held (port B): every word written in A comes back, valid pulses once, two clocks after the strobe
+        run = 2'b00; @(negedge clk); #1;
+        host_read(9'd5, w0);
+        check(w0 == 32'h1005 && v_on && !v_early && !v_late, "readback word 5 via port B, valid pulse exactly once");
+        host_read(9'd261, w0);
+        check(w0 == 32'h2005 && v_on, "readback word 261 via port B");
+        host_write(9'd400, 32'hCAFE0190);
+        host_read(9'd400, w0);
+        check(w0 == 32'hCAFE0190, "write then read back word 400");
+
+        // H. engine 0 running with window [8,16), engine 1 held: readback goes through port A, also inside the running window (read only)
+        run = 2'b11; @(negedge clk); #1;
+        region(0, 9'd8, 10'd16);
+        check(region0 == {6'd0, 10'd16, 7'd0, 9'd8}, "REGION of engine 0 after OP_REGION [8,16)");
+        run = 2'b01; @(negedge clk); #1;
+        host_read(9'd10, w0);
+        check(w0 == 32'h1000 + 10 && v_on, "readback inside the running window via port A");
+        host_read(9'd400, w0);
+        check(w0 == 32'hCAFE0190, "readback outside the window via port A");
+        check(region0 == {6'd0, 10'd16, 7'd0, 9'd8}, "REGION of engine 0 kept while it runs");
+
+        // I. REGION of engine 1, and the full window after a hold
+        run = 2'b11; @(negedge clk); #1;
+        region(1, 9'd256, 10'd260);
+        check(region1 == {6'd0, 10'd260, 7'd0, 9'd256}, "REGION of engine 1 after OP_REGION [256,260)");
+        run = 2'b10; @(negedge clk); #1; @(negedge clk); #1;
+        check(region0 == {6'd0, 10'd512, 7'd0, 9'd0}, "REGION of a held engine is the full memory");
+        check(region1 == {6'd0, 10'd260, 7'd0, 9'd256}, "REGION of the running engine is kept");
 
         $display("RESULT tb_imem_shared: %s (%0d/%0d checks)", fails == 0 ? "PASS" : "FAIL", checks - fails, checks);
         $finish;

@@ -151,6 +151,43 @@ def main():
         check("no OP_REGION: default window is the whole memory", not chip.wait_halt(0)["fault"] and chip.pop_rx(0) == 7)
         chip.stop(0)
 
+        # ---- S1: REGION read and instruction readback (frame v2)
+        from chip_host import OP2_READ, OP2_WRITE
+        chip.stop(0); chip.stop(1)
+        mem = [(0x5A000000 + 7 * i) & 0xFFFFFFFF for i in range(48)]
+        put_words(chip, 100, mem)
+        back = [chip.read2(S.IMEM_BASE + 4 * (100 + i)) for i in range(48)]
+        check("readback with both engines held returns every word written", back == mem)
+        put_words(chip, 0, [0x13572468])                                  # (a word never written reads as X in simulation: write the ends first)
+        put_words(chip, 511, [0x2468ACE0])
+        check("readback of the first and last word of the memory",
+              chip.read2(S.IMEM_BASE) == 0x13572468 and chip.read2(S.IMEM_BASE + 4 * 511) == 0x2468ACE0)
+        full = (512 << 16) | 0
+        check("REGION of a held engine is the whole memory", chip.read2(ENG_BASE[0] + 0x008) == full
+              and chip.read2(ENG_BASE[1] + 0x008) == full)
+
+        img = S.Image.from_asm("loop", loop_prog(), origin=200)
+        chip.start(0, img)
+        base, limit = img.window
+        want = (limit << 16) | base
+        check("REGION of a running engine is the window its OP_REGION set", chip.read2(ENG_BASE[0] + 0x008) == want)
+        check("REGION of the held engine is still the whole memory", chip.read2(ENG_BASE[1] + 0x008) == full)
+        check("readback with one engine running goes through the held engine's port",
+              [chip.read2(S.IMEM_BASE + 4 * (100 + i)) for i in range(8)] == mem[:8])
+        check("readback of the running image itself matches what was loaded",
+              [chip.read2(S.IMEM_BASE + 4 * (200 + i)) for i in range(len(img.words))] == list(img.words))
+        r = chip.cmd2(OP2_WRITE, ENG_BASE[0] + 0x008, 0x1234)
+        check("REGION is read only (result code 4)", r.code == 4)
+
+        start_raw(chip, 1, 100)
+        r = chip.cmd2(OP2_READ, S.IMEM_BASE + 4 * 100)
+        check("readback with both engines running is refused (result code 4)", r.code == 4)
+        chip.stop(0); chip.stop(1)
+        chip.read(S.IMEM_BASE + 4 * 100)                                  # a v1 frame cannot read the memory: err
+        check("a v1 read of the instruction memory is refused (err)", chip.status().err)
+        chip.clear_err()
+        chip.stop(0)
+
     print(f"RESULT shmem_chip_test: {'PASS' if not errs else 'FAIL (%d)' % errs}")
     return 1 if errs else 0
 

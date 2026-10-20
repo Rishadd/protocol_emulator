@@ -60,6 +60,10 @@ module mgmt (
 `ifdef SHARED_IMEM
     input  wire        imem_ok,         // imem_shared: a held engine's port is free and no running window holds that word
     output reg  [8:0]  start0, start1,  // START register per engine (program counter reset value), written only while held
+    output reg         imem_rd,         // one-clock strobe: read instruction word imem_waddr through a held engine's port (v2 frames only)
+    input  wire [31:0] ir_data,         // the word, with ir_valid two clocks after the strobe
+    input  wire        ir_valid,
+    input  wire [31:0] region0, region1, // window each engine holds: {6'd0, limit[9:0], 7'd0, base[8:0]}
 `endif
     // engine status and RX FIFOs
     input  wire [1:0]  halted,
@@ -164,10 +168,14 @@ module mgmt (
     wire hit_imem = (addr[15:12] == 4'h0) && (addr[11] ^ addr[10]) && (addr[1:0] == 2'b00);
     wire imem_wr_ok = imem_ok;                                                  // a held engine's port is free, no running window holds the word
     wire hit_start = eng_ok && (addr[11:0] == 12'h00C);                          // START: writable only while the engine is held
+    wire hit_region = eng_ok && (addr[11:0] == 12'h008);                         // REGION: read only
+    wire imem_rd_ok = !(eng_run[0] && eng_run[1]);                               // some held engine's port is free for the host
 `else
     wire hit_imem = eng_ok && (addr[11:10] == 2'b01) && (addr[1:0] == 2'b00);   // 0x400..0x7FC
     wire imem_wr_ok = !eng_run[eng];
     wire hit_start = 1'b0;
+    wire hit_region = 1'b0;
+    wire imem_rd_ok = 1'b0;
 `endif
     wire hit_rx   = eng_ok && (addr[11:0] == 12'h204);
     wire hit_tx   = eng_ok && (addr[11:0] == 12'h200);
@@ -212,6 +220,7 @@ module mgmt (
                            (ra[11:0] == 12'h204) ? (r_rx_ok ? rx_e : 32'd0) :
 `ifdef SHARED_IMEM
                            (ra[11:0] == 12'h00C) ? {23'd0, r_eng ? start1 : start0} :
+                           (ra[11:0] == 12'h008) ? (r_eng ? region1 : region0) :
 `endif
                                                    32'd0;
     wire [31:0] rd_mux   = (c_op != 8'h02) ? 32'd0 : rd_val;                    // v1
@@ -226,6 +235,7 @@ module mgmt (
             if (at_ctrl)                code = (data[31:1] != 31'd0) ? 8'd3 : (hold && data[0]) ? 8'd4 : 8'd0;
             else if (hit_imem)          code = imem_wr_ok ? 8'd0 : 8'd4;
             else if (hit_start)         code = (data[31:9] != 23'd0) ? 8'd3 : eng_run[eng] ? 8'd4 : 8'd0;
+            else if (hit_region)        code = 8'd4;                            // REGION is read-only
             else if (hit_tx)            code = tx_full[eng] ? 8'd1 : 8'd0;
             else if (hit_pin)           code = pin_ok ? 8'd0 : 8'd4;
             else if (hit_scr || hit_cnt) code = 8'd0;
@@ -233,7 +243,10 @@ module mgmt (
             else                        code = 8'd2;
         end else if (op2 == 8'h82) begin // READ
             if (hit_rx)                 code = rx_empty[eng] ? 8'd1 : 8'd0;
-            else if (at_ctrl || hit_pin || hit_idr || hit_start) code = 8'd0;
+`ifdef SHARED_IMEM
+            else if (hit_imem)          code = imem_rd_ok ? 8'd0 : 8'd4;       // instruction readback needs a held engine
+`endif
+            else if (at_ctrl || hit_pin || hit_idr || hit_start || hit_region) code = 8'd0;
             else                        code = 8'd2;
         end
     end
@@ -304,6 +317,7 @@ module mgmt (
             eng_run     <= 2'b00;
             imem_we     <= 2'b00;
 `ifdef SHARED_IMEM
+            imem_rd     <= 1'b0;
             start0      <= 9'd0;
             start1      <= 9'd0;
 `endif
@@ -313,6 +327,9 @@ module mgmt (
             err         <= 1'b0;
         end else begin
             imem_we  <= 2'b00;
+`ifdef SHARED_IMEM
+            imem_rd  <= 1'b0;
+`endif
             rx_rd_en <= 2'b00;
             tx_wr_en <= 2'b00;
             pin_we   <= 1'b0;
@@ -351,7 +368,11 @@ module mgmt (
                 else if (go && is_write && hit_cnt) begin
                     cnt_crc <= 8'd0; cnt_len <= 8'd0; cnt_seq <= 8'd0;
                 end
-                else if (go && is_read && (at_ctrl || hit_pin || hit_idr || hit_start))
+`ifdef SHARED_IMEM
+                else if (go && is_v2 && is_read && hit_imem && imem_rd_ok)
+                    imem_rd <= 1'b1;
+`endif
+                else if (go && is_read && (at_ctrl || hit_pin || hit_idr || hit_start || hit_region))
                     ;                                   // plain register read, no side effect
                 else if (go && !is_v2)                  // v1: a rejected access
                     err <= 1'b1;
@@ -392,6 +413,10 @@ module mgmt (
                     txcrc <= crc16(txcrc, tx_byte);     // the byte just sent to the host
                 end
             end
+`ifdef SHARED_IMEM
+            // instruction readback: the word arrives two clocks after the strobe, long before the next frame shows this result
+            if (ir_valid) res_data <= ir_data;
+`endif
         end
     end
 endmodule
