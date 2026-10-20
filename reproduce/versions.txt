@@ -1,0 +1,15 @@
+# Versions of everything the results were made with (host: Ubuntu 22.04.5 LTS, x86-64, 16 cores, 15 GB RAM)
+Nix: nix (Determinate Nix 3.23.3) 2.35.3
+nixpkgs: Determinate weekly pins rev 494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25 and 7fd4004d0511991fff3a0524856a9be09e28c5f0 (the two profile entries; see 'nix profile list')
+Name:               boolector	Store paths:        boolector-3.2.4
+Name:               gtkwave	Store paths:        gtkwave-3.3.128
+Name:               iverilog	Store paths:        iverilog-13.0
+Name:               klayout	Store paths:        klayout-0.30.12
+Name:               python312	Store paths:        python3-3.12.15
+Name:               sby	Store paths:        sby-0.69
+Name:               yices	Store paths:        yices-2.7.0
+System python3 (pictvenv): Python 3.10.12
+LibreLane 3.1.0.dev3, commit ca6adb1e2982cd75445a68b632d461213d8ca421 (2026-08-13), Yosys 0.66 (git 86f2ddebce7e98ce7cacc27e8a5c14cb53b51b51); OpenROAD/Magic/Netgen/KLayout are the ones in that release's Nix shell
+IHP-Open-PDK 2bbec755dc67ca3db0261c3d6163e15735d66710 (2026-09-08), ihp-sg13cmos5l
+tt-support-tools d66cf179e7bc4d296362ab7e2e3b344dc3c4f665 (branch ihp-sg13cmos5l, 2026-09-21)
+Icarus Verilog: Icarus Verilog version 13.0 (stable) (v13_0)

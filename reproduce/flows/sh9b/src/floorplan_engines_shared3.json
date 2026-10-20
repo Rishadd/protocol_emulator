@@ -1,0 +1,9 @@
+{
+  "note": "Shared memory, compact columns (variant shared3): each engine in its own 475 um wide column like tt14b (the shared macro at x 509.6..1195.1, y 13.8..233.6 sits between the columns at the bottom), common logic above the macro with a free routing channel y 244..300 for the fetch buses. Replaces the L-shaped engines of 'shared' (run sh2: 54 % routing demand, 5,726 overflow). Fences are removed after global placement.",
+  "version": 10,
+  "boxes": [
+    {"name": "eng0", "match": ["u_eng0."], "box": [20, 8, 495, 700]},
+    {"name": "eng1", "match": ["u_eng1."], "box": [1229, 8, 1704, 700]},
+    {"name": "common", "match": ["u_mgmt.", "u_spi.", "u_pins.", "u_dbg."], "box": [540, 300, 1180, 692]}
+  ]
+}

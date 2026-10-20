@@ -1,0 +1,1 @@
+start 2026-10-20T13:01:10+05:30 tag=sh4 variant=shared3 tree=/media/rishadd/OS/Data/protocol_emulator_shmem TILES=8x4

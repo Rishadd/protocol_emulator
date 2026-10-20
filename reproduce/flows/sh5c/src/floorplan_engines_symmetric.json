@@ -1,0 +1,8 @@
+{
+  "note": "Symmetric floorplan (run with librelane/floorplan_symmetric_cfg.json): SRAM 0 at the bottom left (60.0,13.8)-(476.6,132.6), SRAM 1 mirrored at the bottom right (824.3,13.8)-(1241.0,132.6), both with their pins facing up. Engine 0 is fenced into the column above and beside SRAM 0, engine 1 into the column above and beside SRAM 1 (each column = the SRAM plus its 17 um halo, out to the core edge). The middle column (494-807 um) is not fenced: management, SPI link and pin manager settle there, between the two engines they serve, together with the buffers the tools add. The engines have no wires between them, so the fences cost little; there are no boxes inside an engine (its modules are tightly connected, module boxes cost 12-19 % wire length). The fences are removed after global placement (Project.RemoveModuleRegions).",
+  "version": 7,
+  "boxes": [
+    {"name": "eng0", "match": ["u_eng0."], "box": [4, 6, 494, 706]},
+    {"name": "eng1", "match": ["u_eng1."], "box": [807, 6, 1286, 706]}
+  ]
+}

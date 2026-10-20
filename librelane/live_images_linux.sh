@@ -4,7 +4,7 @@
 # 60 s, shows the current step and the routing progress). Also writes <results>/index.html with one line per run.
 # Usage (in WSL): bash librelane/live_images_wsl.sh "<tag>=<title>" ...      e.g. "tt9b=pipelined CRC, fixed floorplan"
 # Stops when every listed run has finished and its last images are made.
-P=/media/rishadd/OS/Data/protocol_emulator
+P=${P:-$(cd "$(dirname "$0")/.." && pwd)}
 RES=${RES:-$P/results/shared_2026-10-20}
 PDK=${TT_PDK_ROOT:-$HOME/pdk_tt}/ihp-sg13cmos5l
 declare -A TITLE SEEN DONE

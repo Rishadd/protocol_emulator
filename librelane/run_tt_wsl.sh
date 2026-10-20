@@ -6,7 +6,7 @@
 # TT_PDK_ROOT=<dir> selects another PDK checkout), ~/tt-support-tools (branch ihp-sg13cmos5l).
 # Usage: RUN_TAG=tt1 bash librelane/run_tt_wsl.sh      (results: $WORK/runs/$RUN_TAG)
 set -e
-SRC=${SRC:-/mnt/c/Data/protocol_emulator}
+SRC=${SRC:-$(cd "$(dirname "$0")/.." && pwd)}
 WORK=${WORK:-$HOME/pe_tt}
 TAG=${RUN_TAG:-tt1}
 mkdir -p "$WORK/src" "$WORK/tt"

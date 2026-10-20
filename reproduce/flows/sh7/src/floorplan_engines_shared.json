@@ -1,0 +1,21 @@
+{
+  "note": "Shared-memory floorplan on 8x4 tiles (librelane/floorplan_shared_cfg.json). Macro 509.6..1195.1 x 13.8..233.6 (halo 17 / 10). Each engine is an L: a wing beside the macro plus a band above its half of the macro. Common logic on top under the chip pins. imem_shared (u_imem.) is unboxed so it sits by the macro. Fences are removed after global placement.",
+  "version": 9,
+  "boxes": [
+    {
+      "name": "eng0",
+      "match": ["u_eng0."],
+      "box": [[20, 8, 490, 244], [20, 244, 862, 470]]
+    },
+    {
+      "name": "eng1",
+      "match": ["u_eng1."],
+      "box": [[1234, 8, 1704, 244], [862, 244, 1704, 470]]
+    },
+    {
+      "name": "common",
+      "match": ["u_mgmt.", "u_spi.", "u_pins.", "u_dbg."],
+      "box": [440, 476, 1284, 698]
+    }
+  ]
+}

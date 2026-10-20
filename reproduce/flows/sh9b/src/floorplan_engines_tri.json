@@ -1,0 +1,45 @@
+{
+  "note": "Three-column floorplan on 8x4 tiles (librelane/floorplan_tri_cfg.json). Engines fenced into their SRAM's width plus the 17 um halo; the common logic in the middle column (room for the logic analyser's SRAM at x = 689.44 later). Fences are removed after global placement.",
+  "version": 8,
+  "boxes": [
+    {
+      "name": "eng0",
+      "match": [
+        "u_eng0."
+      ],
+      "box": [
+        133,
+        6,
+        583,
+        706
+      ]
+    },
+    {
+      "name": "common",
+      "match": [
+        "u_mgmt.",
+        "u_spi.",
+        "u_pins.",
+        "u_dbg."
+      ],
+      "box": [
+        640,
+        6,
+        1155,
+        706
+      ]
+    },
+    {
+      "name": "eng1",
+      "match": [
+        "u_eng1."
+      ],
+      "box": [
+        1212,
+        6,
+        1663,
+        706
+      ]
+    }
+  ]
+}

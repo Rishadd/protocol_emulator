@@ -9,6 +9,6 @@ LABEL=${STEP/placement/_placement}                     # detailedplacement -> de
 BG=$(ls "$OUT"/*_${LABEL}__cells_only.png 2>/dev/null | head -n 1)
 LEF=${TT_PDK_ROOT:-$HOME/pdk_tt}/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lef/sg13cmos5l_stdcell.lef
 . ~/pictvenv/bin/activate
-python3 /media/rishadd/OS/Data/protocol_emulator/librelane/module_map.py --def $DEF --lef $LEF \
+python3 "$(cd "$(dirname "$0")" && pwd)/module_map.py" --def $DEF --lef $LEF \
   --lef $WORK/macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.lef \
   --out "$OUT" --prefix "${STEP}__" ${BG:+--bg $BG} --title "$TITLE"
