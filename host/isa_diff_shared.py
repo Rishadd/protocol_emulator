@@ -48,6 +48,10 @@ def make_program(rnd, L, origin, mode):
         words[0] = region_word(origin, origin + rnd.randint(4, max(5, L // 2)))      # code beyond the window traps
     elif mode == "wide":
         words[0] = region_word(max(0, origin - rnd.randint(0, 30)), min(512, origin + L + rnd.randint(0, 30)))
+    elif mode == "tiny":                                                              # only the OP_REGION word itself: the very next fetch is outside
+        words[0] = region_word(origin, origin + 1)
+    elif mode == "ahead":                                                             # the window starts a few words further on: the next fetch is below the base
+        words[0] = region_word(origin + rnd.randint(2, 8), origin + L)
     elif mode == "late":                                                              # the window is set after a few instructions
         words[rnd.randint(1, 6)] = region_word(origin, origin + L)
     elif mode == "bad":
@@ -70,7 +74,7 @@ def make_stim(rnd):
     return stim
 
 
-MODES = ["exact"] * 5 + ["none"] * 3 + ["small"] * 2 + ["wide"] + ["late"] + ["bad"]
+MODES = ["exact"] * 5 + ["none"] * 3 + ["small"] * 2 + ["wide"] + ["late"] + ["bad"] + ["tiny"] * 2 + ["ahead"] * 2
 LAYOUTS = ["disjoint"] * 4 + ["adjacent"] * 2 + ["overlap"] * 2 + ["same"]
 
 
@@ -212,7 +216,7 @@ REQUIRED = [("op", n, 30) for n in A.OPCODE if n not in ("HALT", "REGION")] + [(
            [("sh", "window_set", 150), ("sh", "window_narrowed", 100), ("sh", "fault", 150), ("sh", "pc_above_255", 150),
             ("sh", "fetch_outside_window_fault", 40)] + \
            [("sh", "layout", l, 20) for l in ("disjoint", "adjacent", "overlap", "same")] + \
-           [("sh", "mode", m, 20) for m in ("exact", "none", "small", "wide", "late", "bad")]
+           [("sh", "mode", m, 20) for m in ("exact", "none", "small", "wide", "late", "bad", "tiny", "ahead")]
 
 
 def coverage_report(cov, n_tests):
@@ -230,12 +234,64 @@ def coverage_report(cov, n_tests):
     return not missing
 
 
+# ------------------------------------------------------------------ planted bugs in the shared-memory logic: each must make the RTL disagree with the model
+MUTANTS = [
+    ("imem_shared.v", "engine 0's window limit is off by one", "({1'b0, f_addr0} < limit0));", "({1'b0, f_addr0} <= limit0));"),
+    ("imem_shared.v", "engine 1's window limit is off by one", "({1'b0, f_addr1} < limit1));", "({1'b0, f_addr1} <= limit1));"),
+    ("imem_shared.v", "engine 0's window base is not checked", "({1'b0, f_addr0} >= {1'b0, base0})", "1'b1"),
+    ("imem_shared.v", "engine 1's window base is not checked", "({1'b0, f_addr1} >= {1'b0, base1})", "1'b1"),
+    ("imem_shared.v", "an OP_REGION of engine 0 does not apply to the fetch of its own clock", "if (rg_go0) oob0 <=", "if (1'b0) oob0 <="),
+    ("imem_shared.v", "an OP_REGION of engine 1 does not apply to the fetch of its own clock", "if (rg_go1) oob1 <=", "if (1'b0) oob1 <="),
+    ("imem_shared.v", "engine 0's lock is never set", "limit0 <= rg_val0[18:9]; lk0 <= 1'b1;", "limit0 <= rg_val0[18:9]; lk0 <= 1'b0;"),
+    ("imem_shared.v", "engine 1's lock is never set", "limit1 <= rg_val1[18:9]; lk1 <= 1'b1;", "limit1 <= rg_val1[18:9]; lk1 <= 1'b0;"),
+    ("imem_shared.v", "engine 0 fetches through port A", "assign f_raw0 = dout_b;", "assign f_raw0 = dout_a;"),
+    ("imem_shared.v", "engine 1 is trapped by engine 0's flag", "assign f_oob1 = oob1;", "assign f_oob1 = oob0;"),
+    ("engine_top.v", "an out-of-window word is decoded instead of TRAP", "assign instr   = im_oob ? {5'd31, 27'd0} : im_instr;", "assign instr   = im_instr;"),
+    ("engine_top.v", "the START address is ignored", ".start     (start_pc[PC_W-1:0]),", ".start     ({PC_W{1'b0}}),"),
+    ("control_unit.v", "a second OP_REGION is accepted", "(!region_locked && ", "("),
+    ("control_unit.v", "an empty window is accepted", "({1'b0, operand[8:0]} < operand[18:9])", "({1'b0, operand[8:0]} <= operand[18:9])"),
+    ("control_unit.v", "a window ending above 512 is accepted", "(operand[18:9] <= 10'd512)", "(operand[18:9] <= 10'd513)"),
+    ("control_unit.v", "jump targets ignore address bit 8", "assign jump_addr     = {operand[11], operand[7:0]};", "assign jump_addr     = {1'b0, operand[7:0]};"),
+]
+
+
+def mutants_phase(seed, n):
+    tests = make_tests(seed + 1000, n)
+    outdir = os.path.join(ROOT, "build", "mutants", "isa_diff_shared")
+    os.makedirs(outdir, exist_ok=True)
+    caught = bad = 0
+    for i, (fname, desc, old, new) in enumerate(MUTANTS):
+        text = open(os.path.join(ROOT, "src", fname)).read()
+        if text.count(old) != 1:
+            print(f"  MUTANT {i:2d} INVALID ({text.count(old)} matches): {desc}")
+            bad += 1
+            continue
+        mpath = os.path.join(outdir, f"m{i}_{fname}")
+        open(mpath, "w").write(text.replace(old, new))
+        lines, err = run_rtl(tests, f"mut{i}", rtl_sources({fname: mpath}))
+        if lines is None:
+            if err.startswith("COMPILE"):
+                print(f"  MUTANT {i:2d} INVALID (does not compile): {desc}")
+                bad += 1
+                continue
+            hit = True
+        else:
+            mism, _ = compare(tests, lines)
+            hit = bool(mism)
+        caught += hit
+        print(f"  MUTANT {i:2d} {'caught ' if hit else 'MISSED '} {desc}")
+    print(f"  shared-memory mutants caught: {caught}/{len(MUTANTS)}" + (f" ({bad} invalid)" if bad else ""))
+    return 0 if caught == len(MUTANTS) and not bad else 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("phase", nargs="*", default=["run"])
     ap.add_argument("--tests", type=int, default=400)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
+    if "mutants" in args.phase:
+        return mutants_phase(args.seed, min(args.tests, 150))
     tests = make_tests(args.seed, args.tests)
     lines, err = run_rtl(tests, f"s{args.seed}")
     if lines is None:
