@@ -8,7 +8,7 @@ module tb_pc_reg;
     reg [7:0] nxt;
 
     pc_reg dut (.clk(clk), .rst_n(rst_n), .advance(advance), .jump(jump),
-                .jump_addr(jump_addr), .pc(pc), .next_pc(next_pc));
+                .jump_addr(jump_addr), .start(8'd0), .pc(pc), .next_pc(next_pc));
 
     always #5 clk = ~clk;
     task tick; begin @(posedge clk); #1; end endtask

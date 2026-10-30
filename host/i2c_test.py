@@ -201,17 +201,23 @@ def tstats(T):
 _vvp = {}
 
 
+SHARED = os.environ.get("PROTO_SHARED", "") == "1"      # the chip-level test bench on the shared 512-word memory (-DSHARED_IMEM); engine 1's image at word 256
+SIM_LIBS_SHARED = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
+                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v")]
+
+
 def compile_tb(name, rise):
     key = (name, rise)
+    shared = SHARED and name == "tb_i2c_chip"
     if key not in _vvp:
         os.makedirs(BUILD, exist_ok=True)
-        out = os.path.join(BUILD, f"{name}_r{rise}.vvp")
+        out = os.path.join(BUILD, f"{name}_r{rise}{'_shared' if shared else ''}.vvp")
         tmp = f"{out}.{os.getpid()}.tmp"                    # suites run in parallel and share this file: compile aside, then rename
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
-        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", f"-P{name}.T_RISE={rise}",
+        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if shared else []) + [f"-P{name}.T_RISE={rise}",
                         "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", tmp,
                         os.path.join(ROOT, "tb", name + ".v"), os.path.join(ROOT, "tb", "i2c_slave_model.v"),
-                        *srcs, *SIM_LIBS], check=True)
+                        *srcs, *(SIM_LIBS_SHARED if shared else SIM_LIBS)], check=True)
         os.replace(tmp, out)
         _vvp[key] = out
     return _vvp[key]

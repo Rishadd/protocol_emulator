@@ -44,8 +44,9 @@ def hold_pin_high():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--fpga", action="store_true", help="run on the DE0-Nano top (src/fpga) instead of the chip top")
     args = ap.parse_args()
-    with SimLink() as link:
+    with SimLink(fpga=args.fpga) as link:
         chip = ChipHost(link, trace=not args.quiet)
 
         section("1. Is the chip alive? Reset state (STATUS bit 7 = 1, nothing running, no error)")

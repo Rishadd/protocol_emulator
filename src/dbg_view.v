@@ -7,7 +7,7 @@
 //   3  loopback: ui_in[7:3], uio_in[0]
 //   4  memory self-test (not built yet: 0)
 //   5  uio_in[5:0]
-//   6  logic analyser (not built yet: 0)
+//   6  logic analyser: [0] armed [1] triggered or done [2] done [3] buffer full [4] wrapped [5] engines' trigger line (view[0] = uo_out[2])
 //   7  reserved (0)
 module dbg_view (
     input  wire       clk,
@@ -24,6 +24,7 @@ module dbg_view (
     input  wire       active,
     input  wire [4:0] ui_hi,         // ui_in[7:3]
     input  wire [7:0] uio_in,
+    input  wire [5:0] la_view,       // la_block
     output reg  [5:0] view
 );
     reg [24:0] hb;
@@ -48,6 +49,7 @@ module dbg_view (
             3'd2:    view = {~active, frame_clean, rx_byte[7:4]};
             3'd3:    view = {uio_in[0], ui_hi};
             3'd5:    view = uio_in[5:0];
+            3'd6:    view = la_view;
             default: view = 6'd0;
         endcase
     end

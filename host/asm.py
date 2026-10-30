@@ -17,12 +17,12 @@ import fw_layout
 
 OPCODE = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9, SETH=10, SETLO=11,
               DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20,
-              LDI=21, ALU=22, JCC=23, RGET=24, RPUT=25, WAITR=26, CRC=27, LINE=28)
+              LDI=21, ALU=22, JCC=23, RGET=24, RPUT=25, WAITR=26, CRC=27, LINE=28, REGION=29, TSTAMP=30)   # REGION: shared memory only
 LAST_LEGAL = 28
 FUNC = dict(MOV=0, ADD=1, SUB=2, AND=3, OR=4, XOR=5, SHL=6, SHR=7, CMP=8, TST=9, NOT=10, PAR=11, REV8=12)
 COND = dict(Z=0, NZ=1, C=2, NC=3, N=4, NN=5, GTU=6, LEU=7)
 RGET_SRC = dict(OSR=0, ISR=1, LC=2, PIN=3, CRC=4, TXF=5, LINE=6, FIFO=7)
-RPUT_DST = dict(OSR=0, ISR=1, LC=2, RXF=3)
+RPUT_DST = dict(OSR=0, ISR=1, LC=2, RXF=3, TRIG=4)
 CRC_OP = dict(RST=0, POLY=1, INIT=2, XOR=3, FMT=4, BIT=5, BYTE=6)
 LINE_OP = dict(CFG=0, PERIOD=1, TXB=2, TXE=3, RXCTL=4, RESET=5)
 JUMP_OPS = ("JMP", "DJNZ", "JPH", "JPL", "JPO", "JCC")   # operand [7:0] is a program address
@@ -124,6 +124,8 @@ class Asm:
     def RGET(self, rd, src):
         s = RGET_SRC[src] if isinstance(src, str) else src
         return self._add("RGET", s << 4 | (rd & 7))
+    def TSTAMP(self, rd):
+        return self._add("TSTAMP", rd & 7)
     def RPUT(self, dst, rs):
         d = RPUT_DST[dst] if isinstance(dst, str) else dst
         return self._add("RPUT", d << 4 | (rs & 7))
@@ -144,13 +146,27 @@ class Asm:
         self.ALU("SHL", rd, imm=8)
         return self.ALU("OR", rd, imm=value & 0xFF)
 
-    def raw(self):
-        """Resolved (op, operand) list."""
+    def REGION(self, lo=0, hi=None):
+        """OP_REGION (shared memory only): the window [origin+lo, origin+hi) of this engine; hi=None means the whole program."""
+        return self._add("REGION", (lo, hi))
+
+    def raw(self, origin=None):
+        """Resolved (op, operand) list. origin=None: the 256-word default, targets are the labels as before.
+        origin=N (shared memory): the program sits at physical address N; labels, targets and REGION offsets are relative to it,
+        and a jump target is written as {operand[11], operand[7:0]} (bit 8 in operand bit 11, src/control_unit.v)."""
         out = []
         for op, operand, target, hi in self.items:
+            if op == "REGION":
+                lo, end = operand
+                end = len(self.items) if end is None else end
+                o = origin or 0
+                out.append(("REGION", (o + lo) | (o + end) << 9))
+                continue
             if target is not None:
                 addr = self.labels[target] if isinstance(target, str) else target
-                operand = hi | (addr & 0xFF)
+                if origin is not None:
+                    addr += origin
+                operand = hi | (addr & 0xFF) | ((addr >> 8 & 1) << 11)
             out.append((op, operand))
         return out
 
@@ -158,6 +174,13 @@ class Asm:
         ws = [word(op, operand) for op, operand in self.raw()]
         assert len(ws) <= 256, f"program has {len(ws)} words (memory holds 256)"
         return fw_layout.place(ws)
+
+    def words_at(self, origin):
+        """Shared memory: the program linked to physical address `origin` (512-word memory), as encoded words. The caller
+        places them at that address (SharedImem.load, ChipHost.load_image)."""
+        raw = self.raw(origin)
+        assert 0 <= origin and origin + len(raw) <= 512, f"program of {len(raw)} words at {origin} does not fit 512 words"
+        return [word(op, operand) for op, operand in raw]
 
     def words_unplaced(self):
         return [word(op, operand) for op, operand in self.raw()]

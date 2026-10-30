@@ -28,6 +28,10 @@ F_CLK = 50_000_000
 EV = 1 << 26
 
 CHIP = os.environ.get("PROTO_CHIP", "") == "1"
+SHARED = os.environ.get("PROTO_SHARED", "") == "1"      # chip-level runs on the shared 512-word memory (-DSHARED_IMEM): engine 0 at word 0, engine 1 at word 256
+SIM_LIBS_SHARED = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
+                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v")]
+JUMP_OPS = (2, 5, 17, 18, 19, 23)                       # JMP DJNZ JPH JPL JPO JCC: operand [7:0] is a program address; shared mode: bit 11 is address bit 8
 _vvp = None
 
 
@@ -41,16 +45,20 @@ def compile_tb(extra_srcs=(), tag=None, chip=None):
     global _vvp
     chip = CHIP if chip is None else chip
     tag = tag or ("tb_chip_proto" if chip else "tb_proto")
+    shared = SHARED and chip
     os.makedirs(BUILD, exist_ok=True)
-    out = os.path.join(BUILD, tag + ".vvp")
+    out = os.path.join(BUILD, tag + ("_shared" if shared else "") + ".vvp")
     if not os.path.exists(out) or os.path.getmtime(out) < _newest_input():
-        srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v"))) + SIM_LIBS + sorted(
+        tmp = out + f".{os.getpid()}.tmp"
+        srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v"))) + (SIM_LIBS_SHARED if shared else SIM_LIBS) + sorted(
             glob.glob(os.path.join(ROOT, "tb", "peer_*.v"))) + list(extra_srcs)
-        r = subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL", "-I", os.path.join(ROOT, "src"),
-                            "-I", os.path.join(ROOT, "tb"), "-o", out, os.path.join(ROOT, "tb", tag + ".v")] + srcs,
+        r = subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if shared else []) +
+                           ["-I", os.path.join(ROOT, "src"),
+                            "-I", os.path.join(ROOT, "tb"), "-o", tmp, os.path.join(ROOT, "tb", tag + ".v")] + srcs,
                            capture_output=True, text=True)
         if r.returncode:
             raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+        os.replace(tmp, out)             # atomic: suites that start together (regress phases) never read a half-written file
     return out
 
 
@@ -106,11 +114,14 @@ def run(name, progs=None, htx=None, od=0, ext=0, stim=None, dur_ns=1_000_000, pe
         oloc, iloc = pin_map(remap, own_m[0] | own_m[1], od, uo_ok)
         plus = dict(plus or {}, OLOC=oloc, ILOC=iloc)
     # one folder per (case, chip, pin seed, firmware origin): regression suites run in parallel and must not share files
-    tag = ("_chip" if chip else "") + (f"_r{remap}" if chip and remap else "") + (f"_o{os.environ['FW_ORG']}" if os.environ.get("FW_ORG") else "")
+    tag = ("_chip" if chip else "") + (f"_r{remap}" if chip and remap else "") + (f"_o{os.environ['FW_ORG']}" if os.environ.get("FW_ORG") else "") + \
+        ("_sh" if SHARED and chip else "")
     d = os.path.join(BUILD, _safe(name) + tag)
     os.makedirs(d, exist_ok=True)
     args = []
     for e, words in (progs or {}).items():
+        if SHARED and chip and e == 1:                  # engine 1's image sits at physical word 256: every jump target gets address bit 8 (operand bit 11)
+            words = [w | (1 << 11) if (w >> 27) in JUMP_OPS else w for w in words]
         fn = os.path.join(d, f"prog{e}.hex")
         sp.write_hex(words, fn)
         args.append(f"+PROG{e}={fn}")

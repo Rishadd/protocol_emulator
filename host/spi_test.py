@@ -155,16 +155,23 @@ def rng_str(xs, unit=CLK):
 _vvp = {}
 
 
+SHARED = os.environ.get("PROTO_SHARED", "") == "1"      # the chip-level test bench on the shared 512-word memory (-DSHARED_IMEM); engine 1's image at word 256
+SIM_LIBS_SHARED = [os.path.join(ROOT, "sim", "ihp_sram", f) for f in
+                   ("RM_IHPSG13_2P_512x32_c2_bm_bist.v", "RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v")]
+
+
 def compile_tb(name):
-    if name not in _vvp:
+    shared = SHARED and name == "tb_spi_chip"
+    key = name + ("_shared" if shared else "")
+    if key not in _vvp:
         os.makedirs(BUILD, exist_ok=True)
-        out = os.path.join(BUILD, name + ".vvp")
+        out = os.path.join(BUILD, key + ".vvp")
         srcs = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
-        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL",
-                        "-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", out,
-                        os.path.join(ROOT, "tb", name + ".v"), *srcs, *SIM_LIBS], check=True)
-        _vvp[name] = out
-    return _vvp[name]
+        subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if shared else []) +
+                       ["-I", os.path.join(ROOT, "src"), "-I", os.path.join(ROOT, "tb"), "-o", out,
+                        os.path.join(ROOT, "tb", name + ".v"), *srcs, *(SIM_LIBS_SHARED if shared else SIM_LIBS)], check=True)
+        _vvp[key] = out
+    return _vvp[key]
 
 
 def parse_log(path):

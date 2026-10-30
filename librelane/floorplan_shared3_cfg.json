@@ -1,0 +1,50 @@
+{
+  "//": "Variant shared3 (compact engine columns like tt14b, shared macro at the bottom centre): ONE 2P 512x32 macro at the bottom, flipped (FS) so its signal pins (bottom edge in the LEF) face up. x = 60 + 10 x 44.96 = 509.6 (whole stripe pitches, as for the 1P macros); the macro is 685.49 x 219.77 um. Fences in src/floorplan_engines_shared.json. Use: PE=/mnt/c/Data/protocol_emulator_shmem bash librelane/flow_variant_wsl.sh <tag> shared3",
+  "TILES": "8x4",
+  "VERILOG_DEFINES": ["SYNTHESIS", "SHARED_IMEM"],
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "//": "Power grid matched to the 2P macro: its Metal4 power columns are 4.42 um wide on a 17.68 um pitch, VDD! / VSS! centres 8.84 um apart (the 1P macro: 2.81 um on 11.24 um). Stripe pitch 3 x 17.68 = 53.04, centre distance VPWR to VGND 8.84 (width 2.1 + spacing 6.74), first VPWR stripe centre at core left 2.88 + offset = 21.425. The middle of the macro (x 813-886 um) has narrower columns (2.81 um on 5.15 um, nets irregular), so the offset was found by scanning all pitches/offsets for no wrong-net overlap (window 20.575-22.275 at 53.04; 35.36 has none). The old 44.96 grid put VGND stripes on VDD! columns and VPWR stripes on VSS! columns (sh3: LVS, VPWR and VGND shorted)",
+  "FP_PDN_VPITCH": 53.04,
+  "FP_PDN_VSPACING": 6.74,
+  "FP_PDN_VOFFSET": 18.545,
+  "ROUTING_OBSTRUCTIONS": [
+    ["Metal4", 508.6, 12.78, 1196.09, 234.55]
+  ],
+  "MACROS": {
+    "RM_IHPSG13_2P_512x32_c2_bm_bist": {
+      "instances": {
+        "u_imem.u_mem": {
+          "location": [509.6, 13.78],
+          "orientation": "FS"
+        }
+      },
+      "gds": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.gds"
+      ],
+      "lef": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.lef"
+      ],
+      "lib": {
+        "*_typ_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_typ_1p20V_25C.lib"
+        ],
+        "*_fast_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_fast_1p32V_m55C.lib"
+        ],
+        "*_slow_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_slow_1p08V_125C.lib"
+        ]
+      },
+      "nl": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.v"
+      ],
+      "spice": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.cdl"
+      ]
+    }
+  },
+  "PDN_MACRO_CONNECTIONS": [
+    "u_imem.u_mem VPWR VGND VDD! VSS!",
+    "u_imem.u_mem VPWR VGND VDDARRAY! VSS!"
+  ]
+}

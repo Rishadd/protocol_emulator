@@ -1,8 +1,0 @@
-{
-  "note": "Compact symmetric floorplan (run with librelane/floorplan_compact_cfg.json; draft: results/tt_flow_2026-10-18/floorplan_draft_compact.png). SRAM 0 at (149.9,13.8)-(566.6,132.6), SRAM 1 at (689.4,13.8)-(1106.1,132.6): 12 stripe pitches apart, the pair centred on the die. Each engine is fenced into its SRAM's width plus the 17 um halo (451 um); the 89 um gap between the fences holds management, SPI link and pin manager (not fenced). The 129 / 163 um strips left and right stay empty (filler). Fences are removed after global placement.",
-  "version": 8,
-  "boxes": [
-    {"name": "eng0", "match": ["u_eng0."], "box": [133, 6, 583, 706]},
-    {"name": "eng1", "match": ["u_eng1."], "box": [673, 6, 1123, 706]}
-  ]
-}

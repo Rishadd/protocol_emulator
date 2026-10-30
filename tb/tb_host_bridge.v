@@ -32,8 +32,23 @@ module tb_host_bridge;
     wire       bus_dm = uio_oe[1] ? uio_out[1] : h_oe ? h_dm : 1'b1;
     wire       both = usb_en && h_oe && (uio_oe[0] || uio_oe[1]);
 
+`ifdef FPGA_TOP
+    // the DE0-Nano wrapper (src/fpga/de0_nano_chip_top.v): the same chip behind the GPIO_2 header; pads uio = gpio2[8:1]
+    wire [12:0] gp;
+    wire [7:0]  led;
+    assign gp[0] = 1'bz;  assign gp[9] = 1'bz;
+    assign gp[10] = ui_hi[0];  assign gp[12:11] = ui_hi[2:1];
+    genvar gi;
+    generate for (gi = 0; gi < 8; gi = gi + 1) begin : g_pad
+        assign gp[gi+1] = uio_oe[gi] ? 1'bz : (usb_en && gi < 2) ? (gi == 0 ? bus_dp : bus_dm) : uio_in[gi];
+    end endgenerate
+    de0_nano_chip_top dut (.clk_50M(clk), .reset_n(rst_n), .gpio2_in({cs_n, mosi, sclk}), .gpio2(gp), .led(led));
+    assign uo_out = {led[7:2], gp[9], gp[0]};
+    assign uio_out = dut.uio_out;  assign uio_oe = dut.uio_oe;
+`else
     tt_um_protocol_emulator dut (.ui_in({ui_hi, cs_n, mosi, sclk}), .uo_out(uo_out),
         .uio_in(usb_en ? {uio_in[7:2], bus_dm, bus_dp} : uio_in), .uio_out(uio_out), .uio_oe(uio_oe), .ena(1'b1), .clk(clk), .rst_n(rst_n));
+`endif
 
     `include "spi_master.vh"
     always #10 clk = ~clk;

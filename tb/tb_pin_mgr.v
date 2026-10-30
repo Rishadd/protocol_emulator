@@ -27,7 +27,7 @@ module tb_pin_mgr;
     pin_mgr dut (.clk(clk), .rst_n(rst_n), .run(run), .w_addr(w_addr), .w_data(w_data), .w_hit(w_hit), .w_ok(w_ok), .we(we),
                  .r_addr(r_addr), .r_data(r_data), .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
                  .uio_in(uio_in), .ui_hi(ui_hi), .uio_oe(pad_oe), .uio_out(pad_out), .uo_hi(uo_hi), .view(view),
-                 .irq_src(irq_src), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
+                 .irq_src(irq_src), .la_done(1'b0), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
                  .owner(owner), .od(od), .remap(remap), .oowner(oowner), .oremap(oremap), .isel0_r(isel0), .isel1_r(isel1),
                  .viol(viol));
 

@@ -34,7 +34,8 @@ module mgmt_props (
     wire [15:0] f_rxcrc, f_low16;
     wire [15:0] owner, oowner, viol, mask;
     wire [23:0] remap, oremap;
-    wire [7:0]  od, irq_st;
+    wire [7:0]  od;
+    wire [8:0]  irq_st;
 
     spi_slave u_spi (.clk(clk), .rst_n(rst_n), .sclk(sclk), .mosi(mosi), .cs_n(cs_n), .miso(miso),
                      .byte_valid(byte_valid), .rx_byte(rx_byte), .tx_byte(tx_byte),
@@ -50,7 +51,7 @@ module mgmt_props (
     pin_mgr u_pins (.clk(clk), .rst_n(rst_n), .run(eng_run), .w_addr(pin_wa), .w_data(pin_wd), .w_hit(pin_hit), .w_ok(pin_ok),
                     .we(pin_we), .r_addr(pin_ra), .r_data(pin_rd), .oe0(oe0), .out0(out0), .oe1(oe1), .out1(out1), .in0(in0), .in1(in1),
                     .uio_in(uio_in), .ui_hi(ui_hi), .uio_oe(uio_oe), .uio_out(uio_out), .uo_hi(uo_hi), .view(view),
-                    .irq_src({err, fault, halted, ~rx_empty}), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
+                    .irq_src({err, fault, halted, ~rx_empty}), .la_done(1'b0), .hold(hold), .trig_en(trig_en), .view_sel(view_sel), .irq(irq),
                     .owner(owner), .od(od), .remap(remap), .oowner(oowner), .oremap(oremap), .isel0_r(isel0), .isel1_r(isel1),
                     .viol(viol), .misc(misc), .vsel(vsel), .mask(mask), .irq_st(irq_st));
 

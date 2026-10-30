@@ -10,6 +10,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "..", "src")
 WORK = os.path.expanduser("~/formal_work/mutants")
+RUNNER = "run_formal_linux.sh" if os.path.exists(os.path.join(HERE, "run_formal_linux.sh")) and os.path.isdir("/nix/store") else "run_formal_wsl.sh"
 
 MUTANTS = [
     ("pin_mgr", "pin_mgr.v", "|| (o1 && oe1[l]));", "|| oe1[l]);", "a non-owner's enable reaches a pad"),
@@ -60,6 +61,21 @@ MUTANTS = [
     ("engine", "engine_top.v", "    pin_block pins (\n        .clk         (clk),\n        .rst_n       (core_rst_n),",
      "    pin_block pins (\n        .clk         (clk),\n        .rst_n       (rst_n),", "the pin block is not reset when the engine is held"),
     ("engine", "pin_block.v", "            pin_oe  <= 8'h00;", "            pin_oe  <= 8'h01;", "reset leaves pin 0 enabled"),
+    # shared instruction memory (imem_shared.sby: P1 fetch stays in the window, P2 host writes, P3 the lock) and the control unit (region_go.sby)
+    ("imem_shared", "imem_shared.v", "({1'b0, f_addr0} < limit0));", "({1'b0, f_addr0} <= limit0));", "engine 0's window limit is off by one"),
+    ("imem_shared", "imem_shared.v", "({1'b0, f_addr1} < limit1));", "({1'b0, f_addr1} <= limit1));", "engine 1's window limit is off by one"),
+    ("imem_shared", "imem_shared.v", "({1'b0, f_addr0} >= {1'b0, base0})", "1'b1", "engine 0's window base is not checked"),
+    ("imem_shared", "imem_shared.v", "if (rg_go0) oob0 <=", "if (1'b0) oob0 <=", "an OP_REGION does not apply to the fetch of its own clock"),
+    ("imem_shared", "imem_shared.v", " && !(run[1] && in1);", ";", "a host write may land in engine 1's running window"),
+    ("imem_shared", "imem_shared.v", "wire port_b = !run[0];", "wire port_b = 1'b1;", "a host write goes through running engine 0's port"),
+    ("imem_shared", "imem_shared.v", "lk0 <= 1'b0;\n            end else if (rg_go0) begin", "\n            end else if (rg_go0) begin", "a hold does not clear the lock"),
+    ("imem_shared", "imem_shared.v", "                base0 <= 9'd0; limit0 <= 10'd512; lk0 <= 1'b0;\n            end else if (rg_go0)", "                lk0 <= 1'b0;\n            end else if (rg_go0)",
+     "a hold does not return the window to the whole memory"),
+    ("imem_shared", "imem_shared.v", "limit0 <= rg_val0[18:9]; lk0 <= 1'b1;", "limit0 <= rg_val0[18:9] + 10'd1; lk0 <= 1'b1;", "OP_REGION sets a window one word too large"),
+    ("imem_shared", "imem_shared.v", "limit0 <= rg_val0[18:9]; lk0 <= 1'b1;", "limit0 <= rg_val0[18:9]; lk0 <= 1'b0;", "OP_REGION does not set the lock"),
+    ("region_go", "control_unit.v", "(!region_locked && ", "(", "a second OP_REGION is passed on while locked"),
+    ("region_go", "control_unit.v", "({1'b0, operand[8:0]} < operand[18:9])", "({1'b0, operand[8:0]} <= operand[18:9])", "an empty window is accepted"),
+    ("region_go", "control_unit.v", "(operand[18:9] <= 10'd512)", "(operand[18:9] <= 10'd513)", "a window ending above 512 is accepted"),
 ]
 
 
@@ -79,7 +95,7 @@ def main():
         shutil.rmtree(d, ignore_errors=True)
         shutil.copytree(SRC, d)
         open(os.path.join(d, fname), "w").write(text.replace(old, new))
-        r = subprocess.run(["bash", os.path.join(HERE, "run_formal_wsl.sh"), proof + ".sby"], capture_output=True, text=True,
+        r = subprocess.run(["bash", os.path.join(HERE, RUNNER), proof + ".sby"], capture_output=True, text=True,
                            env=dict(os.environ, SRC_DIR=d, FORMAL_WORK=os.path.join(WORK, f"w{i}")))
         hit = f"FAIL {proof}" in r.stdout
         caught += hit

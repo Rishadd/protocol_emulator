@@ -31,6 +31,9 @@ module tb_i2c_chip;
 
     `include "spi_master.vh"
     `include "host_knobs.vh"
+`ifdef SHARED_IMEM
+    `include "shared_imem.vh"
+`endif
 
     reg [8*256-1:0] prog_f, htx_f, out_f;
     reg [31:0] htx [0:8191];
@@ -90,7 +93,12 @@ module tb_i2c_chip;
         $readmemh(prog_f, img);
         nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
         if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
+`ifdef SHARED_IMEM
+        for (k = 0; k < nimg; k = k + 1) frame(OP_WR, 16'h0400 + 4 * ((base[13] ? 256 : 0) + k), shw(img[k], base[13]));
+        if (base[13]) frame(OP_WR, base + 16'h00C, 32'd256);          // START of engine 1
+`else
         for (k = 0; k < nimg; k = k + 1) frame(OP_WR, base + 16'h400 + 4 * k, img[k]);
+`endif
         frame(OP_WR, base, 32'd1);                                  // RUN
 
         while ((sent < n || idle < 2000 || empty < 3) && cyc < tmax) begin

@@ -23,6 +23,9 @@ module tb_spi_chip;
 
     `include "spi_master.vh"
     `include "host_knobs.vh"
+`ifdef SHARED_IMEM
+    `include "shared_imem.vh"
+`endif
     `include "spi_peer.vh"
 
     // 1 ns inertial pad delay: filters the zero-width pulse the uio_out mux makes in zero-delay
@@ -72,7 +75,12 @@ module tb_spi_chip;
             nimg = 256; while (nimg > 1 && img[nimg - 1] === W_HALT) nimg = nimg - 1;   // load the program, not the HALT filler
             if (nimg < 256) nimg = nimg + 1;                                            // plus one HALT word after it
             frame(OP_WR, base, 32'd0);                              // RUN = 0
+`ifdef SHARED_IMEM
+            for (j = 0; j < nimg; j = j + 1) frame(OP_WR, 16'h0400 + 4 * ((base[13] ? 256 : 0) + j), shw(img[j], base[13]));
+            if (base[13]) frame(OP_WR, base + 16'h00C, 32'd256);        // START of engine 1
+`else
             for (j = 0; j < nimg; j = j + 1) frame(OP_WR, base + 16'h400 + 4 * j, img[j]);
+`endif
         end
     endtask
 

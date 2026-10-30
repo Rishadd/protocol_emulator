@@ -1,0 +1,57 @@
+# Quartus project of the whole protocol-emulator chip on the DE0-Nano (Cyclone IV E EP4CE22F17C6). Open pe_chip.qpf.
+# Pins: see src/fpga/de0_nano_chip_top.v (management SPI and protocol pads on the GPIO_2 header). Pin numbers are from Terasic's DE0-Nano user manual.
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE22F17C6
+set_global_assignment -name TOP_LEVEL_ENTITY de0_nano_chip_top
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files_chip
+set_global_assignment -name VERILOG_MACRO "SHARED_IMEM=1"
+set_global_assignment -name VERILOG_MACRO "SYNTHESIS=1"
+set_global_assignment -name SEARCH_PATH ../src
+set_global_assignment -name VERILOG_FILE ../src/alu_unit.v
+set_global_assignment -name VERILOG_FILE ../src/control_unit.v
+set_global_assignment -name VERILOG_FILE ../src/crc_unit.v
+set_global_assignment -name VERILOG_FILE ../src/dbg_view.v
+set_global_assignment -name VERILOG_FILE ../src/delay_counter.v
+set_global_assignment -name VERILOG_FILE ../src/engine_top.v
+set_global_assignment -name VERILOG_FILE ../src/fifo.v
+set_global_assignment -name VERILOG_FILE ../src/imem_shared.v
+set_global_assignment -name VERILOG_FILE ../src/line_coder.v
+set_global_assignment -name VERILOG_FILE ../src/loop_counter.v
+set_global_assignment -name VERILOG_FILE ../src/mgmt.v
+set_global_assignment -name VERILOG_FILE ../src/pc_reg.v
+set_global_assignment -name VERILOG_FILE ../src/pin_block.v
+set_global_assignment -name VERILOG_FILE ../src/pin_mgr.v
+set_global_assignment -name VERILOG_FILE ../src/shift_reg.v
+set_global_assignment -name VERILOG_FILE ../src/spi_slave.v
+set_global_assignment -name VERILOG_FILE ../src/tt_um_protocol_emulator.v
+set_global_assignment -name VERILOG_FILE ../src/fpga/sram2p_fpga.v
+set_global_assignment -name VERILOG_FILE ../src/fpga/de0_nano_chip_top.v
+set_global_assignment -name SDC_FILE ../src/fpga/de0_nano_chip.sdc
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED WITH WEAK PULL-UP"
+set_location_assignment PIN_R8 -to clk_50M
+set_location_assignment PIN_J15 -to reset_n
+set_location_assignment PIN_E15 -to gpio2_in[0]
+set_location_assignment PIN_E16 -to gpio2_in[1]
+set_location_assignment PIN_M16 -to gpio2_in[2]
+set_location_assignment PIN_A14 -to gpio2[0]
+set_location_assignment PIN_B16 -to gpio2[1]
+set_location_assignment PIN_C14 -to gpio2[2]
+set_location_assignment PIN_C16 -to gpio2[3]
+set_location_assignment PIN_C15 -to gpio2[4]
+set_location_assignment PIN_D16 -to gpio2[5]
+set_location_assignment PIN_D15 -to gpio2[6]
+set_location_assignment PIN_D14 -to gpio2[7]
+set_location_assignment PIN_F15 -to gpio2[8]
+set_location_assignment PIN_F16 -to gpio2[9]
+set_location_assignment PIN_F14 -to gpio2[10]
+set_location_assignment PIN_G16 -to gpio2[11]
+set_location_assignment PIN_G15 -to gpio2[12]
+set_location_assignment PIN_A15 -to led[0]
+set_location_assignment PIN_A13 -to led[1]
+set_location_assignment PIN_B13 -to led[2]
+set_location_assignment PIN_A11 -to led[3]
+set_location_assignment PIN_D1 -to led[4]
+set_location_assignment PIN_F3 -to led[5]
+set_location_assignment PIN_B1 -to led[6]
+set_location_assignment PIN_L3 -to led[7]

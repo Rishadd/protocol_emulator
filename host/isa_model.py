@@ -58,16 +58,54 @@ class CrcUnit:
         return (r ^ self.xorout) & self.mask
 
 
+TRAP_WORD = 31 << 27            # opcode 31: illegal, faults the engine (what imem_shared.v returns outside a window)
+TSTAMP_OP = 30                  # TSTAMP rd: R[rd] <= the free-running clock counter (the cycle number, 0 at the first clock of the model)
+REGION_OP = 29                  # OP_REGION (SHARED_IMEM only): [8:0] base, [18:9] limit, once per run
+
+
+class SharedImem:
+    """The 512-word memory both engines fetch from in shared mode (src/imem_shared.v). Physical addresses."""
+    SIZE = 512
+
+    def __init__(self):
+        self.mem = [A.word("HALT")] * self.SIZE
+
+    def load(self, origin, words):
+        assert origin >= 0 and origin + len(words) <= self.SIZE, "image does not fit the memory"
+        self.mem[origin:origin + len(words)] = list(words)
+
+
 class Engine:
-    def __init__(self, program):
-        self.mem = list(program) + [A.word("HALT")] * (256 - len(program))
+    def __init__(self, program, shared=None, start=0):
+        """shared=None: the private 256-word memory (default build). shared=SharedImem(): the program is already in the
+        shared memory (program must be empty); the engine fetches through its window, see OP_REGION. start: the physical
+        address the program counter takes at reset (host START register, shared mode; 0 for the default build)."""
+        self.shared = shared
+        self.start = start
+        self.pcmask = 0x1FF if shared is not None else 0xFF
+        if shared is None:
+            self.mem = list(program) + [A.word("HALT")] * (256 - len(program))
+        else:
+            assert not program, "shared mode: load the program into the SharedImem, not the engine"
+            self.mem = shared.mem
         self.tx, self.rx = [], []
         self.sync0 = self.sync1 = 0
+        self.cycle = 0                         # clocks executed since construction: the value TSTAMP reads
+        self.trig = 0                          # trigger line (RPUT TRIG)
         self.cov = collections.Counter()       # what was executed (for coverage reports), not part of the architecture
         self.core_reset()
 
+    def jt(self, operand):
+        """Jump target: operand [7:0], plus bit 8 from operand bit 11 in shared mode (src/control_unit.v jump_addr)."""
+        return (operand & 0xFF) | ((((operand >> 11) & 1) << 8) if self.shared is not None else 0)
+
+    def in_window(self):
+        return self.shared is None or self.win[0] <= self.pc < self.win[1]
+
     def core_reset(self):
-        self.pc, self.hold, self.halted, self.fault = 0, False, False, False
+        self.pc, self.hold, self.halted, self.fault = self.start, False, False, False
+        self.trig = 0
+        self.win, self.locked = (0, SharedImem.SIZE), False      # shared mode: the whole memory until OP_REGION (src/imem_shared.v)
         self.dc, self.lc = 0, 0
         self.osr, self.isr = 0, 0
         self.cfg_out = self.cfg_in = 0
@@ -132,11 +170,14 @@ class Engine:
         return res, write, c
 
     def legal(self, op, operand):
-        if op > A.LAST_LEGAL:
+        if op == REGION_OP:
+            base, limit = operand & 0x1FF, operand >> 9 & 0x3FF
+            return self.shared is not None and not self.locked and base < limit <= SharedImem.SIZE
+        if op > A.LAST_LEGAL and op != TSTAMP_OP:
             return False
         if op == A.OPCODE["ALU"] and operand >> 23 > 12:
             return False
-        if op == A.OPCODE["RPUT"] and (operand >> 4 & 7) > 3:
+        if op == A.OPCODE["RPUT"] and (operand >> 4 & 7) > 4:
             return False
         if op == A.OPCODE["CRC"] and (operand >> 24 & 7) > 6:
             return False
@@ -179,7 +220,7 @@ class Engine:
         pop_tx = False
         dc_load = None
         pc_next = None                 # None = hold
-        instr = self.mem[self.pc]
+        instr = self.mem[self.pc] if self.in_window() else TRAP_WORD
         op, operand = instr >> 27, instr & 0x7FFFFFF
         rs = self.r[operand & 7]
         dc_last = self.dc == 1
@@ -188,7 +229,7 @@ class Engine:
             if self.hold:
                 if dc_last:
                     self.hold = False
-                    pc_next = (self.pc + 1) & 0xFF
+                    pc_next = (self.pc + 1) & self.pcmask
             elif not self.legal(op, operand):
                 self.halted = self.fault = True
                 self.cov[("trap", op if op > A.LAST_LEGAL else A.NAME[op])] += 1
@@ -196,7 +237,7 @@ class Engine:
                 self.halted = True
                 self.cov[("op", "HALT")] += 1
             else:
-                name = A.NAME[op]
+                name = "REGION" if op == REGION_OP else "TSTAMP" if op == TSTAMP_OP else A.NAME[op]
                 stall = {
                     "PULL": tx_empty,
                     "PUSH": rx_full, "PUSHI": rx_full,
@@ -249,13 +290,16 @@ class Engine:
                         dc_load = operand
                         adv = operand == 0
                         self.hold = operand != 0
+                    elif name == "REGION":
+                        self.win = (operand & 0x1FF, operand >> 9 & 0x3FF)
+                        self.locked = True
                     elif name == "JMP":
-                        pc_next, adv = operand & 0xFF, False
+                        pc_next, adv = self.jt(operand), False
                     elif name == "SETL":
                         self.lc = operand & 0xFFFF
                     elif name == "DJNZ":
                         if self.lc > 1:
-                            pc_next, adv = operand & 0xFF, False
+                            pc_next, adv = self.jt(operand), False
                         self.lc = max(self.lc - 1, 0)
                     elif name == "PULL":
                         pop_tx = True
@@ -277,12 +321,12 @@ class Engine:
                     elif name in ("JPH", "JPL"):
                         lvl = sync1 >> (operand >> 8 & 7) & 1
                         if lvl == (name == "JPH"):
-                            pc_next, adv = operand & 0xFF, False
+                            pc_next, adv = self.jt(operand), False
                     elif name == "JPO":
                         b = self.osr_bit()
                         self.osr_shift()
                         if b:
-                            pc_next, adv = operand & 0xFF, False
+                            pc_next, adv = self.jt(operand), False
                     elif name == "LDI":
                         self.r[operand >> 24 & 7] = operand & 0xFFFFFF
                     elif name == "ALU":
@@ -294,7 +338,7 @@ class Engine:
                         self.z, self.n, self.c = int(res == 0), res >> 31 & 1, c
                     elif name == "JCC":
                         if self.cond(operand >> 8 & 7):
-                            pc_next, adv = operand & 0xFF, False
+                            pc_next, adv = self.jt(operand), False
                     elif name == "RGET":
                         src = operand >> 4 & 7
                         val = [self.osr, self.isr, self.lc, sync1, self.crc.value(), tx_head, self.line.status(ldp, ldm),
@@ -304,9 +348,13 @@ class Engine:
                         if src == 6:
                             line_pop = True
                         self.r[operand & 7] = val & MASK32
+                    elif name == "TSTAMP":
+                        self.r[operand & 7] = self.cycle & MASK32
                     elif name == "RPUT":
                         dst = operand >> 4 & 7
-                        if dst == 0:
+                        if dst == 4:
+                            self.trig = rs & 1
+                        elif dst == 0:
                             self.osr = rs
                         elif dst == 1:
                             self.isr = rs
@@ -319,7 +367,7 @@ class Engine:
                     elif name == "LINE":
                         line_cmd = (1, operand >> 24 & 7, rs)   # applied by the line coder one clock later
                     if adv:
-                        pc_next = (self.pc + 1) & 0xFF
+                        pc_next = (self.pc + 1) & self.pcmask
         # CRC unit: executes the command issued in the previous clock (in order, one per clock), then takes this clock's command
         if self.crc_cmd is not None:
             self.crc_exec(*self.crc_cmd)
@@ -343,6 +391,7 @@ class Engine:
             self.rx.pop(0)
         if push_rx is not None and len(self.rx) < FIFO_DEPTH and not rx_full_before(rx_full):
             self.rx.append(push_rx & MASK32)
+        self.cycle += 1
         # pin synchronizer
         self.sync1 = self.sync0
         self.sync0 = pin_in & 0xFF
@@ -363,12 +412,12 @@ class Engine:
         return dict(pc=self.pc, pin_out=pin_out, pin_oe=pin_oe, halted=int(self.halted), fault=int(self.fault),
                     tx_full=int(len(self.tx) >= FIFO_DEPTH), rx_empty=int(not self.rx),
                     rx_head=self.rx[0] if self.rx else 0, osr=self.osr, isr=self.isr, lc=self.lc,
-                    crc=self.crc.value(), z=self.z, n=self.n, c=self.c, r=list(self.r))
+                    crc=self.crc.value(), z=self.z, n=self.n, c=self.c, trig=self.trig, r=list(self.r))
 
     def trace_line(self):
         s = self.snapshot()
         return (f"{s['pc']:02x} {s['pin_out']:02x} {s['pin_oe']:02x} {s['halted']}{s['fault']}{s['tx_full']}{s['rx_empty']} "
-                f"{s['rx_head']:08x} {s['osr']:08x} {s['isr']:08x} {s['lc']:04x} {s['crc']:08x} {s['z']}{s['n']}{s['c']} "
+                f"{s['rx_head']:08x} {s['osr']:08x} {s['isr']:08x} {s['lc']:04x} {s['crc']:08x} {s['z']}{s['n']}{s['c']}{s['trig']} "
                 + " ".join(f"{x:08x}" for x in s["r"]))
 
 
@@ -437,11 +486,80 @@ def selftest():
         check(f"RGET CRC {'one instruction after' if gap else 'directly after'} CRC BYTE: pc {pcs}",
               pcs == want_pcs and e.rx == [cm.CRC(32, 0x04C11DB7, 0xFFFFFFFF, True, True, 0xFFFFFFFF).of(b"1")])
     # trap on a reserved opcode / sub-field
-    for w in (29 << 27, A.enc_alu(13, 0, imm=1), A.word("RPUT", 4 << 4), A.word("CRC", 7 << 24), A.word("LINE", 6 << 24)):
+    for w in (29 << 27, A.enc_alu(13, 0, imm=1), A.word("RPUT", 5 << 4), A.word("CRC", 7 << 24), A.word("LINE", 6 << 24)):
         e = Engine([w])
         e.step()
         check(f"trap {w:08x}", e.halted and e.fault and e.pc == 0)
+    errs += selftest_shared()
     print(f"RESULT isa_model: {'PASS' if not errs else 'FAIL (%d)' % errs}")
+    return errs
+
+
+def selftest_shared():
+    """Shared memory (SHARED_IMEM): windows, the lock, the trap outside a window, jump bit 8. Hand-checked, not from the RTL."""
+    errs = 0
+
+    def check(name, cond):
+        nonlocal errs
+        if not cond:
+            errs += 1
+            print("  FAIL shared:", name)
+
+    NOP = A.word("NOP")
+    HALT = A.word("HALT")
+
+    def region(base, limit):
+        return (REGION_OP << 27) | base | (limit << 9)
+
+    def jmp(target):
+        return A.word("JMP", target & 0xFF) | (((target >> 8) & 1) << 11)
+
+    # window [0,2): the NOP at 1 is inside, the fetch at 2 is outside and traps (the trap is seen when the fetch happens)
+    sm = SharedImem(); sm.load(0, [region(0, 2), NOP, NOP, NOP])
+    e = Engine([], shared=sm)
+    for _ in range(3):
+        e.step()
+    check("fetch at the window's limit traps", e.halted and e.fault and e.pc == 2)
+
+    # a second OP_REGION in the same run faults (the lock)
+    sm = SharedImem(); sm.load(0, [region(0, 8), region(0, 4), NOP])
+    e = Engine([], shared=sm)
+    for _ in range(4):
+        e.step()
+    check("second OP_REGION faults", e.halted and e.fault and e.pc == 1 and e.locked)
+
+    # limit above 512 and an empty window are illegal
+    sm = SharedImem(); sm.load(0, [region(0, 513)])
+    e = Engine([], shared=sm); e.step()
+    check("limit 513 faults", e.halted and e.fault)
+    sm = SharedImem(); sm.load(0, [region(4, 4)])
+    e = Engine([], shared=sm); e.step()
+    check("empty window faults", e.halted and e.fault)
+
+    # a loop inside its window runs; the full-width limit 512 is legal
+    sm = SharedImem(); sm.load(0, [region(0, 512), NOP, jmp(1)])
+    e = Engine([], shared=sm)
+    for _ in range(12):
+        e.step()
+    check("loop inside the window runs", not e.fault and not e.halted)
+
+    # jump target bit 8 from operand bit 11: JMP 258 reaches the HALT at 258
+    sm = SharedImem(); sm.load(0, [jmp(258)]); sm.load(258, [HALT])
+    e = Engine([], shared=sm)
+    for _ in range(3):
+        e.step()
+    check("JMP with target bit 8 reaches word 258", e.halted and not e.fault and e.pc == 258)
+
+    # the program counter takes the host's START address at reset: a program at 100 with window [100,103) traps after 2 instructions
+    sm = SharedImem(); sm.load(100, [region(100, 103), NOP, NOP])
+    e = Engine([], shared=sm, start=100)
+    for _ in range(4):
+        e.step()
+    check("START address: program at 100 runs in its window and traps at 103", e.halted and e.fault and e.pc == 103)
+
+    # the default build is unchanged: an engine without shared memory has no window and a 256-word PC
+    e = Engine([NOP, jmp(1)])
+    check("default engine: no window", e.in_window() and not e.locked and e.pcmask == 0xFF)
     return errs
 
 

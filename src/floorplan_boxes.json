@@ -1,8 +1,0 @@
-{
-  "note": "Floorplan: one box per engine (everything whose instance name starts with u_eng0. / u_eng1.: control, ALU, CRC, FIFOs, shifters, pin block and the engine's SRAM), nothing else. Both SRAM macros sit on the bottom edge, pins facing up: SRAM 0 at (15.0,13.8)-(431.7,132.6), SRAM 1 at (464.6,13.8)-(881.3,132.6). Engine 0 owns the left column above SRAM 0, engine 1 the rest of the die to the right. The management block (u_mgmt, u_spi, u_pins) is not boxed; it uses the free top-left corner next to the chip pins (top edge, x 30-191). The fences are removed after global placement (Project.RemoveModuleRegions) so that the cells the resizer adds later, which belong to no engine, can be placed anywhere.",
-  "version": 5,
-  "boxes": [
-    {"name": "eng0", "match": ["u_eng0."], "box": [[4, 6, 448, 560], [230, 560, 448, 706]]},
-    {"name": "eng1", "match": ["u_eng1."], "box": [448, 6, 1286, 706]}
-  ]
-}

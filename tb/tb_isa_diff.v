@@ -13,6 +13,8 @@ module tb_isa_diff;
     wire [31:0] rx_rd_data;
     wire        tx_full, rx_empty, halted, fault;
     wire [7:0]  pin_out, pin_oe, pc;
+    reg  [31:0] ts = 0;
+    wire        trig;
 
     engine_top dut (
         .clk(clk), .rst_n(rst_n), .run(run),
@@ -20,7 +22,7 @@ module tb_isa_diff;
         .tx_wr_en(tx_wr_en), .tx_wr_data(tx_wr_data), .tx_full(tx_full),
         .rx_rd_en(rx_rd_en), .rx_rd_data(rx_rd_data), .rx_empty(rx_empty),
         .pin_in(pin_in), .pin_out(pin_out), .pin_oe(pin_oe),
-        .halted(halted), .fault(fault), .pc(pc));
+        .halted(halted), .fault(fault), .pc(pc), .ts(ts), .trig(trig));
 
     reg [31:0] prog [0:NTMAX*256-1];
     reg [47:0] stim [0:NTMAX*CYCMAX-1];
@@ -47,13 +49,13 @@ module tb_isa_diff;
             tick; tick; tick;                      // the held engine re-reads word 0
             for (c = 0; c < cyc; c = c + 1) begin
                 s = stim[t * cyc + c];
-                pin_in = s[47:40]; tx_wr_en = s[33]; rx_rd_en = s[32]; tx_wr_data = s[31:0];
+                ts = c; pin_in = s[47:40]; tx_wr_en = s[33]; rx_rd_en = s[32]; tx_wr_data = s[31:0];
                 run = 1;
                 tick;
-                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b %h %h %h %h %h %h %h %h", pc, pin_out, pin_oe,
+                $fdisplay(fo, "%h %h %h %b%b%b%b %h %h %h %h %h %b%b%b%b %h %h %h %h %h %h %h %h", pc, pin_out, pin_oe,
                           halted, fault, tx_full, rx_empty, rx_empty ? 32'd0 : rx_rd_data,
                           dut.osr.data, dut.isr.data, dut.lc.count, dut.crc.value,
-                          dut.alu.flag_z, dut.alu.flag_n, dut.alu.flag_c,
+                          dut.alu.flag_z, dut.alu.flag_n, dut.alu.flag_c, trig,
                           dut.alu.r[0], dut.alu.r[1], dut.alu.r[2], dut.alu.r[3],
                           dut.alu.r[4], dut.alu.r[5], dut.alu.r[6], dut.alu.r[7]);
             end

@@ -74,6 +74,29 @@ D = [(f"remap{s}_{n}", [PY, "host/" + script, *args], {"PROTO_CHIP": "1", "PROTO
                                     ("jtag_test", "jtag_test.py", ["run"], {"PROTO_REMAP_UO": "0x38"}),
                                     ("onewire_test", "onewire_test.py", ["run"], {}),
                                     ("modbus_test", "modbus_test.py", ["tx", "rx", "loop"], {}))]
+# E: the shared 512-word instruction memory (PROTO_SHARED=1, -DSHARED_IMEM): the chip-level protocol suites with engine 0's image at word 0 and engine 1's at word 256
+# (absolute 9-bit jump targets, START register), plain and with the pins of seed 2 placed at random
+E = [(n.replace("chip_", "shared_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in B] + \
+    [(n.replace("remap2_", "sharedremap2_"), cmd, {**env, "PROTO_SHARED": "1"}) for n, cmd, env in D if n.startswith("remap2_")] + \
+    [("shared_spi_chip", [PY, "host/spi_test.py", "chip"], {"PROTO_SHARED": "1"}),      # SPI master on engine 0, slave on engine 1 (word 256)
+     ("shared_i2c_chip", [PY, "host/i2c_test.py", "chip"], {"PROTO_SHARED": "1"})]
+# F: management frame v2, the shared-memory software (host rules, models, differential test, chip level) and the logic analyser (model, capture unit
+# against the model, chip level through the SPI link); every *_mutants run must catch all its planted bugs
+F = [
+    ("mgmt_v2_test", [PY, "host/mgmt_v2_test.py"], {}),
+    ("mgmt_v2_mutants", [PY, "host/mgmt_v2_mutants.py"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
+    ("shmem_test", [PY, "host/shmem_test.py"], {}),
+    ("shmem_chip_test", [PY, "host/shmem_chip_test.py"], {}),
+    ("isa_diff_shared", [PY, "host/isa_diff_shared.py", "run"], {}),
+    ("isa_diff_shared_mutants", [PY, "host/isa_diff_shared.py", "mutants"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
+    ("la_model", [PY, "host/la_model.py"], {}),
+    ("la_rtl_test", [PY, "host/la_rtl_test.py", "run"], {}),
+    ("la_rtl_mutants", [PY, "host/la_rtl_test.py", "mutants"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
+    ("la_chip_test", [PY, "host/la_chip_test.py"], {}),
+    ("la_capture", [PY, "host/la_capture.py", "--sim", "--demo", "--out", "build/la_capture.vcd"], {}),
+    ("fpga_bringup", [PY, "host/fpga_bringup.py", "--sim"], {}),       # the DE0-Nano top (src/fpga) in simulation
+    ("fpga_shmem_chip_test", [PY, "host/shmem_chip_test.py"], {"PE_FPGA": "1"}),
+]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 
 
@@ -117,7 +140,7 @@ def main():
     for chip in (False, True):                                   # compile the shared protocol benches once, before anything runs in parallel
         pl.compile_tb(chip=chip)
     rows = []
-    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D)):
+    for label, phase in (("A", A), ("B", B), ("C", C), ("D", D), ("E", E), ("F", F)):
         items = [i for i in phase if (not only or i[0] in only) and i[0] not in skip]
         if not items:
             continue

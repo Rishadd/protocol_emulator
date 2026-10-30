@@ -21,6 +21,7 @@ project:
     - "delay_counter.v"
     - "engine_top.v"
     - "fifo.v"
+    - "imem_shared.v"
     - "instr_mem.v"
     - "line_coder.v"
     - "loop_counter.v"

@@ -45,7 +45,7 @@ module tb_i2c_engine;
     pin_mgr pm (.clk(clk), .rst_n(rst_n), .run({1'b0, run}), .w_addr(cfg_pad), .w_data({29'd0, padcfg}),
         .w_hit(), .w_ok(cfg_ok), .we(cfg_we), .r_addr(6'd0), .r_data(pm_rd), .oe0(pin_oe), .out0(pin_out), .oe1(8'd0),
         .out1(8'd0), .in0(in0_unused), .in1(in1_unused), .uio_in(8'd0), .ui_hi(5'd0), .uio_oe(pad_oe), .uio_out(pad_out),
-        .uo_hi(uo_unused), .view(6'd0), .irq_src(7'd0), .hold(), .trig_en(), .view_sel(), .irq(),
+        .uo_hi(uo_unused), .view(6'd0), .irq_src(7'd0), .la_done(1'b0), .hold(), .trig_en(), .view_sel(), .irq(),
         .owner(owner), .od(od), .remap(), .oowner(), .oremap(), .isel0_r(), .isel1_r(), .viol(viol),
         .misc(), .vsel(), .mask(), .irq_st());
     i2c_slave_model #(7'h50) s1 (.sda(sda), .scl(scl), .sda_low(s1_sda), .scl_low(s1_scl));
