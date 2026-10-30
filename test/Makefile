@@ -6,18 +6,18 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = alu_unit.v control_unit.v crc_unit.v dbg_view.v delay_counter.v engine_top.v fifo.v instr_mem.v line_coder.v loop_counter.v mgmt.v pc_reg.v pin_block.v pin_mgr.v shift_reg.v spi_slave.v tt_um_protocol_emulator.v
+PROJECT_SOURCES = alu_unit.v control_unit.v crc_unit.v dbg_view.v delay_counter.v engine_top.v fifo.v imem_shared.v line_coder.v loop_counter.v mgmt.v pc_reg.v pin_block.v pin_mgr.v shift_reg.v spi_slave.v tt_um_protocol_emulator.v
 
 ifneq ($(GATES),yes)
 
 # RTL simulation:
 SIM_BUILD				= sim_build/rtl
-# the SRAM functional models need FUNCTIONAL (no timing checks), like the gate-level branch below
-COMPILE_ARGS    += -DFUNCTIONAL
+# one shared 512x32 2P instruction memory (SHARED_IMEM); the SRAM functional models need FUNCTIONAL (no timing checks), like the gate-level branch below
+COMPILE_ARGS    += -DFUNCTIONAL -DSHARED_IMEM
 VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
 # SRAM macro functional models (simulation only)
-VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_1P_core_behavioral_bm_bist.v
-VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_1P_256x32_c2_bm_bist.v
+VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v
+VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_2P_512x32_c2_bm_bist.v
 
 else
 
@@ -31,8 +31,8 @@ VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilo
 VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_stdcell.v
 
 # SRAM macro functional models (simulation only)
-VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_1P_core_behavioral_bm_bist.v
-VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_1P_256x32_c2_bm_bist.v
+VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v
+VERILOG_SOURCES += $(PWD)/../sim/ihp_sram/RM_IHPSG13_2P_512x32_c2_bm_bist.v
 # this gets copied in by the GDS action workflow
 VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 

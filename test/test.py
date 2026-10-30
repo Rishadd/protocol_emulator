@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Smoke tests through the management SPI port (frame v1, see src/mgmt.v). The full self-checking
+# Smoke tests through the management SPI port (frame v1, see src/mgmt.v; the chip has the shared instruction memory). The full self-checking
 # suite (engines, UART/SPI/I2C firmware, mutation tests) lives in tb/ and runs with run_tests.ps1.
 
 import cocotb
@@ -83,7 +83,7 @@ PROG_ALU_CRC = [
 async def test_alu_crc_program(dut):
     await reset(dut)
     for k, w in enumerate(PROG_ALU_CRC):
-        await frame(dut, OP_WR, 0x1400 + 4 * k, w)  # engine 0 instruction memory
+        await frame(dut, OP_WR, 0x0400 + 4 * k, w)  # shared instruction memory, word k (engine 0 starts at word 0)
     await frame(dut, OP_WR, 0x1000, 1)  # RUN engine 0
     for msg in (b"123456789", bytes(range(1, 21))):
         for w in [len(msg)] + list(msg):
