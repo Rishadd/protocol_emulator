@@ -1,0 +1,38 @@
+  CRC-4/G-704          check 0x7 got 0x7 ok
+  CRC-5/USB            check 0x19 got 0x19 ok
+  CRC-7/MMC            check 0x75 got 0x75 ok
+  CRC-8/SMBUS          check 0xf4 got 0xf4 ok
+  CRC-8/MAXIM-DOW      check 0xa1 got 0xa1 ok
+  CRC-15/CAN           check 0x059e got 0x059e ok
+  CRC-16/MODBUS        check 0x4b37 got 0x4b37 ok
+  CRC-16/USB           check 0xb4c8 got 0xb4c8 ok
+  CRC-16/CCITT-FALSE   check 0x29b1 got 0x29b1 ok
+  CRC-16/XMODEM        check 0x31c3 got 0x31c3 ok
+  CRC-16/KERMIT        check 0x2189 got 0x2189 ok
+  CRC-32/ISO-HDLC      check 0xcbf43926 got 0xcbf43926 ok
+  CRC-32C              check 0xe3069283 got 0xe3069283 ok
+  CRC-32/MPEG-2        check 0x0376e6e7 got 0x0376e6e7 ok
+RESULT crc_model: PASS
+  3280 Python vectors: RESULT tb_crc_unit: PASS
+  MUTANT  0 caught  refin ignored (always MSB first)
+  MUTANT  1 caught  refout ignored
+  MUTANT  2 caught  width mask off by one
+  MUTANT  3 caught  polynomial aligned one bit off
+  MUTANT  4 caught  init not aligned on RST
+  MUTANT  5 caught  xorout skipped
+  MUTANT  6 caught  feedback ignores input bit
+  MUTANT  7 caught  top bit taken one low
+  MUTANT  8 caught  byte step feeds only 7 bits
+  MUTANT  9 caught  set_poly also resets the register
+  MUTANT 10 caught  reset default not CRC-32 (init)
+  MUTANT 11 caught  reflect shifted by one
+  MUTANT 12 caught  format write does not realign the register
+  MUTANT 13 caught  format write realigns by the old width
+  MUTANT 14 caught  aligned polynomial not updated on FMT
+  MUTANT 15 caught  aligned polynomial not updated on POLY
+  MUTANT 16 caught  byte step uses the unaligned polynomial
+  MUTANT 17 caught  busy never set
+  MUTANT 18 caught  busy combinational from the command inputs
+  MUTANT 19 caught  feed takes the live input byte, not the registered one
+  mutants caught: 20/20
+RESULT crc_test: PASS

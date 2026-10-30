@@ -37,8 +37,7 @@ STANDARD_BAUDS = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400,
                   57600, 76800, 115200, 230400, 460800, 921600,
                   1_000_000, 1_500_000, 2_000_000, 3_000_000]
 
-OP = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9,
-          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16)
+from asm import OPCODE as OP
 
 
 def word(op, operand=0):

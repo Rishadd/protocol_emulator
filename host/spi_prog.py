@@ -13,9 +13,7 @@ import argparse
 
 from fw_layout import place
 
-OP = dict(NOP=0, WAIT=1, JMP=2, HALT=3, SETL=4, DJNZ=5, PULL=6, PUSH=7, OUT1=8, IN1=9,
-          SETH=10, SETLO=11, DIRO=12, DIRI=13, WAITH=14, WAITL=15, CFG=16, JPH=17, JPL=18, JPO=19, PUSHI=20,
-          LDI=21, ALU=22, JCC=23, RGET=24, RPUT=25, WAITR=26, CRC=27)
+from asm import OPCODE as OP
 SCLK, MOSI, MISO, CS = 2, 3, 4, 5
 
 

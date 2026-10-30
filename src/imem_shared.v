@@ -140,6 +140,7 @@ module imem_shared (
         .B_BIST_DIN(32'd0), .B_BIST_BM(32'd0));
 
 `ifndef SYNTHESIS
+    // synthesis translate_off
     task poke(input integer a, input [31:0] w);
         begin
             u_mem.i_SRAM_2P_behavioral_bm_bist.mem_arr[a] = w;
@@ -148,6 +149,7 @@ module imem_shared (
     function [31:0] peek(input integer a);
         peek = u_mem.i_SRAM_2P_behavioral_bm_bist.mem_arr[a];
     endfunction
+    // synthesis translate_on
 `endif
 endmodule
 `endif

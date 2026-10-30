@@ -1,7 +1,7 @@
 // Logic analyser block: everything between the pins and the management window (docs/DEBUG_LA_PLAN.md, Phase 3).
 //   * the free-running 32-bit clock counter (TSTAMP in the engines, TS register here)
 //   * a 2-flop synchroniser on the 13 input-capable pins, so a capture shows what the engines' own synchronisers deliver (same latency)
-//   * la_unit (capture state machine, host/la_model.py) and its buffer, the third SRAM macro (1P 256x32)
+//   * la_unit (capture state machine, host/la_model.py) and its buffer, the third SRAM macro (a second 2P 512x32 instance, the same type as the instruction memory; only port A and words 0..255 are used)
 //   * the register window 0x0300..0x03FF, word index a = addr[7:2]:
 //       a 0  0x0300 CTRL     W: [0] arm (restart the capture), [1] manual trigger, others 0.  R: [1:0] state (0 idle, 1 armed, 2 triggered, 3 done)
 //                            [2] full [3] wrapped [15:8] write pointer [23:16] trigger position (index of the first post-trigger word)
@@ -121,11 +121,16 @@ module la_block (
 
     wire [31:0] mem_q;
     wire [AW-1:0] mem_addr = buf_we ? buf_waddr : ptr;
-    RM_IHPSG13_1P_256x32_c2_bm_bist u_buf (
-        .A_CLK(clk), .A_MEN(1'b1), .A_WEN(buf_we), .A_REN(!buf_we), .A_ADDR(mem_addr), .A_DIN(buf_wdata), .A_DLY(1'b1), .A_DOUT(mem_q),
+    // the same 2-port 512x32 macro as the instruction memory (one power-grid pitch for every macro); only port A and word 0..255 are used
+    RM_IHPSG13_2P_512x32_c2_bm_bist u_buf (
+        .A_CLK(clk), .A_MEN(1'b1), .A_WEN(buf_we), .A_REN(!buf_we), .A_ADDR({1'b0, mem_addr}), .A_DIN(buf_wdata), .A_DLY(1'b1), .A_DOUT(mem_q),
         .A_BM({32{1'b1}}),
-        .A_BIST_CLK(1'b0), .A_BIST_EN(1'b0), .A_BIST_MEN(1'b0), .A_BIST_WEN(1'b0), .A_BIST_REN(1'b0), .A_BIST_ADDR(8'd0),
-        .A_BIST_DIN(32'd0), .A_BIST_BM(32'd0));
+        .A_BIST_CLK(1'b0), .A_BIST_EN(1'b0), .A_BIST_MEN(1'b0), .A_BIST_WEN(1'b0), .A_BIST_REN(1'b0), .A_BIST_ADDR(9'd0),
+        .A_BIST_DIN(32'd0), .A_BIST_BM(32'd0),
+        .B_CLK(clk), .B_MEN(1'b0), .B_WEN(1'b0), .B_REN(1'b0), .B_ADDR(9'd0), .B_DIN(32'd0), .B_DLY(1'b1), .B_DOUT(),
+        .B_BM({32{1'b1}}),
+        .B_BIST_CLK(1'b0), .B_BIST_EN(1'b0), .B_BIST_MEN(1'b0), .B_BIST_WEN(1'b0), .B_BIST_REN(1'b0), .B_BIST_ADDR(9'd0),
+        .B_BIST_DIN(32'd0), .B_BIST_BM(32'd0));
 
     reg rq;
     always @(posedge clk or negedge rst_n)
@@ -137,10 +142,10 @@ module la_block (
 
 `ifndef SYNTHESIS
     task poke(input integer a, input [31:0] w);
-        u_buf.i_SRAM_1P_behavioral_bm_bist.memory[a] = w;
+        u_buf.i_SRAM_2P_behavioral_bm_bist.mem_arr[a] = w;
     endtask
     function [31:0] peek(input integer a);
-        peek = u_buf.i_SRAM_1P_behavioral_bm_bist.memory[a];
+        peek = u_buf.i_SRAM_2P_behavioral_bm_bist.mem_arr[a];
     endfunction
 `endif
 endmodule

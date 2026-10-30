@@ -93,6 +93,9 @@ F = [
     ("la_rtl_test", [PY, "host/la_rtl_test.py", "run"], {}),
     ("la_rtl_mutants", [PY, "host/la_rtl_test.py", "mutants"], {}, dict(final=r"(?:mutants|bugs) caught: (\d+)/\1\b", ignore_bad=True)),
     ("la_chip_test", [PY, "host/la_chip_test.py"], {}),
+    ("la_capture", [PY, "host/la_capture.py", "--sim", "--demo", "--out", "build/la_capture.vcd"], {}),
+    ("fpga_bringup", [PY, "host/fpga_bringup.py", "--sim"], {}),       # the DE0-Nano top (src/fpga) in simulation
+    ("fpga_shmem_chip_test", [PY, "host/shmem_chip_test.py"], {"PE_FPGA": "1"}),
 ]
 BAD = re.compile(r"\bFAIL\b|MISSED|COMPILE FAIL|Traceback")
 

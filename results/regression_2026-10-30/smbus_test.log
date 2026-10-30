@@ -1,0 +1,27 @@
+Phase 1: SMBus with PEC, engine master <-> engine slave (400 kHz)
+  PASS     Write Byte with PEC                                        1 tr 4 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     Write Byte with PEC, 20 random                             20 tr 80 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     Block Write with PEC, 1..32 data bytes                     5 tr 78 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     Read Byte with PEC (good PEC)                              2 tr 5 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     Read Byte with PEC, 12 random                              24 tr 60 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     Block Read with PEC (count byte + 5 data)                  2 tr 10 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     wrong PEC from the slave: master reports EV_PEC            2 tr 5 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     wrong PEC (all 255 single-byte corruptions of the PEC would be caught) 8 tr 20 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     one corrupted data byte in a block read is caught via the PEC 2 tr 9 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+  PASS     mixed sequence                                             7 tr 28 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+Phase 2: speeds
+  PASS     100 kHz mixed sequence                                     6 tr 25 B | low>=4740 high>=5280 su_dat>=4500 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14480 f<=100kHz
+  PASS     100 kHz rise 1000 ns                                       3 tr 9 B | low>=4740 high>=5280 su_dat>=4500 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14480 f<=100kHz
+  PASS     400 kHz mixed sequence                                     6 tr 25 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     400 kHz rise 300 ns                                        3 tr 9 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  PASS     1000 kHz mixed sequence                                    6 tr 25 B | low>=540 high>=480 su_dat>=300 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1640 f<=980kHz
+  PASS     1000 kHz rise 120 ns                                       3 tr 9 B | low>=540 high>=480 su_dat>=300 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=1640 f<=980kHz
+Phase 3: broken firmware must be caught
+  DETECTED mutant: polynomial 0x31                                    6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  DETECTED mutant: init 0xFF                                          6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  DETECTED mutant: reflected input                                    6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  DETECTED mutant: PEC byte not replaced by the CRC                   6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  DETECTED mutant: CRC not reset at START                             6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3560 f<=397kHz
+  DETECTED mutant: bytes not fed to the CRC                           6 tr 23 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=3580 f<=397kHz
+  DETECTED mutant: PEC check never reports                            2 tr 5 B | low>=1340 high>=1180 su_dat>=1120 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=- f<=397kHz
+RESULT smbus_test: PASS (23/23 cases as expected)

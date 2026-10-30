@@ -1,0 +1,69 @@
+# Tiny Tapeout project information
+project:
+  title:        "Protocol Emulator"
+  author:       "Rishadd Ranjith"
+  discord:      ""
+  description:  "Programmable pin-level protocol engines with ALU and CRC units (UART, SPI, I2C master/slave, Modbus, 1-Wire, JTAG, CAN as firmware), SRAM instruction memory and an SPI management port"
+  language:     "Verilog"
+  clock_hz:     50000000
+
+  # Jane Street protocol emulator competition: 6x4 tiles
+  tiles: "6x4"
+
+  top_module:  "tt_um_protocol_emulator"
+
+  # Include files (isa.vh) are found through VERILOG_INCLUDE_DIRS in src/config.json
+  source_files:
+    - "alu_unit.v"
+    - "control_unit.v"
+    - "crc_unit.v"
+    - "dbg_view.v"
+    - "delay_counter.v"
+    - "engine_top.v"
+    - "fifo.v"
+    - "imem_shared.v"
+    - "instr_mem.v"
+    - "line_coder.v"
+    - "loop_counter.v"
+    - "mgmt.v"
+    - "pc_reg.v"
+    - "pin_block.v"
+    - "pin_mgr.v"
+    - "shift_reg.v"
+    - "spi_slave.v"
+    - "tt_um_protocol_emulator.v"
+
+pinout:
+  # Inputs
+  ui[0]: "MGMT_SCLK"
+  ui[1]: "MGMT_MOSI"
+  ui[2]: "MGMT_CS_N"
+  # ui[3..7] and uo[1..7] are reset defaults; each can be remapped to an engine's logical pin
+  ui[3]: "HOLD (high = engines held)"
+  ui[4]: "TRIG_IN"
+  ui[5]: "DBG_SEL[0]"
+  ui[6]: "DBG_SEL[1]"
+  ui[7]: "DBG_SEL[2]"
+
+  # Outputs
+  uo[0]: "MGMT_MISO"
+  uo[1]: "IRQ"
+  uo[2]: "DBG[0] (view 0: heartbeat)"
+  uo[3]: "DBG[1] (view 0: mgmt error)"
+  uo[4]: "DBG[2] (view 0: RUN e0)"
+  uo[5]: "DBG[3] (view 0: RUN e1)"
+  uo[6]: "DBG[4] (view 0: halted/fault e0)"
+  uo[7]: "DBG[5] (view 0: halted/fault e1)"
+
+  # Bidirectional pins: protocol pads shared by both engines through the pin manager
+  uio[0]: "P0"
+  uio[1]: "P1"
+  uio[2]: "P2"
+  uio[3]: "P3"
+  uio[4]: "P4"
+  uio[5]: "P5"
+  uio[6]: "P6"
+  uio[7]: "P7"
+
+# Do not change!
+yaml_version: 6

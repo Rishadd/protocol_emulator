@@ -51,10 +51,7 @@ class LogicAnalyserHost:
         start = st["wp"] if st["wrapped"] else 0
         self.chip.write2(PTR, start % DEPTH)
         res = self.chip.pipeline2([(0x82, DATA, 0)] * n)           # one frame per word
-        words = [r.data for r in res]
-        if st["wrapped"]:
-            pass                                                 # already read from wp on: oldest first
-        return words if not st["wrapped"] else words
+        return [r.data for r in res]                             # a wrapped ring was read from the write pointer on: oldest first
 
     def waveform(self):
         return LM.decode_change(self.read_buffer())

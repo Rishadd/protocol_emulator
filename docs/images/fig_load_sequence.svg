@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520"><title>Loading and starting a program</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="518.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="100" y="20" width="150" height="40" rx="8" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="175.0" y="44.55" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="bold" fill="#1c2733">Host (Pico)</text>
+<rect x="650" y="20" width="150" height="40" rx="8" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="725.0" y="44.55" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="bold" fill="#1c2733">Chip</text>
+<line x1="175" y1="60" x2="175" y2="500" stroke="#9aa5b1" stroke-width="1.4" stroke-dasharray="4 4"/>
+<line x1="725" y1="60" x2="725" y2="500" stroke="#9aa5b1" stroke-width="1.4" stroke-dasharray="4 4"/>
+<text x="60" y="92" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">1</text>
+<line x1="175" y1="88" x2="725" y2="88" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="450" y="80" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">write CTRL = 0 (hold the engine)</text>
+<text x="60" y="144" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">2</text>
+<line x1="175" y1="140" x2="725" y2="140" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="450" y="132" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">write words to 0x0400 + 4 w   (one frame per word)</text>
+<text x="60" y="196" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">3</text>
+<line x1="725" y1="192" x2="175" y2="192" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<line x1="175" y1="180" x2="725" y2="180" stroke="#9aa5b1" stroke-width="1.2"/>
+<text x="450" y="174" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">read the words back and compare</text>
+<text x="60" y="248" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">4</text>
+<line x1="175" y1="244" x2="725" y2="244" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="450" y="236" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">write START = first word of the image</text>
+<text x="60" y="300" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">5</text>
+<line x1="175" y1="296" x2="725" y2="296" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="450" y="288" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">write CTRL = 1 (run)</text>
+<text x="60" y="352" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">6</text>
+<line x1="725" y1="348" x2="175" y2="348" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<line x1="175" y1="336" x2="725" y2="336" stroke="#9aa5b1" stroke-width="1.2"/>
+<text x="450" y="330" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">read REGION: must equal the image&#x27;s window</text>
+<text x="60" y="404" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">7</text>
+<line x1="175" y1="400" x2="725" y2="400" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<text x="450" y="392" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">write TX_DATA / read RX_DATA, poll STATUS</text>
+<text x="60" y="456" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="12" text-anchor="middle" font-weight="bold" fill="#5c6670">8</text>
+<line x1="725" y1="452" x2="175" y2="452" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<line x1="175" y1="440" x2="725" y2="440" stroke="#9aa5b1" stroke-width="1.2"/>
+<text x="450" y="434" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">read CTRL: pc, fault, halted</text>
+</svg>

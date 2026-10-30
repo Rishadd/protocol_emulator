@@ -429,13 +429,16 @@ class SimLink:
     SRCS = ["sim/ihp_sram/RM_IHPSG13_1P_core_behavioral_bm_bist.v", "sim/ihp_sram/RM_IHPSG13_1P_256x32_c2_bm_bist.v"]
     SRCS_SHARED = ["sim/ihp_sram/RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v", "sim/ihp_sram/RM_IHPSG13_2P_512x32_c2_bm_bist.v"]
 
-    def __init__(self, half_ns=200, cs_ns=100, rebuild=None, shared=False, la=False):
+    def __init__(self, half_ns=200, cs_ns=100, rebuild=None, shared=False, la=False, fpga=False):
         """shared=True: the chip with the shared 512-word instruction memory (-DSHARED_IMEM, docs/SHARED_IMEM_PLAN.md)."""
+        fpga = fpga or os.environ.get("PE_FPGA") == "1"       # PE_FPGA=1 runs any suite on the DE0-Nano top
+        self.fpga = fpga                                 # the DE0-Nano top (src/fpga) with its block-RAM memory instead of the SRAM macro model
+        shared = shared or fpga
         self.shared = shared
         self.la = la                                     # -DLA: the logic analyser block (needs the 1P 256x32 buffer macro)
         # PE_SRC_DIR=<dir> simulates another copy of src/ (used by the planted-bug checks), built into its own file
         self.src = os.environ.get("PE_SRC_DIR") or os.path.join(ROOT, "src")
-        name = ("bridge_shared" if shared else "bridge") + ("_la" if la else "")
+        name = ("bridge_fpga" if fpga else "bridge_shared" if shared else "bridge") + ("_la" if la else "")
         if "PE_SRC_DIR" in os.environ:
             name += "_" + os.path.basename(os.path.normpath(self.src))
         self.vvp = os.path.join(ROOT, "build", "host", name + ".vvp")
@@ -453,11 +456,12 @@ class SimLink:
             os.makedirs(os.path.dirname(self.vvp), exist_ok=True)
             if os.name == "nt" and os.path.isdir(r"C:\iverilog\bin"):
                 os.environ["PATH"] += os.pathsep + r"C:\iverilog\bin"
-            r = subprocess.run(["iverilog", "-g2012", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if self.shared else []) + (["-DLA"] if self.la else []) +
+            r = subprocess.run(["iverilog", "-g2012", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if self.shared else []) + (["-DLA"] if self.la else []) + (["-DFPGA_TOP"] if self.fpga else []) +
                                ["-I", self.src, "-I",
                                 os.path.join(ROOT, "tb"), "-o", self.vvp, os.path.join(ROOT, "tb", "tb_host_bridge.v")] +
                                [d for d in deps if d.endswith(".v") and "tb_host_bridge" not in d] +
-                               [os.path.join(ROOT, s) for s in ((self.SRCS_SHARED + (self.SRCS if self.la else [])) if self.shared else self.SRCS)],
+                               [os.path.join(self.src, "fpga", f) for f in (("de0_nano_chip_top.v", "sram2p_fpga.v") if self.fpga else ())] +
+                               [os.path.join(ROOT, s) for s in (() if self.fpga else self.SRCS_SHARED if self.shared else self.SRCS)],
                                capture_output=True, text=True)
             if r.returncode:
                 raise HostError("iverilog failed:\n" + r.stderr)

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300"><title>Logic analyser states</title><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2b3a4a"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5c6670"/></marker></defs><rect x="0.75" y="0.75" width="898.5" height="298.5" rx="12" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.5"/>
+<rect x="40" y="90" width="160" height="80" rx="10" fill="#eef0f3" stroke="#5c6670" stroke-width="1.5"/>
+<text x="120" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Idle</text>
+<text x="120" y="138" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">not recording</text>
+<line x1="200" y1="130" x2="255" y2="130" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="255" y="90" width="160" height="80" rx="10" fill="#dff3e3" stroke="#2e7d46" stroke-width="1.5"/>
+<text x="335" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Armed</text>
+<text x="335" y="138" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">recording,</text>
+<text x="335" y="151" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">waiting for the trigger</text>
+<line x1="415" y1="130" x2="470" y2="130" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="470" y="90" width="160" height="80" rx="10" fill="#fde8d0" stroke="#c46a12" stroke-width="1.5"/>
+<text x="550" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Triggered</text>
+<text x="550" y="138" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">recording the</text>
+<text x="550" y="151" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">post-trigger part</text>
+<line x1="630" y1="130" x2="685" y2="130" stroke="#2b3a4a" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="685" y="90" width="160" height="80" rx="10" fill="#dbe8fb" stroke="#2a5db0" stroke-width="1.5"/>
+<text x="765" y="118" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#1c2733">Done</text>
+<text x="765" y="138" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">buffer frozen,</text>
+<text x="765" y="151" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" fill="#5c6670">ready to read</text>
+<text x="442" y="120" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">trigger</text>
+<text x="227" y="120" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">arm</text>
+<text x="657" y="120" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#1c2733">post limit</text>
+<path d="M 735 170 L 735 230 L 120 230 L 120 172" stroke="#5c6670" stroke-width="1.4" fill="none" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+<text x="430" y="248" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">arm again: clears the pointers and starts over (also possible from Armed and Triggered)</text>
+<text x="450" y="40" font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="normal" fill="#5c6670">manual trigger and the firmware marker work like any other trigger</text>
+</svg>
