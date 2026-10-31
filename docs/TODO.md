@@ -1,4 +1,6 @@
-# To-do (working list, started 2026-10-20)
+# To-do (working list, started 2026-10-20; reviewed 2026-10-31)
+
+Status 2026-10-31: `main` now contains the shared-memory chip, frame v2 and the logic analyser RTL (merge of `clean/v1`); full regression 70/70 on 2026-10-30/31; the cocotb/gate-level test was retargeted to the shared-memory chip (commit 639663b) to fix the GitHub `gl_test` failure. Items below that mention branch `shared/on-v2` as pending are therefore merged; the GitHub Actions result of the new commit has still to be read on the Actions page.
 
 Direction decided 2026-10-20: **shared 512-word memory is the base**, get as close to 50 MHz as possible with a meaningful layout, then
 build the logic analyser on top of it. Tick items off as they finish.

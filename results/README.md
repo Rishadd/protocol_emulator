@@ -11,3 +11,4 @@ Only evidence that a document refers to is kept; temporary and per-run scratch o
 | `bigmem_2026-10-17/` | regression with the 256-word instruction memory | [BIGMEM_RESULTS.md](../docs/BIGMEM_RESULTS.md) |
 | `spi_2026-10-11/`, `i2c_2026-10-11/` | full SPI and I2C test runs | [SPI_RESULTS.md](../docs/SPI_RESULTS.md), [I2C_RESULTS.md](../docs/I2C_RESULTS.md) |
 | `workload_2026-10-12/`, `uart_workload_2026-10-01/` | UART and all-protocol workload runs | [WORKLOAD_RESULTS.md](../docs/WORKLOAD_RESULTS.md) |
+| `regression_2026-10-30/` | **latest regression**: `summary.md` (70 of 70 suites pass, phases A-F) and one log per suite, on the shared-memory chip | [../README.md](../README.md) |

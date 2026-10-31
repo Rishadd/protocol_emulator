@@ -1,5 +1,7 @@
 # Test results, all in one place (state of 2026-10-18)
 
+> **Newer state (2026-10-31):** the regression now has 70 suites and all pass, see [../results/regression_2026-10-30/summary.md](../results/regression_2026-10-30/summary.md). This file keeps the tables of 2026-10-18 (private 256-word memories, tt9b / tt9c layouts); the shared-memory layouts (sh4-sh10) are in [PROGRESS_REPORT_2026-10-18_to_2026-10-20.md](PROGRESS_REPORT_2026-10-18_to_2026-10-20.md) and [../reproduce/flows/README.md](../reproduce/flows/README.md).
+
 Everything below was measured in simulation or in the LibreLane / Tiny Tapeout flow in WSL. **Nothing was measured on silicon**, and only
 UART has also run on an FPGA (DE0-Nano). Raw logs: [results/regression_2026-10-18/](../results/regression_2026-10-18/) (one log per suite).
 Re-run everything with `python host/regress.py` (about 70 minutes on 16 cores) or one suite at a time (see the README).
