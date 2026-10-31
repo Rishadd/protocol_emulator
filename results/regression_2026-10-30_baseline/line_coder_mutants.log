@@ -1,0 +1,55 @@
+--- transmitter
+  FAIL  tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation', 'stuff violation'], sent ffffffffffffffff
+  mutant caught   transmitter stuffs after seven ones   (tx_all_ones: bus decodes to dfeff7fbfd7ebfdf partial=0 errs=['stuff vi)
+--- transmitter
+  FAIL  tx_stuff_before_eop: symbol runs [('K', 1), ('J', 1), ('K', 1), ('J', 1), ('K', 1), ('J', 1), ('K', 2), ('J', 1), ('K', 7), ('0', 2)] differ from the expected [('K', 1), ('J', 1), ('K', 1), ('J', 1), ('K', 1), ('J', 1), ('K', 2), ('J', 1), ('K', 7), ('J', 1), ('0', 2)]
+  mutant caught   no stuff bit before the EOP   (tx_stuff_before_eop: symbol runs [('K', 1), ('J', 1), ('K', 1), ('J', )
+--- transmitter
+  FAIL  tx_handshake: bus decodes to  partial=1 errs=[], sent d2
+  mutant caught   NRZI inverted   (tx_handshake: bus decodes to  partial=1 errs=[], sent d2)
+--- transmitter
+  FAIL  tx_token: run J lasts 4.950 bit times
+  mutant caught   fractional bit period ignored   (tx_token: run J lasts 4.950 bit times)
+--- transmitter
+  FAIL  tx_handshake: run J lasts 1.050 bit times
+  mutant caught   data bits one clock too long   (tx_handshake: run J lasts 1.050 bit times)
+--- transmitter
+--- receiver
+  mutant equivalent (below the checks' resolution, not counted)   SE0 one clock too long
+--- transmitter
+  mutant caught   driver never released   (ERROR watchdog: command stream stalled
+/home/rishadd/pe_shared_v2/tb/t)
+--- transmitter
+  FAIL  tx_all_ones: receiver B got dfeff7fbfd7ebfdfefdfeff75f, expected ffffffffffffffffffff7f3f
+  mutant caught   receiver does not remove stuff bits   (tx_all_ones: receiver B got dfeff7fbfd7ebfdfefdfeff75f, expected fffff)
+--- transmitter
+--- receiver
+  FAIL  rx_short_sync: bytes , expected e183e04bf0f1f2f3f4f5f6f7655cd2
+  mutant caught   a shortened SYNC is not accepted   (rx_short_sync: bytes , expected e183e04bf0f1f2f3f4f5f6f7655cd2)
+--- transmitter
+  FAIL  tx_rx_slow_B: receiver B got 4b6d138bb7f5c89e8b67, expected 4b6d132cded6237b2e9e55
+  mutant caught   sampler not re-centred on edges   (tx_rx_slow_B: receiver B got 4b6d138bb7f5c89e8b67, expected 4b6d132cde)
+--- transmitter
+  FAIL  tx_token: receiver B got 2d00106989, expected 2d00106915ef
+  mutant caught   sampling near the end of the bit   (tx_token: receiver B got 2d00106989, expected 2d00106915ef)
+--- transmitter
+--- receiver
+  FAIL  rx_partial: end-of-packet events [(3, 0)], expected [(3, 4)]
+  mutant caught   partial byte count lost   (rx_partial: end-of-packet events [(3, 0)], expected [(3, 4)])
+--- transmitter
+--- receiver
+  FAIL  rx_stuff_error: end-of-packet events [(3, 0)], expected [(6, 0), (3, 0)]
+  mutant caught   stuff violation not flagged   (rx_stuff_error: end-of-packet events [(3, 0)], expected [(6, 0), (3, 0)
+--- transmitter
+  FAIL  tx_handshake: receiver B got d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2, expected d2
+  mutant caught   received byte never consumed   (tx_handshake: receiver B got d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d)
+--- transmitter
+  FAIL  underrun flag [(16150, 73728)]
+  mutant caught   underrun not flagged   (underrun flag [(16150, 73728)])
+--- transmitter
+  FAIL  tx_handshake: receiver B got , expected d2
+  mutant caught   receiver NRZI inverted   (tx_handshake: receiver B got , expected d2)
+--- transmitter
+  FAIL  tx_all_ones: receiver B got dfffffffffffffffdfffff5f, expected ffffffffffffffffffff7f3f
+  mutant caught   the last SYNC 1 does not count toward stuffing   (tx_all_ones: receiver B got dfffffffffffffffdfffff5f, expected fffffff)
+line coder mutants caught: 16/16

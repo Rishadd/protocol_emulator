@@ -1,0 +1,2 @@
+  coverage: 56727 instructions committed; trap kinds seen: 6; 77/77 coverage points met
+RESULT isa_diff_shared: PASS (400 tests x 600 clocks x 2 engines, 0 mismatching tests, seed 1)

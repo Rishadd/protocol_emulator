@@ -1,0 +1,8 @@
+--- identification, scratch, v1 next to v2
+--- damaged frames never execute
+--- exactly once: retry, gap, conflict, NOP
+--- result codes
+--- real use: program, run and a FIFO stream with v2 frames
+      30 frames for the stream
+236 checks, 0 failed
+RESULT mgmt_v2_test: PASS (236/236 checks)

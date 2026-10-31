@@ -1,0 +1,10 @@
+--- phase E: 8 suites
+  PASS shared_jtag_test          2.3 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS shared_onewire_test       2.4 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS sharedremap2_jtag_test    2.7 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS shared_can_test           4.9 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS sharedremap2_onewire_test    2.9 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS sharedremap2_can_test     5.2 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS shared_modbus_test        7.3 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  PASS sharedremap2_modbus_test    7.1 min  RESULT modbus_test: PASS (16/16 cases as expected)
+REGRESSION PASS: 8 of 8 suites; summary in results/regression_2026-10-20_shared/summary.md

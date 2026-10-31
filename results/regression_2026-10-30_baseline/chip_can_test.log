@@ -1,0 +1,30 @@
+Phase 1: engine transmits, bus node + Python decoder check the wire
+  PASS     every DLC 0..8, random ID and data                             9 frames, 706 wire bits
+  PASS     worst-case stuffing: all-dominant and all-recessive frames     4 frames, 344 wire bits
+  PASS     alternating patterns (no stuffing at all)                      3 frames, 255 wire bits
+  PASS     stuff bits at header end, word end, data end, behind the CRC   4 frames, 336 wire bits
+  PASS     DLC 9..15 means 8 data bytes                                   3 frames, 333 wire bits
+  PASS     identifier walking ones / zeros                                22 frames, 1331 wire bits
+  PASS     40 random frames back to back                                  40 frames, 2924 wire bits
+  PASS     no node acknowledges: the ACK slot stays recessive             2 frames, 119 wire bits
+  PASS     bit time 50 clocks (1000 kbit/s)                               2 frames, 193 wire bits
+  PASS     bit time 250 clocks (200 kbit/s)                               2 frames, 193 wire bits
+  (skipped on the chip: the receiver would have to drive the ACK slot on a pad that engine 0 owns - one owner per pad)
+Phase 2: engine receives frames from a Python waveform
+  PASS     good frames, every DLC 0..8                                    9 frames, 30 words, ACK edges within 41 ns
+  PASS     stuff bits at header end, word end, data end, behind the CRC   4 frames, 10 words, ACK edges within 41 ns
+  PASS     all-dominant / all-recessive frames                            4 frames, 12 words, ACK edges within 41 ns
+  PASS     DLC 9..15 means 8 data bytes                                   2 frames, 8 words, ACK edges within 41 ns
+  PASS     30 random frames at the minimum intermission                   30 frames, 98 words, ACK edges within 41 ns
+  PASS     a flipped CRC bit is detected, not acknowledged, and the next frame is fine 4 frames, 15 words, ACK edges within 41 ns
+  PASS     stuff error (six equal bits) at header, data and later positions 4 frames, 9 words, ACK edges within 41 ns
+  PASS     stuff errors in the middle of long runs, in every data word    7 frames, 15 words, ACK edges within 41 ns
+  PASS     remote and extended frames are reported as unsupported, the bus recovers 3 frames, 5 words, ACK edges within 41 ns
+  PASS     form errors: dominant CRC delimiter / ACK delimiter / EOF bit  4 frames, 12 words, ACK edges within 41 ns
+  PASS     sender clock error -0.15 % (data and ACK slot)                 5 frames, 14 words, ACK edges within 389 ns
+  PASS     sender clock error +0.15 % (data and ACK slot)                 5 frames, 14 words, ACK edges within 307 ns
+  PASS     sender clock error -0.30 % (data only)                         5 frames, 14 words
+  PASS     sender clock error +0.30 % (data only)                         5 frames, 14 words
+  PASS     bit time 50 clocks                                             4 frames, 13 words, ACK edges within 41 ns
+  PASS     bit time 250 clocks                                            4 frames, 13 words, ACK edges within 41 ns
+RESULT can_test: PASS (26/26 cases as expected)

@@ -1,0 +1,52 @@
+--- phase A: 25 suites
+  PASS alu_test                  0.5 min  RESULT alu_test: PASS
+  PASS crc_test                  0.9 min  RESULT crc_test: PASS
+  PASS smbus_test                0.6 min  RESULT smbus_test: PASS (23/23 cases as expected)
+  PASS i2c_slave_test            2.6 min  RESULT i2c_slave_test: PASS (45/45 cases as expected)
+  PASS i2c_test                  3.8 min  RESULT i2c_test: PASS (60/60 cases as expected)
+  PASS jtag_test                 0.2 min  RESULT jtag_test: PASS (21/21 cases as expected)
+  PASS onewire_test              2.4 min  RESULT onewire_test: PASS (18/18 cases as expected)
+  PASS unit_testbenches          5.8 min  22 testbenches reported; none failed
+  PASS isa_diff_test             6.3 min  RESULT isa_diff_test: PASS
+  PASS can_test                  3.2 min  RESULT can_test: PASS (47/47 cases as expected)
+  PASS chip_host_demo            0.4 min  DONE: 574 SPI frames (7 bytes each way per frame), all checks passed
+  PASS modbus_test               6.2 min  RESULT modbus_test: PASS (26/26 cases as expected)
+  PASS ws2812_test               0.3 min  RESULT ws2812_test: PASS (15/15 cases as expected)
+  PASS swd_test                  0.1 min  RESULT swd_test: PASS (11/11 cases as expected)
+  PASS line_coder_test           0.1 min  RESULT line_coder_test: PASS (1221/1221 checks)
+  PASS line_coder_mutants        0.6 min  line coder mutants caught: 16/16
+  PASS usb_test_model            0.2 min  RESULT usb_test (model): PASS (45/45 checks)
+  PASS uart_workload             3.4 min  2/2 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
+  PASS ps2_test                  1.6 min  RESULT ps2_test: PASS (29/29 cases as expected)
+  PASS spi_test                  9.6 min  RESULT spi_test: PASS (312/312 cases as expected)
+  PASS uart_rx_workload          4.1 min  ALL PASS
+  PASS usb_mutants               1.5 min  usb firmware mutants caught: 18/18
+  PASS usb_test_rtl              2.8 min  RESULT usb_test (rtl): PASS (45/45 checks)
+  PASS mgmt_duplex_stress       14.4 min  ALL PASS
+  PASS workload                 25.7 min  RESULT workload: PASS (55/55 cases as expected)
+--- phase B: 4 suites
+  PASS chip_jtag_test            1.9 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS chip_onewire_test         2.1 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS chip_can_test             4.2 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS chip_modbus_test          6.3 min  RESULT modbus_test: PASS (16/16 cases as expected)
+--- phase C: 6 suites
+  PASS org64_jtag_test           0.1 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS org64_onewire_test        1.1 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS org64_can_test            1.6 min  RESULT can_test: PASS (27/27 cases as expected)
+  PASS org192_i2c_test           4.4 min  RESULT i2c_test: PASS (60/60 cases as expected)
+  PASS org192_modbus_test        4.5 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  PASS org192_spi_test          12.6 min  RESULT spi_test: PASS (312/312 cases as expected)
+--- phase D: 12 suites
+  PASS remap2_jtag_test          2.2 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS remap1_onewire_test       2.4 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS remap1_can_test           4.1 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap2_onewire_test       2.3 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS remap2_can_test           5.2 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap3_onewire_test       2.2 min  RESULT onewire_test: PASS (10/10 cases as expected)
+  PASS remap3_jtag_test          3.2 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS remap3_can_test           4.0 min  RESULT can_test: PASS (26/26 cases as expected)
+  PASS remap1_modbus_test        8.9 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  PASS remap2_modbus_test        7.6 min  RESULT modbus_test: PASS (16/16 cases as expected)
+  PASS remap1_jtag_test         13.5 min  RESULT jtag_test: PASS (17/17 cases as expected)
+  PASS remap3_modbus_test        6.9 min  RESULT modbus_test: PASS (16/16 cases as expected)
+REGRESSION PASS: 47 of 47 suites; summary in results/regression_2026-10-20_merge2/summary.md

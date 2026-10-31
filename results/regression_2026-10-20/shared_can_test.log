@@ -1,0 +1,26 @@
+Phase 1: engine transmits, bus node + Python decoder check the wire
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/home/rishadd/pe_shared_v2/host/can_test.py", line 444, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/can_test.py", line 434, in main
+    phase_tx()
+  File "/home/rishadd/pe_shared_v2/host/can_test.py", line 178, in phase_tx
+    tx_case("every DLC 0..8, random ID and data", [(rnd.randrange(0x800), [rnd.randrange(256) for _ in range(d)]) for d in range(9)])
+  File "/home/rishadd/pe_shared_v2/host/can_test.py", line 114, in tx_case
+    L = pl.run(name, progs={0: firmware or cp.can_tx(cpb)}, htx={0: words}, od=0x01, peer=peer, dur_ns=dur,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 144, in run
+    r = subprocess.run(["vvp", "-n", compile_tb(chip=chip), *args], capture_output=True, text=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 59, in compile_tb
+    raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+RuntimeError: compile failed:
+/home/rishadd/pe_shared_v2/src/la_block.v:123: error: Unknown module type: RM_IHPSG13_1P_256x32_c2_bm_bist
+4 error(s) during elaboration.
+*** These modules were missing:
+        RM_IHPSG13_1P_256x32_c2_bm_bist referenced 1 times.
+***
+

@@ -1,0 +1,29 @@
+Phase 1: 1-Wire master + CRC-8 on the engine, device model on the bus
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/home/rishadd/pe_shared_v2/host/onewire_test.py", line 179, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/onewire_test.py", line 172, in main
+    {"run": phase_run, "mutants": phase_mutants}[p]()
+  File "/home/rishadd/pe_shared_v2/host/onewire_test.py", line 126, in phase_run
+    read_rom_case("Read ROM, CRC verified on chip", rnd)
+  File "/home/rishadd/pe_shared_v2/host/onewire_test.py", line 120, in read_rom_case
+    return run_case(name, words, exp, rom_bytes=r, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/onewire_test.py", line 72, in run_case
+    L = pl.run(name, progs={0: firmware or op.onewire_master()}, htx={0: words}, od=0x04, peer=1, dur_ns=dur, plus=plus)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 144, in run
+    r = subprocess.run(["vvp", "-n", compile_tb(chip=chip), *args], capture_output=True, text=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 59, in compile_tb
+    raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+RuntimeError: compile failed:
+/home/rishadd/pe_shared_v2/src/la_block.v:123: error: Unknown module type: RM_IHPSG13_1P_256x32_c2_bm_bist
+4 error(s) during elaboration.
+*** These modules were missing:
+        RM_IHPSG13_1P_256x32_c2_bm_bist referenced 1 times.
+***
+

@@ -1,0 +1,14 @@
+1. alive
+  OK   STATUS bit 7 set (a chip in reset or a stuck-low MISO reads 0)   STATUS(0x80 alive=1 err=0 run=(0, 0) tx_full=(0, 0) rx_avail=(0, 0))
+2. identity
+  OK   ID = 'PEM1' (0x50454D31)   0x50454d31
+   VERSION 0x201  CAPABILITY 0x40020002
+3. scratch register
+  OK   write/read 0xa5a5a5a5
+  OK   write/read 0x5a5a5a5a
+4. programs: engine 0 at word 0, engine 1 at word 300
+  OK   both engines halted without fault
+  OK   engine 0 returned 3, engine 1 returned 5
+5. blink uio[0] from engine 0
+  OK   pad 0 is driven and takes both levels   {0, 1}
+RESULT fpga_bringup: PASS

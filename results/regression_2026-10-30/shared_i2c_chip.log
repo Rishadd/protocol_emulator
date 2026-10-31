@@ -1,0 +1,12 @@
+Phase 5: full chip, host only through the management SPI link
+  PASS     chip eng0 100 kHz basic set                        350 mgmt frames (140 TX retries), 7970 us | 17 tr 70 B | low>=4740 high>=5280 su_dat>=4639 hd_dat>=20 hd_sta>=4120 su_sto>=4140 buf>=14360 f<=100kHz
+  PASS     chip eng0 400 kHz basic set                        192 mgmt frames (0 TX retries), 4374 us | 17 tr 68 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng0 1000 kHz basic set                       204 mgmt frames (0 TX retries), 4647 us | 17 tr 74 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+  PASS     chip eng1 400 kHz basic set                        189 mgmt frames (0 TX retries), 4306 us | 17 tr 66 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng1 1000 kHz two slaves + data NACK          96 mgmt frames (0 TX retries), 2189 us | 6 tr 20 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+  PASS     chip eng0 400 kHz rise 300 ns + stretch every byte 20 us 162 mgmt frames (0 TX retries), 3691 us | 11 tr 53 B | low>=1639 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=1039 buf>=3161 f<=355kHz
+  PASS     chip eng0 1000 kHz slow host (mgmt half 2 us)      154 mgmt frames (0 TX retries), 34556 us | 11 tr 49 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=439380 f<=980kHz
+  PASS     chip eng0 1000 kHz fastest host (mgmt half 8 clk)  150 mgmt frames (0 TX retries), 2746 us | 11 tr 47 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=27220 f<=980kHz
+  PASS     chip eng0 400 kHz random stress (301 words)        655 mgmt frames (0 TX retries), 14912 us | 57 tr 301 B | low>=1340 high>=1180 su_dat>=1239 hd_dat>=20 hd_sta>=720 su_sto>=740 buf>=22680 f<=397kHz
+  PASS     chip eng1 1000 kHz random stress (307 words)       668 mgmt frames (0 TX retries), 15208 us | 54 tr 307 B | low>=540 high>=480 su_dat>=439 hd_dat>=20 hd_sta>=380 su_sto>=400 buf>=36180 f<=980kHz
+RESULT i2c_test: PASS (10/10 cases as expected)

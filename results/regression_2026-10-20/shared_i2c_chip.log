@@ -1,0 +1,24 @@
+Phase 5: full chip, host only through the management SPI link
+
+--- stderr ---
+/home/rishadd/pe_shared_v2/src/la_block.v:123: error: Unknown module type: RM_IHPSG13_1P_256x32_c2_bm_bist
+4 error(s) during elaboration.
+*** These modules were missing:
+        RM_IHPSG13_1P_256x32_c2_bm_bist referenced 1 times.
+***
+Traceback (most recent call last):
+  File "/home/rishadd/pe_shared_v2/host/i2c_test.py", line 503, in <module>
+    PHASES[p]()
+  File "/home/rishadd/pe_shared_v2/host/i2c_test.py", line 448, in phase_chip
+    case(f"chip eng0 {khz} kHz basic set", basic_set(rng), khz, eng=0, **chip)
+  File "/home/rishadd/pe_shared_v2/host/i2c_test.py", line 322, in case
+    L = run_sim(tb, name, files, args, rise)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/i2c_test.py", line 237, in run_sim
+    r = subprocess.run(["vvp", "-n", compile_tb(tb, rise), *args], capture_output=True, text=True)
+                                     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/i2c_test.py", line 217, in compile_tb
+    subprocess.run(["iverilog", "-g2012", "-Wall", "-Wno-timescale", "-DFUNCTIONAL"] + (["-DSHARED_IMEM"] if shared else []) + [f"-P{name}.T_RISE={rise}",
+  File "/nix/store/v7wvwm1bpm6kzlqgw33m98arm7sw40ln-python3-3.12.15/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['iverilog', '-g2012', '-Wall', '-Wno-timescale', '-DFUNCTIONAL', '-DSHARED_IMEM', '-Ptb_i2c_chip.T_RISE=1', '-I', '/home/rishadd/pe_shared_v2/src', '-I', '/home/rishadd/pe_shared_v2/tb', '-o', '/home/rishadd/pe_shared_v2/build/i2c/tb_i2c_chip_r1_shared.vvp.371317.tmp', '/home/rishadd/pe_shared_v2/tb/tb_i2c_chip.v', '/home/rishadd/pe_shared_v2/tb/i2c_slave_model.v', '/home/rishadd/pe_shared_v2/src/alu_unit.v', '/home/rishadd/pe_shared_v2/src/control_unit.v', '/home/rishadd/pe_shared_v2/src/crc_unit.v', '/home/rishadd/pe_shared_v2/src/dbg_view.v', '/home/rishadd/pe_shared_v2/src/delay_counter.v', '/home/rishadd/pe_shared_v2/src/engine_top.v', '/home/rishadd/pe_shared_v2/src/fifo.v', '/home/rishadd/pe_shared_v2/src/imem_shared.v', '/home/rishadd/pe_shared_v2/src/instr_mem.v', '/home/rishadd/pe_shared_v2/src/la_block.v', '/home/rishadd/pe_shared_v2/src/la_unit.v', '/home/rishadd/pe_shared_v2/src/line_coder.v', '/home/rishadd/pe_shared_v2/src/loop_counter.v', '/home/rishadd/pe_shared_v2/src/mgmt.v', '/home/rishadd/pe_shared_v2/src/pc_reg.v', '/home/rishadd/pe_shared_v2/src/pin_block.v', '/home/rishadd/pe_shared_v2/src/pin_mgr.v', '/home/rishadd/pe_shared_v2/src/rx_led_sink.v', '/home/rishadd/pe_shared_v2/src/shift_reg.v', '/home/rishadd/pe_shared_v2/src/spi_slave.v', '/home/rishadd/pe_shared_v2/src/tt_um_protocol_emulator.v', '/home/rishadd/pe_shared_v2/sim/ihp_sram/RM_IHPSG13_2P_512x32_c2_bm_bist.v', '/home/rishadd/pe_shared_v2/sim/ihp_sram/RM_IHPSG13_2P_core_behavioral_bm_bist_ideal.v']' returned non-zero exit status 4.

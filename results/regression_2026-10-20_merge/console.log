@@ -1,0 +1,27 @@
+--- phase A: 25 suites
+  PASS alu_test                  0.5 min  RESULT alu_test: PASS
+  PASS smbus_test                0.6 min  RESULT smbus_test: PASS (23/23 cases as expected)
+  PASS crc_test                  0.9 min  RESULT crc_test: PASS
+  PASS jtag_test                 0.2 min  RESULT jtag_test: PASS (21/21 cases as expected)
+  PASS i2c_slave_test            2.5 min  RESULT i2c_slave_test: PASS (45/45 cases as expected)
+  PASS onewire_test              2.0 min  RESULT onewire_test: PASS (18/18 cases as expected)
+  PASS i2c_test                  3.1 min  RESULT i2c_test: PASS (60/60 cases as expected)
+  PASS can_test                  3.6 min  RESULT can_test: PASS (47/47 cases as expected)
+  PASS chip_host_demo            0.2 min  DONE: 574 SPI frames (7 bytes each way per frame), all checks passed
+  PASS ws2812_test               0.3 min  RESULT ws2812_test: PASS (15/15 cases as expected)
+  PASS uart_workload             3.5 min  2/2 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
+  PASS swd_test                  0.1 min  RESULT swd_test: PASS (11/11 cases as expected)
+  PASS line_coder_test           0.1 min  RESULT line_coder_test: PASS (1221/1221 checks)
+  PASS modbus_test               5.8 min  RESULT modbus_test: PASS (26/26 cases as expected)
+  PASS unit_testbenches          6.4 min  22 testbenches reported; none failed
+  PASS isa_diff_test             6.5 min  RESULT isa_diff_test: PASS
+  PASS usb_test_model            0.2 min  RESULT usb_test (model): PASS (45/45 checks)
+  PASS uart_rx_workload          3.9 min  ALL PASS
+  PASS line_coder_mutants        0.6 min  line coder mutants caught: 16/16
+  PASS ps2_test                  1.5 min  RESULT ps2_test: PASS (29/29 cases as expected)
+  PASS usb_mutants               0.7 min  usb firmware mutants caught: 18/18
+  PASS spi_test                  8.4 min  RESULT spi_test: PASS (312/312 cases as expected)
+  PASS usb_test_rtl              2.2 min  RESULT usb_test (rtl): PASS (45/45 checks)
+  FAIL mgmt_duplex_stress       12.5 min  neg_host_stall         tx_rec= 256 echo= 256 rx_spi= 247 exact= 256 retries=  672 polls=   95 frames= 1298 Mcyc= 1.25 wall= 38.7s  PASS (loss detected)  first-bad=99
+  FAIL workload                 18.5 min  RESULT workload: FAIL (54/55 cases as expected)
+--- phase B: 4 suites

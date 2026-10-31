@@ -1,0 +1,13 @@
+  MUTANT  0 caught  the delta of a change word is one too small
+  MUTANT  1 caught  no overflow word after 65535 quiet clocks
+  MUTANT  2 caught  the pattern trigger ignores the mask
+  MUTANT  3 caught  rising and falling edges swapped
+  MUTANT  4 caught  the software trigger fires on any level
+  MUTANT  5 caught  a write in the trigger clock is not a post-trigger word
+  MUTANT  6 caught  the post-clock limit is one clock late
+  MUTANT  7 caught  the trigger clock count ignores the current clock
+  MUTANT  8 caught  sample mode takes the wrong byte
+  MUTANT  9 caught  the wrapped flag is set one word early
+  MUTANT 10 caught  a re-arm does not clear the write pointer
+  MUTANT 11 caught  the sample phase never wraps
+  la_unit mutants caught: 12/12

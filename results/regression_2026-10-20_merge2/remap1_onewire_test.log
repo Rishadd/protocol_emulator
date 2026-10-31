@@ -1,0 +1,12 @@
+Phase 1: 1-Wire master + CRC-8 on the engine, device model on the bus
+  PASS     Read ROM, CRC verified on chip                             12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 2                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 3                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 4                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM with a corrupted CRC byte is detected             12 commands, 10 result words, 74 low pulses
+  PASS     Skip ROM + Read Scratchpad (9 bytes, CRC ok)               14 commands, 11 result words, 90 low pulses
+  PASS     scratchpad with a flipped data bit is detected             14 commands, 11 result words, 90 low pulses
+  PASS     no device on the bus: no presence                          2 commands, 2 result words, 2 low pulses
+  PASS     two Read ROM transactions back to back                     24 commands, 20 result words, 148 low pulses
+  PASS     every bit pattern as the command byte is timed correctly (write slots) 10 commands, 2 result words, 68 low pulses
+RESULT onewire_test: PASS (10/10 cases as expected)

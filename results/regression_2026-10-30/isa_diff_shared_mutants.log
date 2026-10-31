@@ -1,0 +1,17 @@
+  MUTANT  0 caught  engine 0's window limit is off by one
+  MUTANT  1 caught  engine 1's window limit is off by one
+  MUTANT  2 caught  engine 0's window base is not checked
+  MUTANT  3 caught  engine 1's window base is not checked
+  MUTANT  4 caught  an OP_REGION of engine 0 does not apply to the fetch of its own clock
+  MUTANT  5 caught  an OP_REGION of engine 1 does not apply to the fetch of its own clock
+  MUTANT  6 caught  engine 0's lock is never set
+  MUTANT  7 caught  engine 1's lock is never set
+  MUTANT  8 caught  engine 0 fetches through port A
+  MUTANT  9 caught  engine 1 is trapped by engine 0's flag
+  MUTANT 10 caught  an out-of-window word is decoded instead of TRAP
+  MUTANT 11 caught  the START address is ignored
+  MUTANT 12 caught  a second OP_REGION is accepted
+  MUTANT 13 caught  an empty window is accepted
+  MUTANT 14 caught  a window ending above 512 is accepted
+  MUTANT 15 caught  jump targets ignore address bit 8
+  shared-memory mutants caught: 16/16

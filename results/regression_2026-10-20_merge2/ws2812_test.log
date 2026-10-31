@@ -1,0 +1,18 @@
+Phase 1: strip model against the firmware
+  PASS     one LED, a known colour                                        1 LEDs, 1 frame(s)
+  PASS     all bits zero / all bits one                                   2 LEDs, 1 frame(s)
+  PASS     walking one through G, R, B                                    24 LEDs, 1 frame(s)
+  PASS     eight random LEDs                                              8 LEDs, 1 frame(s)
+  PASS     three frames of different length                               16 LEDs, 3 frame(s)
+  PASS     a 60 LED strip                                                 60 LEDs, 1 frame(s)
+  PASS     random frames 1                                                19 LEDs, 2 frame(s)
+  PASS     random frames 2                                                28 LEDs, 2 frame(s)
+  PASS     random frames 3                                                12 LEDs, 2 frame(s)
+  PASS     random frames 4                                                26 LEDs, 2 frame(s)
+Phase 2: broken firmware must be caught
+  DETECTED mutant: bits sent LSB first                                    10 LEDs, 2 frame(s)
+  DETECTED mutant: T0H too long (0.62 us)                                 10 LEDs, 2 frame(s)
+  DETECTED mutant: T1H too short (0.52 us)                                10 LEDs, 2 frame(s)
+  DETECTED mutant: no latch: the strip never sees a frame end             10 LEDs, 2 frame(s)
+  DETECTED mutant: latch of 20 us (too short)                             10 LEDs, 2 frame(s)
+RESULT ws2812_test: PASS (15/15 cases as expected)

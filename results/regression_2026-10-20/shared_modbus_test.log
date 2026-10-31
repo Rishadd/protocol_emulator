@@ -1,0 +1,26 @@
+Phase 1: engine 0 transmits Modbus RTU frames (CRC-16 from the CRC unit)
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/home/rishadd/pe_shared_v2/host/modbus_test.py", line 200, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/modbus_test.py", line 193, in main
+    {"tx": phase_tx, "rx": phase_rx, "loop": phase_loop, "mutants": phase_mutants}[p]()
+  File "/home/rishadd/pe_shared_v2/host/modbus_test.py", line 122, in phase_tx
+    tx_case("textbook frame 01 03 00 00 00 0A -> CRC C5 CD", [[0x01, 0x03, 0x00, 0x00, 0x00, 0x0A]])
+  File "/home/rishadd/pe_shared_v2/host/modbus_test.py", line 41, in tx_case
+    L = pl.run(name, progs={0: prog or mp.modbus_tx(cpb)}, htx={0: htx}, dur_ns=dur)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 144, in run
+    r = subprocess.run(["vvp", "-n", compile_tb(chip=chip), *args], capture_output=True, text=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 59, in compile_tb
+    raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+RuntimeError: compile failed:
+/home/rishadd/pe_shared_v2/src/la_block.v:123: error: Unknown module type: RM_IHPSG13_1P_256x32_c2_bm_bist
+4 error(s) during elaboration.
+*** These modules were missing:
+        RM_IHPSG13_1P_256x32_c2_bm_bist referenced 1 times.
+***
+

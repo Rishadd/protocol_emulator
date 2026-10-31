@@ -1,0 +1,14 @@
+Phase 1: debug probe against the target model
+  PASS     line reset, JTAG-to-SWD switch, IDCODE, power-up handshake     
+  PASS     8 words written and read back through the AP (posted reads + RDBUFF) 
+  PASS     16-word block with auto-increment                              
+  PASS     the target answers WAIT three times, the probe retries and succeeds 
+  PASS     FAULT then ABORT: the sticky error is cleared and the link works again 
+  PASS     a wrong parity on read data is flagged                         
+  PASS     clock rate ~1 MHz, SWDIO only changes while SWCLK is low, no contention, no target complaints 104 requests
+Phase 2: broken firmware must be caught
+  DETECTED mutant: data and request sent MSB first                        
+  DETECTED mutant: no turnaround clock after the request                  
+  DETECTED mutant: wrong parity on write data                             
+  DETECTED mutant: ACK decoded MSB first                                  
+RESULT swd_test: PASS (11/11 cases as expected)

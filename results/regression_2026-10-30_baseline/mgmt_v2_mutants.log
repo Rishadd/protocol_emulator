@@ -1,0 +1,21 @@
+  MUTANT  0 caught  the request CRC is not checked
+  MUTANT  1 caught  CRC initial value wrong
+  MUTANT  2 caught  CRC polynomial wrong
+  MUTANT  3 caught  the response CRC ignores the response
+  MUTANT  4 caught  a duplicate frame is executed again
+  MUTANT  5 caught  a retried frame shows the new result, the older one is lost
+  MUTANT  6 caught  a NOP replaces the result
+  MUTANT  7 caught  a gap in the numbering is accepted
+  MUTANT  8 caught  the same number with other content is accepted
+  MUTANT  9 caught  reserved bytes are not checked
+  MUTANT 10 caught  payload byte order wrong
+  MUTANT 11 caught  a write to a read-only register reports OK
+  MUTANT 12 caught  an empty RX FIFO does not report BUSY
+  MUTANT 13 caught  CRC errors are not counted
+  MUTANT 14 caught  length errors are not counted
+  MUTANT 15 caught  writing ERRCNT does not clear the sequence counter
+  MUTANT 16 caught  the older result's data is lost
+  MUTANT 17 caught  read data never reaches the result
+  MUTANT 18 caught  the ID window sits at the wrong address
+  MUTANT 19 caught  a damaged frame does not set the err flag
+frame v2 mutants caught: 20/20

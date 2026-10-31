@@ -1,0 +1,26 @@
+Phase 1: JTAG controller on the engine, Verilog TAP model on the pins, Python TAP model as oracle
+
+--- stderr ---
+Traceback (most recent call last):
+  File "/home/rishadd/pe_shared_v2/host/jtag_test.py", line 226, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/jtag_test.py", line 219, in main
+    {"run": phase_run, "mutants": phase_mutants}[p]()
+  File "/home/rishadd/pe_shared_v2/host/jtag_test.py", line 174, in phase_run
+    run_case("IDCODE read (default instruction after reset)", reset + go_dr([0] * 32))
+  File "/home/rishadd/pe_shared_v2/host/jtag_test.py", line 137, in run_case
+    L = pl.run(name, progs={0: firmware or jp.jtag_master(half)}, htx={0: words}, peer=2, dur_ns=dur, plus=plus)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 144, in run
+    r = subprocess.run(["vvp", "-n", compile_tb(chip=chip), *args], capture_output=True, text=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rishadd/pe_shared_v2/host/proto_lib.py", line 59, in compile_tb
+    raise RuntimeError("compile failed:\n" + r.stderr[:2000])
+RuntimeError: compile failed:
+/home/rishadd/pe_shared_v2/src/la_block.v:123: error: Unknown module type: RM_IHPSG13_1P_256x32_c2_bm_bist
+4 error(s) during elaboration.
+*** These modules were missing:
+        RM_IHPSG13_1P_256x32_c2_bm_bist referenced 1 times.
+***
+

@@ -1,0 +1,21 @@
+Phase 1: 1-Wire master + CRC-8 on the engine, device model on the bus
+  PASS     Read ROM, CRC verified on chip                             12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 2                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 3                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM, random device 4                                  12 commands, 10 result words, 74 low pulses
+  PASS     Read ROM with a corrupted CRC byte is detected             12 commands, 10 result words, 74 low pulses
+  PASS     Skip ROM + Read Scratchpad (9 bytes, CRC ok)               14 commands, 11 result words, 90 low pulses
+  PASS     scratchpad with a flipped data bit is detected             14 commands, 11 result words, 90 low pulses
+  PASS     no device on the bus: no presence                          2 commands, 2 result words, 2 low pulses
+  PASS     two Read ROM transactions back to back                     24 commands, 20 result words, 148 low pulses
+  PASS     every bit pattern as the command byte is timed correctly (write slots) 10 commands, 2 result words, 68 low pulses
+Phase 2: broken firmware must be caught
+  DETECTED mutant: reset low 300 us                                   12 commands, 10 result words, 73 low pulses
+  DETECTED mutant: write-0 low 30 us (slave samples while the line is rising) 12 commands, 10 result words, 74 low pulses
+  DETECTED mutant: write-1 low 20 us                                  12 commands, 10 result words, 74 low pulses
+  DETECTED mutant: read sample 40 us after the falling edge           12 commands, 8 result words, 67 low pulses
+  DETECTED mutant: CRC polynomial 0x07                                12 commands, 10 result words, 74 low pulses
+  DETECTED mutant: no reflection                                      12 commands, 10 result words, 74 low pulses
+  DETECTED mutant: bytes not fed to the CRC (a corrupted ROM then looks good) 12 commands, 10 result words, 74 low pulses
+  DETECTED mutant: slot period 40 us                                  12 commands, 10 result words, 74 low pulses
+RESULT onewire_test: PASS (18/18 cases as expected)

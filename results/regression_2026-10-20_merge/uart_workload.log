@@ -1,0 +1,6 @@
+payload: 1024 bytes, 256 distinct byte values, f_clk=50 MHz, cycle budget/run=25M
+    baud    cpb      D     actual    err% bytes frames byteOK exact rxtol+% rxtol-% Mcycles wall s  status
+    9600   5208   5206     9600.6  +0.006   245    245    245   245    5.25    5.25   19.40  162.2  PASS pc=3 fault=0 rejected=0
+  115200    434    432   115207.4  +0.006  1024   1024   1024  1024    5.25    5.25    6.09   47.8  PASS pc=3 fault=0 rejected=0
+
+2/2 baud rates fully PASS (all bytes decoded, all frames cycle-exact vs Python reference)
