@@ -1,0 +1,77 @@
+{
+  "TILES": "8x4",
+  "VERILOG_DEFINES": [
+    "SYNTHESIS",
+    "SHARED_IMEM",
+    "LA"
+  ],
+  "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
+  "FP_PDN_VPITCH": 53.04,
+  "FP_PDN_VSPACING": 6.74,
+  "FP_PDN_VOFFSET": 18.545,
+  "ROUTING_OBSTRUCTIONS": [
+    [
+      "Metal4",
+      84.28,
+      12.78,
+      771.77,
+      234.55
+    ],
+    [
+      "Metal4",
+      826.84,
+      12.78,
+      1514.33,
+      234.55
+    ]
+  ],
+  "MACROS": {
+    "RM_IHPSG13_2P_512x32_c2_bm_bist": {
+      "instances": {
+        "u_imem.u_mem": {
+          "location": [
+            85.28,
+            13.78
+          ],
+          "orientation": "FS"
+        },
+        "u_la.u_buf": {
+          "location": [
+            827.84,
+            13.78
+          ],
+          "orientation": "FS"
+        }
+      },
+      "gds": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.gds"
+      ],
+      "lef": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.lef"
+      ],
+      "lib": {
+        "*_typ_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_typ_1p20V_25C.lib"
+        ],
+        "*_fast_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_fast_1p32V_m55C.lib"
+        ],
+        "*_slow_*": [
+          "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist_slow_1p08V_125C.lib"
+        ]
+      },
+      "nl": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.v"
+      ],
+      "spice": [
+        "dir::../macro/RM_IHPSG13_2P_512x32_c2_bm_bist/RM_IHPSG13_2P_512x32_c2_bm_bist.cdl"
+      ]
+    }
+  },
+  "PDN_MACRO_CONNECTIONS": [
+    "u_imem.u_mem VPWR VGND VDD! VSS!",
+    "u_imem.u_mem VPWR VGND VDDARRAY! VSS!",
+    "u_la.u_buf VPWR VGND VDD! VSS!",
+    "u_la.u_buf VPWR VGND VDDARRAY! VSS!"
+  ]
+}

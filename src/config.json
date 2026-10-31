@@ -8,13 +8,19 @@
   "ROUTING_OBSTRUCTIONS": [
     [
       "Metal4",
-      508.6,
+      84.28,
       12.78,
-      1196.09,
+      771.77,
+      234.55
+    ],
+    [
+      "Metal4",
+      826.84,
+      12.78,
+      1514.33,
       234.55
     ]
   ],
-  "MODULE_BOXES": "dir::floorplan_engines_shared3.json",
   "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
   "RUN_MAGIC_DRC": false,
   "RUN_POST_GRT_DESIGN_REPAIR": false,
@@ -48,7 +54,8 @@
   ],
   "VERILOG_DEFINES": [
     "SYNTHESIS",
-    "SHARED_IMEM"
+    "SHARED_IMEM",
+    "LA"
   ],
   "meta": {
     "flow": "Classic",
@@ -69,7 +76,14 @@
       "instances": {
         "u_imem.u_mem": {
           "location": [
-            509.6,
+            85.28,
+            13.78
+          ],
+          "orientation": "FS"
+        },
+        "u_la.u_buf": {
+          "location": [
+            827.84,
             13.78
           ],
           "orientation": "FS"
@@ -102,7 +116,9 @@
   },
   "PDN_MACRO_CONNECTIONS": [
     "u_imem.u_mem VPWR VGND VDD! VSS!",
-    "u_imem.u_mem VPWR VGND VDDARRAY! VSS!"
+    "u_imem.u_mem VPWR VGND VDDARRAY! VSS!",
+    "u_la.u_buf VPWR VGND VDD! VSS!",
+    "u_la.u_buf VPWR VGND VDDARRAY! VSS!"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
   "RUN_IRDROP_REPORT": false,

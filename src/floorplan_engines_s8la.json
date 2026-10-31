@@ -1,0 +1,46 @@
+{
+  "note": "8x4 with the logic analyser: two 2P macros side by side at the bottom (x 85..771 and 828..1514), engines left/right, common logic between, above them",
+  "version": 10,
+  "boxes": [
+    {
+      "name": "eng0",
+      "match": [
+        "u_eng0."
+      ],
+      "box": [
+        20,
+        244,
+        560,
+        700
+      ]
+    },
+    {
+      "name": "common",
+      "match": [
+        "u_mgmt.",
+        "u_spi.",
+        "u_pins.",
+        "u_dbg.",
+        "u_la."
+      ],
+      "box": [
+        570,
+        244,
+        1150,
+        700
+      ]
+    },
+    {
+      "name": "eng1",
+      "match": [
+        "u_eng1."
+      ],
+      "box": [
+        1160,
+        244,
+        1704,
+        700
+      ]
+    }
+  ]
+}
