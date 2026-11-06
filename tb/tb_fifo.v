@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 `include "tb_common.vh"
 module tb_fifo;
+    // waveform: run vvp with +dump to write build/wave/tb_fifo.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_fifo.vcd"); $dumpvars(0, tb_fifo); end
     reg         clk = 0, rst_n = 0, wr_en = 0, rd_en = 0;
     reg  [31:0] wr_data = 0;
     wire [31:0] rd_data;

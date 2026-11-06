@@ -11,6 +11,8 @@
 // +TXGAP_NS (minimum time between two host TX writes).
 // Log: P <ns> <sda><scl>  W/R <ns> <hex>  MEM <slave> <256 bytes hex>  END ...
 module tb_i2c_engine;
+    // waveform: run vvp with +dump to write build/wave/tb_i2c_engine.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_i2c_engine.vcd"); $dumpvars(0, tb_i2c_engine); end
     parameter T_RISE = 1;
     reg         clk = 0, rst_n = 0, run = 0;
     reg         tx_wr_en = 0, rx_rd_en = 0;

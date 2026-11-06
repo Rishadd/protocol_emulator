@@ -5,6 +5,8 @@
 // bit reversal, an unsigned compare for the no-borrow flag. After every operation all 8 registers and the 3 flags are compared with a
 // shadow copy kept by the testbench. A directed section pins down the edge cases; a random section runs thousands of operations.
 module tb_alu_unit;
+    // waveform: run vvp with +dump to write build/wave/tb_alu_unit.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_alu_unit.vcd"); $dumpvars(0, tb_alu_unit); end
     reg         clk = 0, rst_n = 0;
     reg  [26:0] operand = 0;
     reg         do_alu = 0, do_ldi = 0, do_rget = 0;

@@ -8,6 +8,8 @@
 //             F <ns> <hex flags>   B flags change     E <ns> flags partial  B saw an end of packet / error (flags are then cleared)
 //             S <ns> <hex status of A> on 'r' lines    END <ns>
 module tb_line_coder;
+    // waveform: run vvp with +dump to write build/wave/tb_line_coder.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_line_coder.vcd"); $dumpvars(0, tb_line_coder); end
     reg clk = 0, rst_n = 0;
     reg        a_go = 0, b_go = 0, b_ago = 0;
     reg [2:0]  a_op = 0, b_op = 0;

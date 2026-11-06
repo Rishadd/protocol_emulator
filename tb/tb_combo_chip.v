@@ -9,6 +9,8 @@
 // + SPI peer settings (spi_peer.vh p_args) + host knobs (host_knobs.vh) + I2C slave knobs as tb_i2c_chip.
 // Log: P (SPI lines, spi_peer.vh), Q <ns> <sda><scl>, R0/R1 <ns> <hex>, MEM, END.
 module tb_combo_chip;
+    // waveform: run vvp with +dump to write build/wave/tb_combo_chip.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_combo_chip.vcd"); $dumpvars(0, tb_combo_chip); end
     parameter T_RISE = 1;
     localparam [7:0]  OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0] W_HALT = {`OP_HALT, 27'd0};

@@ -4,6 +4,8 @@
 // control_unit + real delay_counter + real loop_counter; fifos/pins/shifters are
 // modelled by directly driving tx_empty / rx_full / pin_in / osr_bit.
 module tb_control_unit;
+    // waveform: run vvp with +dump to write build/wave/tb_control_unit.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_control_unit.vcd"); $dumpvars(0, tb_control_unit); end
     reg         clk = 0, rst_n = 0;
     reg  [31:0] instr = 0;
     reg         tx_empty = 1, rx_full = 0, osr_bit = 1;

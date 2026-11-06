@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 `include "tb_common.vh"
 module tb_pc_reg;
+    // waveform: run vvp with +dump to write build/wave/tb_pc_reg.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_pc_reg.vcd"); $dumpvars(0, tb_pc_reg); end
     reg        clk = 0, rst_n = 0, advance = 0, jump = 0;
     reg  [7:0] jump_addr = 0;
     wire [7:0] pc, next_pc;

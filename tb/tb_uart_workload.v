@@ -5,6 +5,8 @@
 // waveform cycle-exactly. NOWAIT=1 makes the host ignore tx_full (limit test).
 `timescale 1ns/1ps
 module tb_uart_workload;
+    // waveform: run vvp with +dump to write build/wave/tb_uart_workload.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_uart_workload.vcd"); $dumpvars(0, tb_uart_workload); end
     reg         clk = 0, rst_n = 0, tx_wr_en = 0;
     reg  [31:0] tx_wr_data = 0;
     wire        tx_full, rx_empty, halted, fault;

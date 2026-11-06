@@ -20,6 +20,8 @@
 // Log: T <ns> <lvl> (P0 line)  E <ns> <lvl> (P1 line)  W <ns> <byte> (TX accepted)
 //      R <ns> <byte> (valid RX read)  STATUS k=v ...
 module tb_mgmt_duplex;
+    // waveform: run vvp with +dump to write build/wave/tb_mgmt_duplex.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_mgmt_duplex.vcd"); $dumpvars(0, tb_mgmt_duplex); end
     integer            BIT = 434;                   // nominal UART bit, clocks (+BIT=, 5208 = 9600)
     localparam [7:0]   OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0]  W_HALT = {`OP_HALT, 27'd0};

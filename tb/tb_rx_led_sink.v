@@ -2,6 +2,8 @@
 `include "tb_common.vh"
 // rx_led_sink + real fifo: every pushed word must appear on led (byte = [31:24]) in order.
 module tb_rx_led_sink;
+    // waveform: run vvp with +dump to write build/wave/tb_rx_led_sink.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_rx_led_sink.vcd"); $dumpvars(0, tb_rx_led_sink); end
     integer errors = 0;
     reg clk = 0, rst_n = 0, wr_en = 0;
     reg [31:0] wr_data = 0;

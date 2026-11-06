@@ -9,6 +9,8 @@
 // before `value` is checked.
 // Optional: +VEC=<file> reads vectors made by host/crc_test.py (one per line: width poly init refin refout xorout nbytes bytes...).
 module tb_crc_unit;
+    // waveform: run vvp with +dump to write build/wave/tb_crc_unit.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_crc_unit.vcd"); $dumpvars(0, tb_crc_unit); end
     reg         clk = 0, rst_n = 0;
     reg         rst_crc = 0, set_poly = 0, set_init = 0, set_xor = 0, set_fmt = 0, feed_bit = 0, feed_byte = 0;
     reg  [31:0] cfg_data = 0;

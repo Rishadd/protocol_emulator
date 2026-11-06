@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 `include "tb_common.vh"
 module tb_pin_block;
+    // waveform: run vvp with +dump to write build/wave/tb_pin_block.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_pin_block.vcd"); $dumpvars(0, tb_pin_block); end
     reg        clk = 0, rst_n = 0;
     reg        pin_wr = 0, pin_wr_val = 0, dir_wr = 0, dir_wr_val = 0;
     reg  [2:0] pin_wr_idx = 0, dir_wr_idx = 0;

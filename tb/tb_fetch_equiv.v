@@ -8,6 +8,8 @@
 // traffic, random RUN drops and host rewrites while held. Every clock, every output of the two
 // engines and the instruction bus itself must match. Plusargs: +TRIALS=n +SEED=n
 module tb_fetch_equiv;
+    // waveform: run vvp with +dump to write build/wave/tb_fetch_equiv.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_fetch_equiv.vcd"); $dumpvars(0, tb_fetch_equiv); end
     reg         clk = 0, rst_n = 0, run = 0;
     reg         we = 0;
     reg  [7:0]  waddr = 0;

@@ -5,6 +5,8 @@
 //   +NT=<tests> +N=<clocks per test> +OUT=<log>          parameter AW: buffer of 2**AW words
 // Log: "C state wp full wrapped we wdata" per clock (we / wdata = the write this clock performs, the rest after the edge); per test "T trig_wp trig_cnt" and "M i word" for every buffer word
 module tb_la_unit;
+    // waveform: run vvp with +dump to write build/wave/tb_la_unit.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_la_unit.vcd"); $dumpvars(0, tb_la_unit); end
     parameter AW = 8;
     localparam DEPTH = 1 << AW;
     reg         clk = 0, rst_n = 0, arm = 0, manual = 0, mode_sample = 0, sel_hi = 0;

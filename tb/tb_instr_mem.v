@@ -3,6 +3,8 @@
 // instr_mem (one 256x32 SRAM macro): synchronous host write, SYNCHRONOUS read (data appears one clock
 // after the edge that sampled addr). Compile with -DFUNCTIONAL + sim/ihp_sram/*.v.
 module tb_instr_mem;
+    // waveform: run vvp with +dump to write build/wave/tb_instr_mem.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_instr_mem.vcd"); $dumpvars(0, tb_instr_mem); end
     reg         clk = 0, we = 0;
     reg  [7:0]  addr = 0, waddr = 0;
     reg  [31:0] wdata = 0;

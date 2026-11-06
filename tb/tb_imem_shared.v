@@ -3,6 +3,8 @@
 // and the rule that a host write may not hit a running window. Compile with -DFUNCTIONAL -DSHARED_IMEM.
 `timescale 1ns/10ps
 module tb_imem_shared;
+    // waveform: run vvp with +dump to write build/wave/tb_imem_shared.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_imem_shared.vcd"); $dumpvars(0, tb_imem_shared); end
     reg clk = 0, rst_n = 0;
     always #5 clk = ~clk;
 

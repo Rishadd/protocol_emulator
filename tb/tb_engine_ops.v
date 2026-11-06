@@ -4,6 +4,8 @@
 // JPO and PUSHI inside a real engine_top: OSR bit order, RX FIFO data path, stall on a full FIFO.
 // The host drains the RX FIFO on the falling edge whenever `drain` is set.
 module tb_engine_ops;
+    // waveform: run vvp with +dump to write build/wave/tb_engine_ops.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_engine_ops.vcd"); $dumpvars(0, tb_engine_ops); end
     reg         clk = 0, rst_n = 0, run = 0, drain = 1;
     reg         tx_wr_en = 0, rx_rd_en = 0;
     reg  [31:0] tx_wr_data = 0;

@@ -2,6 +2,8 @@
 `include "tb_common.vh"
 // Top-level RX check at 50 MHz / 115200: bytes on bt_rx_pin must appear on led[7:0].
 module tb_de0_nano_rx_top;
+    // waveform: run vvp with +dump to write build/wave/tb_de0_nano_rx_top.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_de0_nano_rx_top.vcd"); $dumpvars(0, tb_de0_nano_rx_top); end
     integer errors = 0;
     reg clk_50M = 0, reset_n = 0, bt_rx_pin = 1;
     wire bt_tx_pin;

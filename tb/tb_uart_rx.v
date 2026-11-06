@@ -6,6 +6,8 @@
 // Also checks that led equals each popped byte on the cycle after the pop.
 `timescale 1ns/1ps
 module tb_uart_rx;
+    // waveform: run vvp with +dump to write build/wave/tb_uart_rx.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_uart_rx.vcd"); $dumpvars(0, tb_uart_rx); end
     reg         clk = 0, rst_n = 0, rx = 1;
     wire        tx_full, rx_empty, rx_rd_en, halted, fault;
     wire [31:0] rx_rd_data;

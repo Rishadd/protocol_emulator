@@ -1,63 +1,54 @@
 # Programmable Protocol Emulator ASIC
 
-Architecture proposal v0.1 | 2026-09-26, revised 2026-10-11 | Status: long-term target; **two engines and an SPI management link are implemented and verified in simulation, UART TX/RX/duplex are proven on an FPGA, and a measured area study says instruction storage must move to SRAM**
+Architecture v1.0 | proposal 2026-09-26, updated to the built chip 2026-10-31 | Status: **built and verified in simulation; two engines, shared 512-word SRAM, 31 opcodes, 13 protocols; layout clean at 8x4**
 
-## 0. Implementation status (2026-10-11)
+## 0. Implementation status (2026-10-31)
 
-This document is the full-chip target. What exists in `src/` today is two protocol engines of §4 with the datapath
-subset below, an SPI slave and a management controller with an interim 7-byte frame, and the Tiny Tapeout top that wires
-them. Pin ownership (pin manager, open-drain per pad) is built since 2026-10-11; the event fabric, trace, BIST, safety latch and CRC frame are still plan. Measured area numbers and
-the SRAM/pin-ownership analysis are in [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md); where this document's
-text predates them (notably §3's resource table, §6's frame and §11's storage ledger) the study and the status notes win.
-Two decisions made during RTL work supersede text further down:
+> **How to read this document.** §0 to §4 and the §3 diagram describe what is built. **§5 to §14 are the original design proposal (2026-09/10)** kept for the reasoning;
+> where they disagree with the source, the source wins. For how the code works now read [CODE_GUIDE.md](CODE_GUIDE.md); for results [TEST_RESULTS.md](TEST_RESULTS.md),
+> [HANDOFF_WINDOWS.md](HANDOFF_WINDOWS.md) and `../memory.md`.
 
-1. **Instruction format is 5-bit opcode + one flat 27-bit operand.** The
-   delay/side-set sub-fields proposed in §4.2 were dropped; delay is the
-   operand of the timed opcodes (`WAIT`, `OUT1`, `IN1`). Side-set is an open
-   item. The authoritative opcode table is [../instructions.md](../instructions.md).
-2. **No protocol-specific hardware anywhere.** Early drafts had a UART frame
-   shifter and a `TX_DATA` byte register; these were replaced by a generic
-   32-bit OSR/ISR pair, generic 32-bit FIFOs and an 8-pin block with per-pin
-   data/direction registers. Framing, clocking and open-drain behaviour are
-   firmware idioms (`SETH`/`SETLO`/`DIRO`/`DIRI`).
+What exists in `src/`:
 
-| Block in §3 diagram | Status |
+| Block | Status |
 |---|---|
-| Deterministic engines 0 and 1 (PC, decode, delay counter, loop counter) | **Built, verified** — 17 opcodes, exact d+1 timing; per-engine `run` gate |
-| Private instruction storage (64×32 per engine) | Built **in flip-flops** with a host write port (only while the engine is held); **no parity**. Flops are 80 % of the chip (§11), so this is to be replaced by SRAM |
-| Per-engine TX/RX FIFOs | Built as 32-bit × 4 (plan says 16-bit × 8). Four FIFOs are 41k um^2; to be shrunk |
-| Serial datapath (shifters) | Built as 32-bit OSR + ISR, LSB/MSB-first selectable |
-| Pin control + synchronizers | Built (8 pins, 2-stage sync). **Pin manager built** (`src/pin_mgr.v`): owner per pad, claim refused while the owner runs, per-pad open-drain, sticky violations; management window `0x0200`. No diagnostic owner, no remap. Edge detect not needed so far |
-| Event fabric, timestamp, deadline | Not built |
-| Management port, CSR, frame decode | **Built, interim frame v1** (7 bytes, big endian, no CRC/sequence), simulation only. Windows as built are in [MGMT_PLAN.md](MGMT_PLAN.md) |
-| Safety latch (abort, `ena`), watchdog, trace, BIST | Not built (reset synchronizer and `run` gating already release all pins) |
-| Firmware | UART TX (12 words) and RX (9 words) verified cycle-exact in simulation **and on the DE0-Nano at 115200, including full-duplex echo**; SPI master/slave (4 modes, 16-18 words) and I2C master (46 words, 100/400/1000 kHz) verified in simulation incl. through the management link; I2C slave deferred (word budget); JTAG drafted |
-| FPGA | DE0-Nano + HC-05: TX to a phone, RX to LEDs, duplex echo — done. The SPI management link has not been put on the FPGA |
-| Synthesis | Yosys on the real CMOS5L cell library: 414,137 um^2 (57.5 % of nominal) with flop memory, 143,425 with SRAM macros. No LibreLane flow run yet |
+| Two deterministic engines (`engine_top.v`: control unit, PC, delay and loop counters, 8 x 32-bit ALU registers, CRC unit, USB line coder, OSR/ISR, FIFOs, 8-pin block) | **Built, verified**, 31 opcodes, exact d+1 timing |
+| Instruction memory | **Shared 512 x 32 2-port SRAM macro** (`imem_shared.v`) with a `REGION` window per engine; private flop memory (`instr_mem.v`) kept as a test variant |
+| Pin manager (`pin_mgr.v`) | **Built**: owner, remap and open-drain per pad, input select per engine pin, HOLD, IRQ, sticky violations |
+| Management (`spi_slave.v`, `mgmt.v`) | **Built**: frame v1 (7 bytes) and frame v2 (12 bytes, CRC-16, sequence numbers, retry-safe) |
+| Timestamp and trigger | **Built** (`TSTAMP`, `RPUT TRIG`); no event fabric or deadline unit |
+| Logic analyser (`la_block.v`, `la_unit.v`, build option `-DLA`) | **Built** (phases 1 to 3); engine debug, sniffers, formal and chip-level mutants not built |
+| Event fabric, trace, BIST, watchdog, parity | Not built, by decision |
+| Firmware | 13 protocols as generators in `host/*_prog.py` (UART, SPI, I2C, CAN, JTAG, Modbus, 1-Wire, SWD, PS/2, USB, WS2812, ...) |
+| Verification | 70 of 70 regression suites pass (`results/regression_2026-10-30/`): unit testbenches, differential test against `isa_model.py`, protocol suites, chip-level suites, mutation tests, formal proofs |
+| Physical design | IHP CMOS5L via LibreLane on an 8x4 die: run `sh10` (shared memory, no analyser) 19.71 ns slow-corner period (50.7 MHz), LVS clean, 0 DRC, 0 antenna. Candidate B adds the analyser at about 22.4 ns (43 MHz). Decision pending |
+| FPGA | DE0-Nano top `src/fpga/de0_nano_chip_top.v` with block-RAM stand-in; verified in simulation only. UART TX/RX/duplex ran on the board earlier with a simpler design |
 
-Next milestones: settle the SRAM question with the organizers, build the SRAM next-PC fetch and the pin manager, finish the
-management frame (CRC, sequence, ID), then the first real GDS flow run (see [EXECUTION_PLAN.md](EXECUTION_PLAN.md)).
+Next: choose the clock (50 or 43 MHz), RTL freeze 2026-12-13, final flows, hardware bring-up ([HANDOFF_WINDOWS.md](HANDOFF_WINDOWS.md) section 8).
+
+Design principle that held throughout: **no protocol-specific hardware**. Framing, clocking and open-drain behaviour are firmware idioms (`SETH`/`SETLO`/`DIRO`/`DIRI`);
+the only protocol-flavoured units are the generic CRC unit and the USB line coder.
 
 ## 1. Recommendation
 
 Build a small, deterministic I/O computer with two independently executing
-protocol engines, private writable instruction memories, and an independent
-hardware management and test controller. Protocols are software, not peripheral
-blocks. Timing, pin ownership, safe shutdown, and observability are hardware
-contracts.
+protocol engines, a writable instruction memory, and an independent hardware
+management controller. Protocols are software, not peripheral blocks. Timing,
+pin ownership, safe shutdown, and observability are hardware contracts.
 
-The distinguishing feature should be explainable behavior: every output edge can
-be traced to an instruction and timestamp, every stall has a visible reason, and
-recovery never depends on the program that stopped working.
+The distinguishing feature is explainable behavior: every output edge can be
+traced to an instruction, every stall has a visible reason, and recovery never
+depends on the program that stopped working (HOLD input, RUN gate, host-owned
+management link).
 
-Baseline: two engines, eight bidirectional protocol pins, 64 x 32-bit instructions
-per engine, small local data stores and FIFOs, on-chip trace, register access,
-memory self-test, and safe pin control. Flip-flop storage was the initial
-implementation and it is built, but synthesis on the real library shows it is 80 % of the chip,
-so instruction storage should move to SRAM (study: [ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md)); qualify
-CMOS5L SRAM acceptance before making it a dependency. Target a
-48 MHz operating point, with 24 MHz fallback and low-frequency bring-up. These
-are design targets, not measured performance or an area-fit claim.
+Baseline as built: two engines, eight logical pins each mapped onto eight
+bidirectional pads, one shared 512 x 32-bit instruction SRAM, 4-deep FIFOs, 8
+registers per engine, CRC and USB line-coder units, timestamp and trigger, and an
+optional logic analyser. Flip-flop instruction storage was the first version; it
+was 80 % of the chip, so it was replaced by the SRAM macro (study:
+[ASIC_AREA_AND_MEMORY_STUDY.md](ASIC_AREA_AND_MEMORY_STUDY.md)). Clock target:
+50 MHz (layout 19.71 ns at the slow corner), or 43 MHz with the analyser.
+
 
 Two engines permit two independent simple tasks, or a cooperating pair such as
 UART TX and RX. This is not a promise of simultaneous full-duplex UART, SPI, and
@@ -72,7 +63,7 @@ concurrency is explicitly bounded by engine count, pins, and host bandwidth.
 | Fixed UART/SPI/I2C blocks | Reject as the product architecture: future protocols would need new silicon. |
 | PIO-like independent engines | Adopt determinism, shift registers, local loops, and explicit waits. |
 | Large PRU-like subsystem | Borrow direct I/O and useful arithmetic, but omit the large SoC bus and software environment. |
-| Shared arbitrated instruction memory | Reject in the baseline: one engine must not delay another's pin edges. Refined 2026-10-11: a **single-port** macro shared by two engines is rejected for that reason; a **dual-port** macro with one port per engine and a page/ownership directory keeps private fetch bandwidth and is a live option (study §4). |
+| Shared instruction memory | Rejected for a single-port macro (one engine would delay the other's fetches). **Adopted with a 2-port macro**: one port per engine, a `REGION` window per engine, host writes only through the port of a held engine. |
 | Deep autonomous waveform sequencer | Defer: useful for replay but duplicates storage and cannot replace data-dependent execution. |
 
 Relative to a minimal PIO design, prioritize native timeout/deadline handling,
@@ -81,10 +72,8 @@ post-silicon debug. This is a custom ISA, not RP2040 binary compatibility.
 
 ## 2. Confirmed Constraints and Open Dependencies
 
-The supplied challenge requires the Tiny Tapeout CMOS5L template and
-`project.tiles: "6x4"` in its project manifest. An 8x4 option is not assumed.
-This document does not initialize that project or modify the puzzle repository.
-
+The challenge requires the Tiny Tapeout CMOS5L template. The project started on the 6x4 tile option; the 6x4 die (1289 x 711 um, 916k um^2) had no room for
+the second macro and was 2.5 to 3.5 ns slower, so the work moved to an **8x4** die (allowed by the organisers).
 Checked against the public template on the date above:
 
 - Eight dedicated inputs, eight dedicated outputs, eight bidirectional pins,
@@ -120,30 +109,23 @@ from the existing reverse-engineering work into this project.
 
 ```mermaid
 flowchart TB
-    Host[External MCU or FPGA host] <--> Mgmt[Fixed management port and CSR controller]
-    Mgmt <--> Test[Memory test and diagnostic controller]
-    Mgmt <--> Mem0[Private instruction and data storage 0]
-    Mgmt <--> Mem1[Private instruction and data storage 1]
-    Mem0 <--> Eng0[Deterministic engine 0]
-    Mem1 <--> Eng1[Deterministic engine 1]
+    Host[External MCU or FPGA host] <-->|SPI| Mgmt[spi_slave + mgmt]
+    Mgmt <--> Mem[Shared 512 x 32 instruction SRAM]
     Mgmt <--> FIFOs[Per-engine TX and RX FIFOs]
+    Mem --> Eng0[Engine 0]
+    Mem --> Eng1[Engine 1]
     FIFOs <--> Eng0
     FIFOs <--> Eng1
-    Events[Timestamp and event fabric] <--> Eng0
-    Events <--> Eng1
-    Eng0 --> Pins[Ownership and registered pin control]
+    Eng0 --> Pins[pin_mgr: owner, remap, open-drain, input select]
     Eng1 --> Pins
-    Pins <--> Pad[Eight bidirectional protocol pins]
-    Pad --> Input[Synchronizers and optional digital filters]
-    Input --> Eng0
-    Input --> Eng1
-    Eng0 --> Trace[Trace and first-fault capture]
-    Eng1 --> Trace
-    Input --> Trace
-    Trace --> Mgmt
-    Safety[Reset and independent abort control] --> Pins
-    Safety --> Eng0
-    Safety --> Eng1
+    Pins <--> Pad[uio 7:0 protocol pads]
+    Pad --> Sync[2-flop synchronisers] --> Eng0
+    Sync --> Eng1
+    Eng0 -.->|trigger| LA[Optional logic analyser]
+    Eng1 -.->|trigger| LA
+    Sync -.-> LA
+    LA <--> Mgmt
+    Hold[HOLD input ui_in 3] --> Pins
 ```
 
 Use one functional clock domain. External serial clocks are sampled as data in
@@ -153,19 +135,19 @@ interrupt preemption inside an engine.
 
 ### Baseline resource contract
 
-| Resource | Proposed implementation | Built today |
-| --- | --- | --- |
-| Protocol engines | 2, independently running | 2 |
-| Instruction storage | 64 x 32 bits per engine, plus one parity bit per word | 64 x 32 per engine in flops, host write port, no parity. **Flops do not fit the budget (§11); SRAM planned** |
-| Data scratchpad | 16 x 16 bits per engine | none (no opcode uses it yet) |
-| General registers | 4 x 16 bits per engine | none; one 16-bit loop counter |
-| Serial datapath | Separate TX/RX shifters and valid-bit counts | 32-bit OSR + 32-bit ISR, no bit counts (firmware loops via `SETL`/`DJNZ`) |
-| FIFOs | 8 x 16-bit TX and 8 x 16-bit RX per engine | 4 x 32-bit each (width/depth parameters) |
-| Timing | Global 32-bit timestamp; per-engine 32-bit deadline and bounded wait timer | 27-bit per-instruction delay counter only |
-| Coordination | Four sticky event bits with independent per-engine pending state | none |
-| Debug | Two PC comparators per engine; coherent halted-state access | `pc`, `halted`, `fault` outputs |
-| Trace | 16 x 64-bit circular buffer; selectable engine or pin-sample mode | none |
-| Safety | Reset release sequencing, output arm, per-engine watchdog, abort input | reset releases all pins |
+| Resource | As built |
+| --- | --- |
+| Protocol engines | 2, independently running, per-engine `run` gate |
+| Instruction storage | One shared 512 x 32 2-port SRAM macro; each engine fetches inside its own `REGION` window; out-of-window fetch traps. No parity |
+| Data scratchpad | none |
+| General registers | 8 x 32 bits per engine (`alu_unit`, flags Z N C) plus a 16-bit loop counter |
+| Serial datapath | 32-bit OSR and 32-bit ISR, either bit order; firmware loops via `SETL`/`DJNZ` |
+| FIFOs | TX (host to engine) and RX (engine to host), 32 bits wide, 4 deep, per engine |
+| Timing | 27-bit per-instruction delay counter, `WAITR` register delay, free-running 32-bit timestamp (`TSTAMP`) |
+| Coordination | none between engines (each owns its pins; the host orchestrates) |
+| Debug | `pc`, `halted`, `fault` outputs, `dbg_view` on `uo_out[7:2]`, optional logic analyser (16 channels, ring buffer in a second 2-port macro) |
+| Trace / BIST / watchdog | not built |
+| Safety | reset releases all pins; HOLD input (`ui_in[3]`) releases every engine pin and clears RUN; pin ownership |
 
 All capacities are discoverable through read-only capability registers. The
 initial program-store depth is a sizing hypothesis: complete UART, SPI, and
@@ -182,18 +164,11 @@ timing state, and FIFO endpoints. A program may read any protocol input but
 write only pins assigned to that engine. The host cannot write running engine
 state or steal its instruction/data access cycles.
 
-Use combinational reads from the small flip-flop instruction and scratch stores
-in the baseline. Ordinary instructions commit once on a rising clock edge.
-Branches, including taken branches, cost one cycle. This timing contract must
-survive synthesis; it is not permissible to introduce unadvertised wait states
-to rescue timing. A pipelined or synchronous-SRAM implementation needs a new,
-explicitly verified fetch contract before adoption.
-
-*Proposed fetch contract for SRAM (2026-10-11, not yet simulated):* present `next_pc` (the D input of the PC register: hold on
-a stall, pc+1, or the jump target) to the macro address pin, so the instruction for the new PC is on the macro output in the
-cycle the PC changes. This keeps one-cycle branches and exact d+1 delays with no added wait state; a stalled instruction
-re-reads the same address. The cost is a longer critical path (macro clock-to-output 3.0-3.1 ns typ, 5.05-5.3 ns at the
-slow corner, then decode, stall/jump select, address setup). The host owns the macro port only while the engine is held.
+The instruction memory is a synchronous SRAM macro (one shared 2-port macro, see CODE_GUIDE section 4), so the fetch address is `next_pc` (the D input of the
+PC register: hold on a stall, pc+1, or the jump target). The instruction for the new PC is then on the macro output in the cycle the PC changes. This keeps one-cycle
+branches and exact d+1 delays with no added wait state; a stalled instruction re-reads the same address. The cost is a long critical path (macro clock-to-output, then
+decode, stall/jump select and address setup); it is the path that limits the clock (see `results/` layout metrics). The host owns a macro port only while that engine is held.
+(`instr_mem.v`, 256 private words per engine in flip-flops, is kept as a test-only variant.)
 
 For an ordinary instruction committing at edge `commit_cycle` with delay `d`,
 the earliest next instruction commits at `commit_cycle + 1 + d`. The input
@@ -202,47 +177,32 @@ edge. Pin registers take their new value after that edge; external pad delay
 is additional. Explicit delays do not slow input synchronizers or the timestamp.
 
 On a blocked instruction, PC and architectural operands hold, no data is
-consumed, no pin or side-set effect occurs, and the stall reason is visible.
+consumed, no pin effect occurs, and the stall reason is visible.
 When the condition succeeds, the instruction commits exactly once. Its delay
-starts then. Illegal instructions and parity faults produce no instruction
+starts then. Illegal instructions produce no instruction
 side effects and enter the fault state.
 
 ### 4.2 Instruction format (as implemented)
 
-Fixed 32-bit words, one flat operand:
-
-| Bits | Meaning |
-| --- | --- |
-| 31:27 | Opcode: 32 encodings, 21 implemented, reserved ones trap |
-| 26:0 | Operand — meaning fixed per opcode: delay, address, count, pin index, or `CFG` bits |
-
-The earlier proposal split the low bits into a 6-bit post-commit delay, 3
-side-set bits and an 18-bit operand. That was dropped: a flat operand keeps
-every instruction single-purpose, makes the decoder a one-level `case`, and
-gives timed instructions a 27-bit range (2.68 s at 50 MHz) instead of 63
-cycles. The cost is that "toggle a second pin in the same instruction"
-(side-set) has no field; when SPI/I3C speed needs it, the candidates are a
-dedicated opcode or a `CFG`-selected clock pin that `OUT1`/`IN1` toggle
-implicitly. Decide before v0.4.
-
-Implemented families (details and cycle costs in [../instructions.md](../instructions.md)):
+Fixed 32-bit words: `[31:27]` opcode, `[26:0]` operand (delay, address, count, pin index, register fields or `CFG` bits, fixed per opcode). Opcodes 0 to 30 are
+implemented; encoding 31 is the TRAP word, which halts the engine with `fault = 1`. The single list is `src/isa.vh`; the Python mirror is `host/asm.py`; the reference
+model is `host/isa_model.py`. A flat operand keeps every instruction single-purpose and gives timed instructions a 27-bit range (2.68 s at 50 MHz). There is no side-set
+field; "toggle a second pin in the same instruction" is not supported (SPI and I3C clocks use `OUT1`/`IN1` plus pin instructions).
 
 | Family | Opcodes | Semantics |
 | --- | --- | --- |
-| Control | `NOP`, `WAIT d`, `JMP a`, `HALT` | `WAIT d` holds exactly d+1 cycles |
+| Control | `NOP`, `WAIT d`, `JMP a`, `HALT`, `REGION` | `WAIT d` holds exactly d+1 cycles; `REGION` (first instruction) fixes the window of memory words this engine may fetch |
 | Loop | `SETL n`, `DJNZ a` | 16-bit loop counter; `DJNZ` jumps while the decremented value is nonzero |
-| Data movement | `PULL`, `PUSH`, `PUSHI v` | Blocking FIFO ↔ shifter transfer; `PUSHI` pushes an immediate (event/status code); stall holds PC with no side effects |
+| Data movement | `PULL`, `PUSH`, `PUSHI v` | Blocking FIFO and shifter transfer; `PUSHI` pushes an immediate; a stall holds the PC with no side effects |
 | Serial | `OUT1 d`, `IN1 d` | One bit between the mapped pin and OSR/ISR, then hold d cycles; bit order from `CFG` |
-| Pins | `SETH p`, `SETLO p`, `DIRO p`, `DIRI p` | Per-pin data / direction; open-drain = `DIRO` to drive low, `DIRI` to release |
+| Pins | `SETH p`, `SETLO p`, `DIRO p`, `DIRI p` | Per-pin data and direction; open-drain = `DIRO` to drive low, `DIRI` to release |
 | Wait on pin | `WAITH p`, `WAITL p` | Level waits (I2C stretch, handshakes) |
-| Branch | `JPH p,a`, `JPL p,a`, `JPO a` | Jump if the synchronized pin is high / low (SPI slave CS abort); `JPO`: jump on the next OSR bit, consuming it (host data steers firmware); added 2026-10-11 |
+| Branch | `JPH p,a`, `JPL p,a`, `JPO a`, `JCC cond,a`, `WAITR` | Jump on pin level; on the next OSR bit (consuming it); on ALU flags Z N C; delay taken from a register |
+| Registers | `LDI`, `ALU` (MOV ADD SUB AND OR XOR SHL SHR CMP TST NOT PAR REV8), `RGET`, `RPUT` | 8 x 32-bit registers; read or write OSR, ISR, loop counter, pins, CRC, FIFOs, line coder, trigger |
+| Units | `CRC` (reset, poly, init, xorout, format, feed bit, feed byte), `LINE` (USB-style NRZI, bit stuffing, SE0 transceiver), `TSTAMP` | Generic CRC of any width and polynomial; free-running 32-bit timestamp |
 | Config | `CFG v` | out_pin, in_pin, OSR/ISR MSB-first |
 
-Planned families from the original proposal, not yet needed by any verified
-program and therefore not built: `LDI`/`MOV`, `ADD`/`SUB`/`AND`/`OR`/`XOR`/`CMP`,
-`SHIFT`, `LD`/`ST` scratch, `BR` (conditional), parallel `IN`/`OUT` 8, `TIME`,
-`SYNC` deadline, `EVENT`, `YIELD`, side-set. Each is added only when a
-protocol program demonstrably needs it; reserved encodings trap until then.
+Not built, by decision: parallel `IN`/`OUT` 8, scratch `LD`/`ST`, `SYNC` deadlines, `EVENT`/`YIELD`, side-set.
 
 There is no implicit auto-push or auto-pull. Firmware places explicit FIFO
 operations in safe intervals, so an innocent-looking bit instruction never
@@ -255,6 +215,8 @@ must honor `tx_full` — a write to a full FIFO is dropped as a whole word, in
 order, without corrupting any frame in flight (verified).
 
 ### 4.3 Deadlines, waits, and event ordering
+
+> Proposal text, **not built**: there is no `SYNC`, deadline, timeout or EVENT hardware. The built timing is the per-instruction delay (§4.1) and `TSTAMP`.
 
 Deadline arithmetic is modulo 2^32. Signed modular comparisons are valid only
 for scheduling distances less than 2^31 clocks, approximately 44.7 seconds at

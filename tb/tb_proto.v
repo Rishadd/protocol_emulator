@@ -14,6 +14,8 @@
 // Log: P <ns> <pads hex> on every pad change; A/B <ns> <word hex> for every word the host reads from engine 0 / 1; END ...
 // Pad resolution per pin: any engine pulling low (or open-drain 0) -> 0; else a push-pull driver at 1 -> 1; else pulled up -> 1.
 module tb_proto;
+    // waveform: run vvp with +dump to write build/wave/tb_proto.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_proto.vcd"); $dumpvars(0, tb_proto); end
     reg         clk = 0, rst_n = 0;
     reg  [1:0]  run = 2'b00;
     reg         tx0_wr = 0, tx1_wr = 0, rx0_rd = 0, rx1_rd = 0;

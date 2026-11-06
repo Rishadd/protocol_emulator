@@ -19,6 +19,8 @@
 // System clock 50 MHz (20 ns). Default SPI timing: SCLK half period 200 ns (10 clocks), CS_N 100 ns (5 clocks), within the
 // contract of docs/PROTOCOL_EMULATOR_ARCHITECTURE.md section 6 (>= 8 clocks per SCLK phase, >= 4 clocks CS_N setup / hold).
 module tb_host_bridge;
+    // waveform: run vvp with +dump to write build/wave/tb_host_bridge.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_host_bridge.vcd"); $dumpvars(0, tb_host_bridge); end
     reg        clk = 0, rst_n = 0;
     reg        sclk = 0, mosi = 0, cs_n = 1;
     real       spi_half_ns = 200.0, spi_cs_ns = 100.0;

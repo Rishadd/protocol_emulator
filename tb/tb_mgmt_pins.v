@@ -4,6 +4,8 @@
 // Pin manager through the management link (full chip): window 0x0200 claims, readback, refusals (err),
 // violations + write-one-to-clear, ownership and open-drain at the uio pads.
 module tb_mgmt_pins;
+    // waveform: run vvp with +dump to write build/wave/tb_mgmt_pins.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_mgmt_pins.vcd"); $dumpvars(0, tb_mgmt_pins); end
     localparam [7:0] OP_WR = 8'h01, OP_RD = 8'h02;
     reg        clk = 0, rst_n = 0;
     reg        sclk = 0, mosi = 0, cs_n = 1;

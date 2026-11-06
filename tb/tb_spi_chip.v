@@ -11,6 +11,8 @@
 // iff its STATUS showed RX data.
 // Log: P/S lines as tb_spi_engine, W/R <ns> <hex> (accepted write / valid read), END ...
 module tb_spi_chip;
+    // waveform: run vvp with +dump to write build/wave/tb_spi_chip.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_spi_chip.vcd"); $dumpvars(0, tb_spi_chip); end
     localparam [7:0]  OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0] W_HALT = {`OP_HALT, 27'd0};
 

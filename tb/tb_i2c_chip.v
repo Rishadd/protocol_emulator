@@ -7,6 +7,8 @@
 // Host loop (as tb_spi_chip): last STATUS said RX data -> READ, else words left -> WRITE, else poll.
 // +MGMT_HALF_NS sets the management SCLK half period. Log: P, R, MEM, END as tb_i2c_engine.
 module tb_i2c_chip;
+    // waveform: run vvp with +dump to write build/wave/tb_i2c_chip.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_i2c_chip.vcd"); $dumpvars(0, tb_i2c_chip); end
     parameter T_RISE = 1;
     localparam [7:0]  OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0] W_HALT = {`OP_HALT, 27'd0};

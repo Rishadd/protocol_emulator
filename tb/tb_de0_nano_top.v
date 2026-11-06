@@ -2,6 +2,8 @@
 `include "tb_common.vh"
 // DE0-Nano top: press KEY1 -> expect the whole message on bt_tx_pin as 115200 8N1.
 module tb_de0_nano_top;
+    // waveform: run vvp with +dump to write build/wave/tb_de0_nano_top.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_de0_nano_top.vcd"); $dumpvars(0, tb_de0_nano_top); end
     localparam integer BIT = 434;              // 50 MHz / 115200
 
     reg        clk = 0, reset_n = 0, start_n = 1, bt_rx_pin = 1;

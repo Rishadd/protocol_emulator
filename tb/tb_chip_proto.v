@@ -14,6 +14,8 @@
 // Log: P <ns> <pads hex> on every pad change, A/B <ns> <word hex> for every word read from engine 0 / 1,
 //      END cyc= fault0= fault1= halted0= halted1= pc0= pc1= contend= frames= err= viol= retries=
 module tb_chip_proto;
+    // waveform: run vvp with +dump to write build/wave/tb_chip_proto.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_chip_proto.vcd"); $dumpvars(0, tb_chip_proto); end
     localparam [7:0]  OP_WR = 8'h01, OP_RD = 8'h02;
     localparam [31:0] W_HALT = {`OP_HALT, 27'd0};
 

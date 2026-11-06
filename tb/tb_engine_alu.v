@@ -6,6 +6,8 @@
 // version: a counted sum, CRC-32 and CRC-16/Modbus computed by firmware, WAITR cycle counts, every RGET source and RPUT destination,
 // FIFO stalls with no side effects, traps, and reset behaviour.
 module tb_engine_alu;
+    // waveform: run vvp with +dump to write build/wave/tb_engine_alu.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_engine_alu.vcd"); $dumpvars(0, tb_engine_alu); end
     reg         clk = 0, rst_n = 0, run = 0, drain = 1;
     reg         tx_wr_en = 0, rx_rd_en = 0;
     reg  [31:0] tx_wr_data = 0;

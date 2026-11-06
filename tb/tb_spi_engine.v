@@ -9,6 +9,8 @@
 // Log: P <ns> <cs sclk mosi miso>  S <ns> (engine ISR shifts at this edge)  W/R <ns> <hex>  END ...
 // Pads: pin 2 SCLK, 3 MOSI, 4 MISO, 5 CS. A pin the engine does not drive carries the peer's value.
 module tb_spi_engine;
+    // waveform: run vvp with +dump to write build/wave/tb_spi_engine.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_spi_engine.vcd"); $dumpvars(0, tb_spi_engine); end
     reg         clk = 0, rst_n = 0, run = 0;
     reg         tx_wr_en = 0, rx_rd_en = 0;
     reg  [31:0] tx_wr_data = 0;

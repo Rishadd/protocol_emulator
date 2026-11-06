@@ -7,6 +7,8 @@
 //   +NT=<tests>  +CYC=<clocks per test>    +OUT=<trace file>
 // Trace line (after each clock edge, engine 0 then engine 1): pc pin_out pin_oe {halted fault tx_full rx_empty} rx_head osr isr lc crc zn c r0..r7
 module tb_isa_diff_shared;
+    // waveform: run vvp with +dump to write build/wave/tb_isa_diff_shared.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_isa_diff_shared.vcd"); $dumpvars(0, tb_isa_diff_shared); end
     localparam NTMAX = 400, CYCMAX = 600;
     reg         clk = 0, rst_n = 0;
     reg  [1:0]  run = 2'b00;

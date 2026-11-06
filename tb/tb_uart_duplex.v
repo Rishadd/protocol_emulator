@@ -3,6 +3,8 @@
 // Log: S <ns> (RX IN1), B <ns> <byte> (pop/echo), T <ns> <level> (bt_tx_pin edges), STATUS.
 `timescale 1ns/1ps
 module tb_uart_duplex;
+    // waveform: run vvp with +dump to write build/wave/tb_uart_duplex.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_uart_duplex.vcd"); $dumpvars(0, tb_uart_duplex); end
     reg  clk = 0, rst_n = 0, rx = 1;
     wire tx;
     wire [7:0] led;

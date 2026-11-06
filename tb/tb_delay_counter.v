@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 `include "tb_common.vh"
 module tb_delay_counter;
+    // waveform: run vvp with +dump to write build/wave/tb_delay_counter.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_delay_counter.vcd"); $dumpvars(0, tb_delay_counter); end
     reg         clk = 0, rst_n = 0, load = 0;
     reg  [26:0] load_value = 0;
     wire        busy, last;

@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 `include "tb_common.vh"
 module tb_shift_reg;
+    // waveform: run vvp with +dump to write build/wave/tb_shift_reg.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_shift_reg.vcd"); $dumpvars(0, tb_shift_reg); end
     reg         clk = 0, rst_n = 0, msb_first = 0, load = 0, clear = 0;
     reg         shift_out = 0, shift_in = 0, in_bit = 0;
     reg  [31:0] load_value = 0;

@@ -4,6 +4,8 @@
 // write-one-to-clear, reset state, open-drain never drives high; remapping of uio and uo_out pins, input select,
 // HOLD, MISC lock while running, IRQ, register readback and refusals.
 module tb_pin_mgr;
+    // waveform: run vvp with +dump to write build/wave/tb_pin_mgr.vcd
+    initial if ($test$plusargs("dump")) begin $dumpfile("build/wave/tb_pin_mgr.vcd"); $dumpvars(0, tb_pin_mgr); end
     reg         clk = 0, rst_n = 0;
     reg  [1:0]  run = 0;
     reg  [5:0]  w_addr = 0, r_addr = 0;
