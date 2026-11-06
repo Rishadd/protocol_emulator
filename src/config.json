@@ -14,6 +14,8 @@
       234.55
     ]
   ],
+  "MODULE_BOXES": "dir::floorplan_engines_s6a.json",
+  "MODULE_BOXES_MAX_UTIL": 0.85,
   "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
   "RUN_MAGIC_DRC": false,
   "RUN_POST_GRT_DESIGN_REPAIR": false,

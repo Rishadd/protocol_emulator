@@ -1,0 +1,45 @@
+{
+  "note": "6x4: macro centred at the bottom (x 297.4..983), engines left and right above it, narrow common column between them at the top",
+  "version": 10,
+  "boxes": [
+    {
+      "name": "eng0",
+      "match": [
+        "u_eng0."
+      ],
+      "box": [
+        20,
+        244,
+        520,
+        700
+      ]
+    },
+    {
+      "name": "common",
+      "match": [
+        "u_mgmt.",
+        "u_spi.",
+        "u_pins.",
+        "u_dbg."
+      ],
+      "box": [
+        525,
+        300,
+        765,
+        700
+      ]
+    },
+    {
+      "name": "eng1",
+      "match": [
+        "u_eng1."
+      ],
+      "box": [
+        770,
+        244,
+        1270,
+        700
+      ]
+    }
+  ]
+}
