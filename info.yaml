@@ -5,7 +5,7 @@ project:
   discord:      ""
   description:  "Programmable pin-level protocol engines with ALU and CRC units (UART, SPI, I2C master/slave, Modbus, 1-Wire, JTAG, CAN, USB low speed and more as firmware), one shared SRAM instruction memory and an SPI management port"
   language:     "Verilog"
-  clock_hz:     43000000
+  clock_hz:     40000000
 
   # Jane Street protocol emulator competition: 8x4 tiles (the 6x4 die does not route with pin mapping, line coder and the shared-memory chip)
   tiles: "8x4"

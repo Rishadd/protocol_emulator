@@ -67,6 +67,29 @@ def bridge(reader):
                 bridged.add((x0, x1, min([s.yMin() for s in segs] + [ylo]), max([s.yMax() for s in segs] + [yhi])))
             print(f"[bridge] {net_name} {inst.getName()}: stripes now bridged: {added}")
 
+        # A stripe that is not over any macro can still stop short: with two macros side by side, pdngen leaves the stripes in the
+        # channel between them as a stub that ends at the macro tops (found on the 8x4 chip with the logic analyser: 460.94 um short
+        # of the top edge, precheck "Port VGND is too far from top edge"). Fill such stripes up to the grid edges the same way.
+        bridged_x = {(x0, x1) for x0, x1, _, _ in bridged}
+        by_x = {}
+        for b in vertical:
+            by_x.setdefault((b.xMin(), b.xMax()), []).append(b)
+        for (x0, x1), segs in sorted(by_x.items()):
+            if (x0, x1) in bridged_x:
+                continue
+            lo = min(s.yMin() for s in segs)
+            hi = max(s.yMax() for s in segs)
+            if lo <= grid_lo + 1000 and hi >= grid_hi - 1000:
+                continue  # already a full-height stripe
+            if lo > grid_lo:
+                odb.dbSBox_create(swire, layer, x0, grid_lo, x1, lo, segs[0].getWireShapeType())
+                added += 1
+            if hi < grid_hi:
+                odb.dbSBox_create(swire, layer, x0, hi, x1, grid_hi, segs[0].getWireShapeType())
+                added += 1
+            bridged.add((x0, x1, min(lo, grid_lo), max(hi, grid_hi)))
+            print(f"[bridge] {net_name}: short stripe x {x0 / 1000:.2f}-{x1 / 1000:.2f} extended to the grid edges")
+
         # The Tiny Tapeout precheck wants every power port in the LEF to be one rectangle reaching both die edges, but
         # pdngen made one pin box per stripe segment. Replace the segment pin boxes of each bridged stripe with one
         # full-height pin box.
