@@ -8,13 +8,12 @@
   "ROUTING_OBSTRUCTIONS": [
     [
       "Metal4",
-      508.6,
+      296.44,
       12.78,
-      1196.09,
+      983.93,
       234.55
     ]
   ],
-  "MODULE_BOXES": "dir::floorplan_engines_shared3.json",
   "PL_KEEP_RESIZE_BELOW_OVERFLOW": 0,
   "RUN_MAGIC_DRC": false,
   "RUN_POST_GRT_DESIGN_REPAIR": false,
@@ -69,7 +68,7 @@
       "instances": {
         "u_imem.u_mem": {
           "location": [
-            509.6,
+            297.44,
             13.78
           ],
           "orientation": "FS"
